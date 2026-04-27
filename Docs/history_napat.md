@@ -1,6 +1,6 @@
-# Learning reflections
+# Napat's learning reflections
 
-## 27 Apr 2026
+## ✅ 27 Apr 2026
 ### Git
 - I've reviewed how to create a repository on Github and also several git commands which necessary use e.g. merge, push, pull. This can decrease issues during this project.
 
