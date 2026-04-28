@@ -11,6 +11,17 @@ Docker and Docker Compose
 - I have found out how to run my application using Docker and Docker Compose, which will help in deploying it easily in different environments.
 
 AI Agent Automation Builders
-- I have explored AI agent automation builders like n8n, langflow, and LangGraph. -
+- I have explored AI agent automation builders like n8n, langflow, and LangGraph. 
 - They provide an easy way to create and manage AI agents without coding, which can be useful.
 - I have to investigate more about these tools and apply them to my project.
+
+## 28 Apr 2026
+What I've learned today (laboratory work): I explored more images on Docker Hub and found several useful ones.
+- atlassian/confluence (https://hub.docker.com/r/atlassian/confluence): Confluence Server is where you create, organise and discuss work with your team. Capture the knowledge that's too often lost in email inboxes and shared network drives in Confluence. It might be useful for our project documentation and team collaboration.
+Unfortunately, I tried to use a trail version but it did not work because it threw an error when I requested a license key.
+- openrouteservice/openrouteservice (https://hub.docker.com/r/openrouteservice/openrouteservice): OpenRouteService is a routing service based on OpenStreetMap data. It provides various routing options, including car, bike, pedestrian, and wheelchair routes. This could be useful for our project if we need to implement routing features.
+I'm implementing this image but it still has some errors. I will investigate more about it and try to solve the issues.
+
+Overall, I saw the way to edit docker-compose.yml file to add new services and make them work together and I will learn more about configuration.
+
+
