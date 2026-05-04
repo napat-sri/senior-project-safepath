@@ -25,3 +25,4 @@
 - My group updated the progress with Professor and guidance us some relevant resources to make it better.
 - Then, we discuss more about workflow and plan to create our github project's backlog.
 - We will learn more resources from both Professor's recommendation and our researches.
+- In addition, as I cannot run the openstreetmap image completely, I tried to run again at home with read the docs again carefully. Finally, I can already run this image.
