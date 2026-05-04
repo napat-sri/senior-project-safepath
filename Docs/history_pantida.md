@@ -24,4 +24,10 @@ I'm implementing this image but it still has some errors. I will investigate mor
 
 Overall, I saw the way to edit docker-compose.yml file to add new services and make them work together and I will learn more about configuration.
 
+## 4 May 2026
+What I've learned today:
+- I created a FastAPI application and set up a Dockerfile and docker-compose.yml file.
+- I updated main.py which has endpoints for the FastAPI application.
+- I've learned how to build docker containers and run them using Docker Compose (docker-compose up --build).
+- My team and I are initiating a final project on github.
 
