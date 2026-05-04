@@ -14,3 +14,14 @@
 ### Exploring Docker Image
 - I research a Docker image which is relevant in this project from Docker Hub. I found ([Openstreetmap](https://hub.docker.com/r/overv/openstreetmap-tile-server)) that is an image that use to display a selected map. The main point is a large size of map resources and combining with my issue that I have to learn how to install it, so it takes much time to prepare.
 - This is the main part of our project, it will be shown in the UI of an application. I will be more encourage to prepare and learn about this image and continue with the way to integrate with another images.
+
+## ✅ 4 May 2026
+### REST Architecture (FastAPI)
+- I've reviewed how to use REST architecture in default protocols (GET, POST, PUT, DELETE)
+- I've got more practice with learning how to build a Docker compose for a sample program of Movie Picker, then complete the functions inside to show the results of each
+- At the beginning, I had a little bit confusing about how to build a Docker, after I research and try, I can build and run it perfectly. Then, I can write some function correctly at once, but some of them has error to fix. My overall practicing is quite good.
+
+### Project Progress Update and Backlog
+- My group updated the progress with Professor and guidance us some relevant resources to make it better.
+- Then, we discuss more about workflow and plan to create our github project's backlog.
+- We will learn more resources from both Professor's recommendation and our researches.
