@@ -31,3 +31,10 @@ What I've learned today:
 - I've learned how to build docker containers and run them using Docker Compose (docker-compose up --build).
 - My team and I are initiating a final project on github.
 
+## 5 May 2026
+What I've learned today:
+- I've learned about Personas, Scenarios, User Stories, and Features identification in software development.
+- I've created personas for our project, which help us understand our users better.
+- I've created scenarios that describe how our users will interact with our application. We shared these scenarios with another team to get feedback and improve them.
+- I've got ideas from other teams' scenarios and personas, which helped me improve our work.
+
