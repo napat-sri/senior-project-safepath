@@ -18,6 +18,7 @@ docker run \
 -v berlin-data:/data/database/ \
 overv/openstreetmap-tile-server \
 import
+```
 
 <ins>Running the server</ins>
 Run the server:
