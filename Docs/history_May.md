@@ -16,3 +16,16 @@ _PostGIS_
 3. in order to test successfully, i would need actually databased with coordinates and I wasn't able to find the data insde.
 4. If actual data is available, I would be able to integrate into "Tableau" and post online for real-time update.
 
+# 04th May Learning History
+=========================================================
+1. Learned how to build a simple REST API using FastAPI and organize the project in a clean way using a main.py file.
+2. I understood how to run the FastAPI application using Uvicorn and access it through a local server like http://localhost:8000 and able to differentiate between container host and local device host. 
+3. Practiced using a virtual environment (.venv) to install and manage dependencies such as FastAPI and Uvicorn without affecting my system. Starting to realize the benefit of using (.venv) and docker container/image.
+4. Created different API endpoints including GET, POST, PATCH, and DELETE to perform operations like retrieving, adding, updating, and deleting data.
+5. Learned how to use Pydantic models to validate input data, which helps ensure the data structure is correct when users send requests.
+6. Implemented basic logic to manage movie data using dictionaries, including filtering movies by mood and selecting a random movie.
+7. Improved my understanding of writing safer code by validating inputs first, such as checking for duplicate movie titles and valid mood values before saving data.
+8. Used Swagger UI (/docs) to test all endpoints interactively, which helped me clearly understand how requests and responses work.
+9. Learned the difference between using a virtual environment for development and Docker for creating a portable and consistent runtime environment.
+10. Finally, I Dockerized my FastAPI project, which allows the application to run the same way on any machine, making it easier to share and deploy.
+
