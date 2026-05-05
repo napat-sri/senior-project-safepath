@@ -26,3 +26,16 @@
 - Then, we discuss more about workflow and plan to create our github project's backlog.
 - We will learn more resources from both Professor's recommendation and our researches.
 - In addition, as I cannot run the openstreetmap image completely, I tried to run again at home with read the docs again carefully. Finally, I can already run this image.
+
+## ✅ 5 May 2026
+### Personas
+- I created a persona of this project with four main aspects: Personalization, Job/Context, Education & Technial Skill, and Relevance. These details show type of user who would want to use the product and hope to archive.
+- My persona is a German project manager named "Markus Schneider". He is 38 years old who lives in a rented apartment in Charlottenburg. He works at a logistics company with frequently travels between office, client sites, and home by a mix of U-Bahn and walking. He is comfortable using everyday apps (e.g. Google Maps or WhatsApp) and digital tool for work (e.g. Excel or PM software). As he is good at product design, he doesn't like in complex settings or technicals. He wants to feel secure during his journey, not just efficiency, and avoid high-risk areas to gain his confidence.
+
+### Scenarios
+- My group discussed about scenarios of this project which describe a realistic situation according to our personas to achieve their goals. The scenarios focused on objective, actors (persona's references), activities, problems, and resolution (how to solve the problems).
+- We found that Alex chen (A bachelor student) and John Doe (A tourist) have a similar scenario to reach our project's purpose. So, we create scenarios from both perspectives to think our product's features in the next process.
+
+### User Stories
+- I've reviewed the definition and how to format a user story which make us easy to understand the features based on users' needs. In addition, the user story can make us estimate, prioritise, and track in a product backlog.
+- We will discuss the user stories during the week before the next class.
