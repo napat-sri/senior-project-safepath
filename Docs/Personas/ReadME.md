@@ -10,4 +10,4 @@
 <img width="2666" height="1500" alt="image" src="https://github.com/user-attachments/assets/9439bf33-656c-405f-8ffa-14fe5c164b94" />
 
 ## Jennifer Miller - Freelancer and Housewife
-<img width="7655" height="522" alt="image" src="https://github.com/user-attachments/assets/40121632-d348-4660-bfc8-66400a5ce232" />
+<img width="2666" height="1500" alt="image" src="https://github.com/user-attachments/assets/83b2842c-60f5-4fb8-a98f-6bb30bc02de3" />
