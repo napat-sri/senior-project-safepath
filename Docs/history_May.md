@@ -29,3 +29,12 @@ _PostGIS_
 9. Learned the difference between using a virtual environment for development and Docker for creating a portable and consistent runtime environment.
 10. Finally, I Dockerized my FastAPI project, which allows the application to run the same way on any machine, making it easier to share and deploy.
 
+# 05th May Learning History 
+========================================================
+Designed a demo prototype in Figma to visualize the SafePath Berlin application, including basic user flow for route selection and safety features
+Structured project backlogs in Excel, defining key features such as safe route recommendation, real-time alerts, and user interaction flows
+Created two user personas (university student and solo traveler) to represent different target users with different needs and behaviors
+Defined persona details, including background, daily context, technical skills, and safety concerns
+Drafted user scenarios for each persona, clearly outlining how they interact with the system
+Ensured each scenario includes objective, actors, activities, problem, and resolution as required
+Connected personas and scenarios to real-world use cases (night travel, unfamiliar city navigation, safety decision-making)
