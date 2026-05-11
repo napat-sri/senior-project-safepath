@@ -8,4 +8,4 @@ John Doe wants to return to his hotel safely in an unfamiliar city (Objective). 
 
 | ID | User Story | Issue Link |
 |----|------------|------------|
-| 1 | As a visitor, I want to enter a destination without login so that I can try SafePath freely. | #20 |
+| 1 | As a visitor, I want to enter a destination without login so that I can try SafePath freely. | https://github.com/napat-sri/senior-project-safepath/issues/20 |
