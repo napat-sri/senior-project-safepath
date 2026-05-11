@@ -39,3 +39,8 @@
 ### User Stories
 - I've reviewed the definition and how to format a user story which make us easy to understand the features based on users' needs. In addition, the user story can make us estimate, prioritise, and track in a product backlog.
 - We will discuss the user stories during the week before the next class.
+
+## ✅ 11 May 2026
+### Project Checklist and Update
+- My group continues the definition of the project especially creating user stories. And for my task is to create a timetable for sprints.
+- Our professor asked for project update according his checklist: Group members, Vision statement, Architecture design, Personas, Scenarios, User stories, Features, and Timetable for Sprints. We completed most of them, however, some documents would add more text or link inside to track them easily.
