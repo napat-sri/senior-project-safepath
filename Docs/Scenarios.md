@@ -1,5 +1,5 @@
 ## Alex Chen - International Bachelor Student at MDH University of Applied Science
-Alex wants to travel from his apartment to a late-night group study session at campus (Objective). He uses the SafePath app while walking to the station (Actors). The app shows a fast route and a safer route, and Alex quickly chooses while moving (Activities). However, the fastest route passes through a poorly lit area, and Alex is distracted by his phone (Problem). The app sends a real-time alert and suggests a safer path, helping him reach safely (Resolution).
+Alex wants to travel from his apartment to a late-night group study session at campus (Objective). He uses the SafePath app while walking to the station (Actors). The app shows a fast route and a safer route, and Alex quickly chooses while moving (Activities). However, the fastest route passes through a poorly lit area (Problem). The app suggests safer paths, helping him reach safely (Resolution).
 
 
 
