@@ -44,3 +44,16 @@
 ### Project Checklist and Update
 - My group continues the definition of the project especially creating user stories. And for my task is to create a timetable for sprints.
 - Our professor asked for project update according his checklist: Group members, Vision statement, Architecture design, Personas, Scenarios, User stories, Features, and Timetable for Sprints. We completed most of them, however, some documents would add more text or link inside to track them easily.
+
+## ✅ 12 May 2026
+### RAG (Retrieval Augmented Generation)
+- I've learned the introduction and the process of RAG.
+- I tried to make a basic agent in Langflow using an information from MDH website to ask the address of Berlin campus as an example.
+
+- An example of an agent
+
+<img width="2560" height="1281" alt="image" src="https://github.com/user-attachments/assets/d2dbea48-ddaa-4385-9683-778271d5b3a0" />
+
+- An example of asking the address of MDH university in Berlin
+
+<img width="2560" height="1278" alt="image" src="https://github.com/user-attachments/assets/6c8522df-6d4c-4d1e-a479-3e19e2ce8778" />
