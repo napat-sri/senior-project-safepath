@@ -31,10 +31,23 @@ _PostGIS_
 
 # 05th May Learning History 
 ========================================================
-Designed a demo prototype in Figma to visualize the SafePath Berlin application, including basic user flow for route selection and safety features
-Structured project backlogs in Excel, defining key features such as safe route recommendation, real-time alerts, and user interaction flows
-Created two user personas (university student and solo traveler) to represent different target users with different needs and behaviors
-Defined persona details, including background, daily context, technical skills, and safety concerns
-Drafted user scenarios for each persona, clearly outlining how they interact with the system
-Ensured each scenario includes objective, actors, activities, problem, and resolution as required
-Connected personas and scenarios to real-world use cases (night travel, unfamiliar city navigation, safety decision-making)
+1. Designed a demo prototype in Figma to visualize the SafePath Berlin application, including basic user flow for route selection and safety features.
+2. Structured project backlogs in Excel, defining key features such as safe route recommendation, real-time alerts, and user interaction flows. 
+3. Created two user personas (university student and solo traveler) to represent different target users with different needs and behaviors. 
+4. Defined persona details, including background, daily context, technical skills, and safety concerns.
+5. Drafted user scenarios for each persona, clearly outlining how they interact with the system. 
+6. Ensured each scenario includes objective, actors, activities, problem, and resolution as required. 
+7. Connected personas and scenarios to real-world use cases (night travel, unfamiliar city navigation, safety decision-making)
+
+# 06th May Learning History
+========================================================
+1. Installed and configured Langflow using Docker Compose on local environment.
+Created a basic prompting workflow in Langflow using components such as Chat Input, Prompt Template, LLM, and Chat Output.
+2. Explored how Langflow connects prompts and user questions into a conversational AI pipeline.
+3. Worked with LiteLLM Proxy and learned how external models can be integrated into Langflow.
+4. Faced and troubleshooted context window errors caused by large website content and model limitations.
+5. Learned how website parsing works by connecting URL and Parser components into the workflow.
+6. Improved the flow configuration by reducing URL depth and optimizing prompt structure to avoid oversized inputs.
+7. Explored the differences between DeepSeek, OpenAI, Gemini, and Ollama integrations inside Langflow.
+8. Configured Gemini API for Langflow and connected Google Generative AI models into the chatbot flow.
+9. Tested Gemini 2.0 Flash model and adjusted temperature settings for more stable and accurate responses.
