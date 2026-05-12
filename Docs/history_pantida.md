@@ -38,3 +38,9 @@ What I've learned today:
 - I've created scenarios that describe how our users will interact with our application. We shared these scenarios with another team to get feedback and improve them.
 - I've got ideas from other teams' scenarios and personas, which helped me improve our work.
 
+## 12 May 2026
+What I've learned today:
+- I have learned about langflow and explored its features and capabilities.
+- I have learned about RAG and implemented it by using Langflow.
+- I have created two projects in Langflow, one for RAG and another for a chatbot assistant. 
+- Chatbot assistant is focusing on MDH. I faced some issues about "ContextWindowExceededError" but I will change some parameters of URL to solve it.
