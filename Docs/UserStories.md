@@ -6,3 +6,4 @@
 | U2.1 | Create Home Page UI with MAP Integrated #24 | P | Sub-issue| https://github.com/napat-sri/senior-project-safepath/issues/24 |
 | U3 | As a user, I want to log in with my email and password so that I can access SafePath features. | P0 | Parent Issue | https://github.com/napat-sri/senior-project-safepath/issues/27 |
 | U4 | As a User, I would like to see the Basic safety information about destination place. #25 | P0 | Parent Issue | https://github.com/napat-sri/senior-project-safepath/issues/25
+| U5 | As a user, I would like to submit UPDATE NEWS related with incidents, Lights or other reports | P0 | Parent Issue | https://github.com/napat-sri/senior-project-safepath/issues/31 |
