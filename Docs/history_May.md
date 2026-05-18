@@ -51,3 +51,25 @@ Created a basic prompting workflow in Langflow using components such as Chat Inp
 7. Explored the differences between DeepSeek, OpenAI, Gemini, and Ollama integrations inside Langflow.
 8. Configured Gemini API for Langflow and connected Google Generative AI models into the chatbot flow.
 9. Tested Gemini 2.0 Flash model and adjusted temperature settings for more stable and accurate responses.
+
+# 11th May Learning History
+========================================================
+1. Continued collaborating with my group on defining the SafePath Berlin project, mainly focusing on user stories and sprint planning.
+2. My responsibility was to prepare and organize the sprint timetable to support the project workflow and development phases.
+3. Reviewed the project checklist provided by our professor, including Vision Statement, Architecture Design, Personas, Scenarios, User Stories, Features, and Sprint Timeline.
+4. Finalized most project documents while improving structure, adding additional descriptions, and linking related materials for easier tracking and team collaboration.
+
+# 12th May Learning History
+========================================================
+1. Worked on setting up and testing the AI chatbot environment for the SafePath Berlin project using Docker and Langflow.
+2. Explored chatbot integration concepts for the web application, including frontend connection and local deployment setup on macOS.
+3. Investigated issues related to LiteLLM, DeepSeek, and API limitations while testing different LLM providers and configurations.
+4. Evaluated alternative AI models and deployment options, including OpenAI and Gemini, to improve chatbot stability and project feasibility.
+
+
+## 18 May Learning History
+========================================================
+1. Continued building and testing the RAG workflow in Langflow using embedding models and document processing components inside Docker.
+2. Troubleshooted chunking and embedding issues together by analyzing Langflow logs, especially errors related to oversized chunks and malformed document indexing.
+3. Adjusted document splitting strategies by reducing chunk size and overlap settings to improve embedding generation and stabilize the RAG pipeline.
+4. Tested API integration methods for embeddings using cURL and Postman while identifying possible dataset and document formatting problems affecting retrieval performance.
