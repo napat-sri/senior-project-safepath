@@ -2,12 +2,10 @@
   <div id="app">
     <h1>Welcome to SafePath</h1>
     <p>Your trusted companion for navigating safe routes.</p>
- <div id="chat-container"></div>
+    <div id="chat-container"></div>
     <div id="map-container">
       <div id="map"></div>
     </div>
-
-   
   </div>
 </template>
 
@@ -31,6 +29,15 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+// 4. Resolve environment-driven configuration with sensible fallbacks so the
+//    app still boots if a teammate forgot to copy .env.example to .env.
+const TILE_URL =
+  process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png';
+const LANGFLOW_HOST =
+  process.env.VUE_APP_LANGFLOW_HOST || 'http://localhost:7860';
+const LANGFLOW_FLOW_ID = process.env.VUE_APP_LANGFLOW_FLOW_ID || '';
+const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY || '';
+
 export default {
   name: 'App',
   data() {
@@ -44,16 +51,17 @@ export default {
   },
   methods: {
     initMap() {
-      // Initialize the map
-      //this.map = L.map('map').setView([52.5200, 13.4050], 12);
+      // Initialize the map (zoom control moved to top-right)
       this.map = L.map('map', {
-        zoomControl: false // Disable the default top-left control
+        zoomControl: false
       }).setView([52.5200, 13.4050], 12);
 
-      // Add zoom control back to the top-right
       L.control.zoom({ position: 'topright' }).addTo(this.map);
-      // Point to your Docker Tile Server (Port 8081)
-      L.tileLayer('http://localhost:8081/tile/{z}/{x}/{y}.png', {
+
+      // Tile server URL is driven by VUE_APP_TILE_URL so the same code works
+      // against the local Docker tile server, the public OSM tile server, or
+      // a hosted environment without modification.
+      L.tileLayer(TILE_URL, {
         maxZoom: 18,
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(this.map);
@@ -70,28 +78,36 @@ export default {
       this.map.flyTo([testLat, testLng], 15);
     },
     initChat() {
-        // 1. Create the script element
+      // Skip the chat widget entirely if Langflow config is missing — better
+      // than rendering a broken widget with no flow_id / api_key.
+      if (!LANGFLOW_FLOW_ID || !LANGFLOW_API_KEY) {
+        console.warn(
+          '[SafePath] Langflow chat disabled: VUE_APP_LANGFLOW_FLOW_ID or ' +
+          'VUE_APP_LANGFLOW_API_KEY is not set. Copy .env.example to .env ' +
+          'and fill in the values to enable the chat assistant.'
+        );
+        return;
+      }
+
       const script = document.createElement('script');
       script.src = "https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js";
-      
+
       script.onload = () => {
-        // 2. Inject the custom element once the library is ready
         const chatContainer = document.getElementById('chat-container');
         if (chatContainer) {
-          chatContainer.innerHTML = `
-            <langflow-chat
-              window_title="Simple Agent"
-              flow_id="dd195420-870e-4896-8b6c-794902b319b1"
-              host_url="http://localhost:7860"
-              api_key="sk-XZOSAs4iJxFFXp0081ugpVHcgqko-eR68ZHlaoyNcAY">
-            </langflow-chat>
-          `;
+          // Build the custom element programmatically to avoid HTML-escaping
+          // surprises with values that come from environment variables.
+          const chat = document.createElement('langflow-chat');
+          chat.setAttribute('window_title', 'SafePath Assistant');
+          chat.setAttribute('flow_id', LANGFLOW_FLOW_ID);
+          chat.setAttribute('host_url', LANGFLOW_HOST);
+          chat.setAttribute('api_key', LANGFLOW_API_KEY);
+          chatContainer.innerHTML = '';
+          chatContainer.appendChild(chat);
         }
       };
-      
-      // 3. Append to body to trigger the download
-      document.body.appendChild(script);
 
+      document.body.appendChild(script);
     }
   }
 };
@@ -115,6 +131,4 @@ export default {
   color: #2c3e50;
   padding-top: 40px;
 }
-
-
 </style>
