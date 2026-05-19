@@ -55,5 +55,11 @@ What I've learned today:
 - I created and run my first RAG project and it worked well. I will continue to improve it and make it more efficient.
 ![Pantida RAG](images/PantidaRAG.png)
 
+# 19 May 2026
+What I've learned today:
+- I continued to work on RAG and Agent projects in Langflow.
+- I have learned about Web Search.
+- I implemented chatbot in my project with a simple prompt template.
+- I've continued to work on backend development and connected the map.
 
 
