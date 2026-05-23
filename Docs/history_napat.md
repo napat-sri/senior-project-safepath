@@ -57,3 +57,11 @@
 - An example of asking the address of MDH university in Berlin
 
 <img width="2560" height="1278" alt="image" src="https://github.com/user-attachments/assets/6c8522df-6d4c-4d1e-a479-3e19e2ce8778" />
+
+## ❌ 18 May 2026
+*I excused for a sick leave. However, I asked my group what they've done this day more about RAG and run an example workflow.*
+
+## ✅ 19 May 2026
+### RAG (Cont.)
+- I've reviewed from yesterday I missed about indexing, chunking, collecting, and embedding the data. Then, I've tried to ask this agent and it can answer deeper compare with last week's workflow.
+- I've learned how to create an agent which can be another choice to integrate in the project.
