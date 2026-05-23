@@ -81,7 +81,8 @@ services:
       LANGFLOW_CORS_ALLOW_METHODS: '["GET","POST","PUT","PATCH","DELETE","OPTIONS"]'
       LANGFLOW_CORS_ALLOW_HEADERS: '["Content-Type","Authorization","x-api-key"]'
       LANGFLOW_CORS_ALLOW_CREDENTIALS: 'True'
-      
+      LANGFLOW_API_KEY_SOURCE: env
+      LANGFLOW_API_KEY: ${VUE_APP_LANGFLOW_API_KEY}
     volumes:
       - ./langflow/flows:/app/flows
       - langflow-data:/app/langflow
