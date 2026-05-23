@@ -24,6 +24,9 @@ Thumbs.db
 .dockerignore
 docker-compose.override.yml
 
+# Keep the env template committed so teammates know what to fill in
+!.env.example
+
 # Build output
 dist/
 build/

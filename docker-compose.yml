@@ -1,5 +1,7 @@
-
 services:
+  # ----------------------------------------------------------------------------
+  # SafePath Vue.js frontend
+  # ----------------------------------------------------------------------------
   safepath-app:
     build:
       context: .
@@ -11,39 +13,80 @@ services:
       - /app/node_modules
     stdin_open: true
     tty: true
+    env_file:
+      - .env
     environment:
       - NODE_ENV=development
-      - BERLIN_CRIME_API_URL=https://www.statistik-berlin-brandenburg.de/opendata
-      - OVERPASS_API_URL=https://overpass-api.de/api/interpreter
+    depends_on:
+      - langflow
 
-  openstreetmap: 
-    image: overv/openstreetmap-tile-server 
+  # ----------------------------------------------------------------------------
+  # OpenStreetMap tile server (run-only)
+  #
+  # NOTE: This service expects the `berlin-data` volume to already contain an
+  # imported Berlin database. On a fresh machine you MUST run the `osm-import`
+  # service first (see below) before `docker-compose up` will produce tiles.
+  # ----------------------------------------------------------------------------
+  openstreetmap:
+    image: overv/openstreetmap-tile-server
     container_name: openstreetmap
     ports:
-       - "8081:80" 
-    volumes: 
-       - berlin-data:/data/database/ 
-    environment: 
-      - DOWNLOAD_PBF=https://download.geofabrik.de/europe/germany/berlin-latest.osm.pbf 
-      - DOWNLOAD_POLY=https://download.geofabrik.de/europe/germany/berlin.poly 
-    # Use a simple string, no brackets.
+      - "8081:80"
+    volumes:
+      - berlin-data:/data/database/
     command: run
     restart: always
+
+  # ----------------------------------------------------------------------------
+  # OpenStreetMap tile server (one-shot import)
+  #
+  # Activated only via the "setup" profile so it does not run on `up`.
+  # Run once on a fresh machine:
+  #
+  #   docker-compose --profile setup run --rm osm-import
+  #
+  # This downloads the Berlin .osm.pbf (~500 MB) and imports it into the
+  # shared `berlin-data` volume. The process takes 20-60 minutes and needs
+  # tens of GB of free disk. After it finishes, `docker-compose up` will
+  # start the `openstreetmap` service with data ready to serve.
+  # ----------------------------------------------------------------------------
+  osm-import:
+    image: overv/openstreetmap-tile-server
+    profiles: ["setup"]
+    volumes:
+      - berlin-data:/data/database/
+    environment:
+      - DOWNLOAD_PBF=https://download.geofabrik.de/europe/germany/berlin-latest.osm.pbf
+      - DOWNLOAD_POLY=https://download.geofabrik.de/europe/germany/berlin.poly
+    command: import
+
+  # ----------------------------------------------------------------------------
+  # Langflow (AI agent / chatbot)
+  #
+  # Flows committed under ./langflow/flows are auto-loaded on startup so any
+  # teammate cloning the repo gets the same agent without rebuilding it in
+  # the UI. Export updated flows from the Langflow UI and commit the JSON.
+  # ----------------------------------------------------------------------------
   langflow:
     image: langflowai/langflow:latest
     container_name: langflow
-    ports: 
+    ports:
       - "7860:7860"
     environment:
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      LANGFLOW_LOAD_FLOWS_PATH: /app/flows
+      LANGFLOW_AUTO_LOGIN: 'true'
+      LANGFLOW_SKIP_AUTH_AUTO_LOGIN: 'true'
       LANGFLOW_CORS_ORIGINS: '["http://localhost:8080", "http://127.0.0.1:8080"]'
       LANGFLOW_CORS_ALLOW_METHODS: '["GET","POST","PUT","PATCH","DELETE","OPTIONS"]'
       LANGFLOW_CORS_ALLOW_HEADERS: '["Content-Type","Authorization","x-api-key"]'
       LANGFLOW_CORS_ALLOW_CREDENTIALS: 'True'
-      LANGFLOW_SKIP_AUTH_AUTO_LOGIN: 'True'
+      
     volumes:
+      - ./langflow/flows:/app/flows
       - langflow-data:/app/langflow
     restart: unless-stopped
 
 volumes:
   langflow-data:
-  berlin-data: 
+  berlin-data:
