@@ -1,369 +1,850 @@
 <template>
-  <div class="home-layout">
+    <div class="page-shell">
+        <aside :class="['sidebar', { collapsed: sidebarCollapsed }]">
+            <div class="brand-section">
 
-    <aside :class="['sidebar', { collapsed: sidebarCollapsed }]">
-      <div class="brand-section">
-        <div class="logo-box">✓</div>
+                <div class="brand-copy">
+                    <h2>SafePath</h2>
+                    <span>Berlin</span>
+                </div>
 
-        <div>
-          <h1>SafePath</h1>
-          <p>Berlin</p>
-        </div>
-
-        <button class="sidebar-toggle" type="button" @click="toggleSidebar" aria-label="Toggle sidebar">☰</button>
-      </div>
-
-      <nav class="nav-menu">
-        <a class="nav-item active">
-          <span>⌂</span>
-          Dashboard
-        </a>
-
-        <a class="nav-item">
-          <span>👤</span>
-          Profile
-        </a>
-
-        <a class="nav-item">
-          <span>⚠️</span>
-          Report Incident
-        </a>
-
-        <a class="nav-item">
-          <span>🗺️</span>
-          Community Reports
-        </a>
-      </nav>
-
-      <div class="premium-card">
-        <h3>Premium Safety+</h3>
-        <p>
-          Unlock predictive safety alerts and personalized safe route analysis.
-        </p>
-
-        <button>Upgrade</button>
-      </div>
-    </aside>
-
-    <main class="main-content">
-
-      <div class="topbar">
-        <div>
-          <h2>Find Your Safe Route</h2>
-          <p>Navigate Berlin with confidence and smarter safety insights.</p>
-        </div>
-
-        <div class="status-badge">
-          <span class="status-dot"></span>
-          SafePath Active
-        </div>
-      </div>
-
-      <section class="content-grid">
-
-        <div class="search-panel">
-
-          <div class="panel-header">
-            <h3>Route Search</h3>
-            <p>Search safer paths using live route intelligence.</p>
-          </div>
-
-          <form @submit.prevent="searchRoute">
-
-            <label>Start Location</label>
-
-            <div class="input-box">
-              <span>📍</span>
-
-              <input
-                v-model="startLocation"
-                type="text"
-                placeholder="e.g., Alexanderplatz"
-              />
+                <button class="sidebar-toggle" type="button" @click="toggleSidebar"
+                    aria-label="Toggle sidebar">☰</button>
             </div>
 
-            <label>Destination</label>
+            <nav class="nav-menu" aria-label="Primary navigation">
+                <button type="button" class="nav-item active">
+                    <span>🗺️</span>
+                    Dashboard
+                </button>
 
-            <div class="input-box">
-              <span>🚩</span>
+                <button type="button" class="nav-item">
+                    <span>👤</span>
+                    Profile
+                </button>
 
-              <input
-                v-model="destination"
-                type="text"
-                placeholder="e.g., Brandenburg Gate"
-              />
+                <button type="button" class="nav-item">
+                    <span>⚠️</span>
+                    Report Incident
+                </button>
+
+                <button type="button" class="nav-item">
+                    <span>📋</span>
+                    Community Reports
+                </button>
+            </nav>
+
+            <div class="premium-card card">
+                <p class="premium-label">Premium Safety+</p>
+                <h3>Unlock predictive safety alerts</h3>
+                <p>
+                    Get proactive warnings, route intelligence, and personalized safe route analysis.
+                </p>
+
+                <button type="button" class="premium-btn btn btn-ghost">Upgrade</button>
             </div>
+        </aside>
 
-            <button type="submit" class="search-btn">
-              Search Safe Route
-            </button>
+        <main class="main-content">
+            <header class="topbar card">
+                <div>
+                    <h2>Find your safest Berlin route</h2>
+                    <p class="muted">Compare route options, validate Berlin-only locations, and inspect detailed route
+                        safety before you go.</p>
+                </div>
+            </header>
 
-          </form>
+            <section class="content-grid">
+                <section class="search-panel card">
+                    <div class="panel-header">
+                        <h3>Route Search</h3>
+                        <span>Search safer paths using live route intelligence.</span>
+                    </div>
 
-        </div>
+                    <form class="search-form" @submit.prevent="searchRoute" novalidate>
+                        <label for="start-location">Start Location *</label>
 
-        <div class="map-wrapper">
+                        <div class="input-wrap" :class="{ invalid: startError }">
+                            <span>📍</span>
+                            <input id="start-location" v-model="startLocation" class="search-input" type="text"
+                                placeholder="e.g., Alexanderplatz" autocomplete="off" @focus="startFocused = true"
+                                @blur="handleFieldBlur('start')" />
+                        </div>
 
-          <div class="map-topbar">
-            <h3>Berlin Safety Map</h3>
-          </div>
+                        <ul v-if="startSuggestions.length && startFocused" class="suggestion-list card">
+                            <li v-for="suggestion in startSuggestions" :key="`start-${suggestion}`">
+                                <button type="button" @mousedown.prevent="selectSuggestion('start', suggestion)">
+                                    {{ suggestion }}
+                                </button>
+                            </li>
+                        </ul>
 
-          <div id="map-container">
-            <div id="map"></div>
-          </div>
+                        <p v-if="startError" class="field-error">{{ startError }}</p>
 
-        </div>
+                        <label for="destination-location">Destination *</label>
 
-      </section>
+                        <div class="input-wrap" :class="{ invalid: destinationError }">
+                            <span>🚩</span>
+                            <input id="destination-location" v-model="destination" class="search-input" type="text"
+                                placeholder="e.g., Brandenburg Gate" autocomplete="off"
+                                @focus="destinationFocused = true" @blur="handleFieldBlur('destination')" />
+                        </div>
 
-    </main>
+                        <ul v-if="destinationSuggestions.length && destinationFocused" class="suggestion-list card">
+                            <li v-for="suggestion in destinationSuggestions" :key="`destination-${suggestion}`">
+                                <button type="button" @mousedown.prevent="selectSuggestion('destination', suggestion)">
+                                    {{ suggestion }}
+                                </button>
+                            </li>
+                        </ul>
 
-    <div id="chat-container"></div>
+                        <p v-if="destinationError" class="field-error">{{ destinationError }}</p>
 
-    <button class="chatbot-btn" type="button">
-      💬
-    </button>
+                        <p class="helper-copy">
+                            Type a Berlin district, station, or landmark to see geocoding suggestions.
+                        </p>
 
-  </div>
+                        <p v-if="searchError" class="global-error">{{ searchError }}</p>
+
+                        <button type="submit" class="search-btn btn btn-primary">
+                            Search Safe Route
+                        </button>
+                    </form>
+
+                    <section class="results-block">
+                        <div v-if="showResults" class="route-card-list">
+                            <div class="results-header">
+                                <div>
+                                    <h3>Suggested Routes</h3>
+                                    <p class="muted">Route options appear below your search and can be opened in detail.
+                                    </p>
+                                </div>
+                                <span v-if="showResults" class="results-count">{{ routes.length }} routes</span>
+                            </div>
+
+                            <article v-for="route in routes" :key="route.id" class="route-card card">
+                                <div class="route-card-top">
+                                    <div>
+                                        <p class="route-type">{{ route.routeType }}</p>
+                                        <h4>{{ route.name }}</h4>
+                                    </div>
+
+                                    <div class="score-pill" :style="scorePillStyle(route.safetyScore)">
+                                        {{ route.safetyScore }}/100
+                                    </div>
+                                </div>
+
+                                <div class="route-meta">
+                                    <span>Distance {{ route.distance }}</span>
+                                    <span>Time {{ route.duration }}</span>
+                                </div>
+
+                                <div class="score-track" :aria-label="`Safety score ${route.safetyScore} out of 100`">
+                                    <span :style="scoreTrackStyle(route.safetyScore, route.accentColor)"></span>
+                                </div>
+
+                                <p class="route-summary">{{ route.summary }}</p>
+
+                                <div class="route-footer">
+                                    <span class="route-pair">{{ route.origin }} to {{ route.destination }}</span>
+                                    <button type="button" class="view-details-btn btn btn-ghost"
+                                        @click="openRouteDetails(route.id)">
+                                        View Details
+                                    </button>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+                </section>
+
+                <section class="map-panel card">
+                    <div class="panel-header map-header">
+                            <h3>Berlin Safety Map</h3>
+                    </div>
+
+                    <div id="map-container">
+                        <div id="home-map"></div>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
 </template>
 
-<script>
-
-// 1. Import Leaflet and its CSS
+<script setup>
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-
-// 2. Import Geocoder (optional, if you want the search bar)
 import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
 import 'leaflet-control-geocoder';
-
-// 3. Fix for missing Marker Icons (Common Leaflet bug in Vue/Webpack)
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-let DefaultIcon = L.icon({
+
+import {
+    getGeocodingSuggestions,
+    getRouteSuggestions,
+    getSafetyTone,
+    validateBerlinLocation
+} from '../data/routeAnalysis';
+import { mountLangflowChat } from '../utils/langflowChat';
+
+const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png';
+
+const DefaultIcon = L.icon({
     iconUrl: icon,
     shadowUrl: iconShadow,
     iconSize: [25, 41],
     iconAnchor: [12, 41]
 });
+
 L.Marker.prototype.options.icon = DefaultIcon;
 
-export default {
-  name: 'App',
-  data() {
-    return {
-      map: null,
-      sidebarCollapsed: false,
-      startLocation: '',
-      destination: ''
-    };
-  },
-  mounted() {
-    this.initMap();
-    this.initChat();
-  },
-  methods: {
-    initMap() {
-      // Initialize the map
-      //this.map = L.map('map').setView([52.5200, 13.4050], 12);
-      this.map = L.map('map', {
-        zoomControl: false // Disable the default top-left control
-      }).setView([52.5200, 13.4050], 12);
+const router = useRouter();
+const map = ref(null);
+const routeOverlay = ref(null);
+const sidebarCollapsed = ref(true);
+const startLocation = ref('');
+const destination = ref('');
+const startTouched = ref(false);
+const destinationTouched = ref(false);
+const startFocused = ref(false);
+const destinationFocused = ref(false);
+const showResults = ref(false);
+const searchError = ref('');
 
-      // Add zoom control back to the top-right
-      L.control.zoom({ position: 'topright' }).addTo(this.map);
-      // Point to your Docker Tile Server (Port 8081)
-      L.tileLayer('http://localhost:8081/tile/{z}/{x}/{y}.png', {
+const routes = computed(() => getRouteSuggestions());
+const selectedRoute = computed(() => routes.value[0]);
+
+const startSuggestions = computed(() => getGeocodingSuggestions(startLocation.value).filter((suggestion) => suggestion !== destination.value));
+const destinationSuggestions = computed(() => getGeocodingSuggestions(destination.value).filter((suggestion) => suggestion !== startLocation.value));
+
+const startError = computed(() => {
+    if (!startTouched.value) {
+        return '';
+    }
+
+    return validateBerlinLocation(startLocation.value);
+});
+
+const destinationError = computed(() => {
+    if (!destinationTouched.value) {
+        return '';
+    }
+
+    return validateBerlinLocation(destination.value);
+});
+
+function scorePillStyle(score) {
+    const tone = getSafetyTone(score);
+
+    return {
+        color: tone.color,
+        backgroundColor: tone.soft
+    };
+}
+
+function scoreTrackStyle(score, accentColor) {
+    return {
+        width: `${score}%`,
+        backgroundColor: accentColor
+    };
+}
+
+function toggleSidebar() {
+    sidebarCollapsed.value = !sidebarCollapsed.value;
+}
+
+function handleFieldBlur(field) {
+    window.setTimeout(() => {
+        if (field === 'start') {
+            startTouched.value = true;
+            startFocused.value = false;
+        }
+
+        if (field === 'destination') {
+            destinationTouched.value = true;
+            destinationFocused.value = false;
+        }
+    }, 120);
+}
+
+function selectSuggestion(field, suggestion) {
+    if (field === 'start') {
+        startLocation.value = suggestion;
+        startTouched.value = true;
+        startFocused.value = false;
+        return;
+    }
+
+    destination.value = suggestion;
+    destinationTouched.value = true;
+    destinationFocused.value = false;
+}
+
+function renderRoutePreview(route = selectedRoute.value) {
+    if (!map.value || !route) {
+        return;
+    }
+
+    const tone = getSafetyTone(route.safetyScore);
+
+    if (routeOverlay.value) {
+        routeOverlay.value.clearLayers();
+    }
+
+    const path = L.polyline(route.coordinates, {
+        color: tone.color,
+        weight: 6,
+        opacity: 0.95
+    });
+
+    routeOverlay.value.addLayer(path);
+
+    const startMarker = L.circleMarker(route.coordinates[0], {
+        radius: 9,
+        color: '#FFFFFF',
+        weight: 3,
+        fillColor: tone.color,
+        fillOpacity: 1
+    });
+
+    const endMarker = L.circleMarker(route.coordinates[route.coordinates.length - 1], {
+        radius: 9,
+        color: '#FFFFFF',
+        weight: 3,
+        fillColor: '#0A0A0A',
+        fillOpacity: 1
+    });
+
+    routeOverlay.value.addLayer(startMarker);
+    routeOverlay.value.addLayer(endMarker);
+    map.value.fitBounds(path.getBounds().pad(0.2));
+}
+
+function initMap() {
+    if (map.value) {
+        return;
+    }
+
+    map.value = L.map('home-map', {
+        zoomControl: false
+    }).setView([52.52, 13.405], 12);
+
+    L.control.zoom({ position: 'topright' }).addTo(map.value);
+
+    L.tileLayer(TILE_URL, {
         maxZoom: 18,
         attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(this.map);
+    }).addTo(map.value);
 
-      // Add the Search Bar
-      L.Control.geocoder().addTo(this.map);
+    L.Control.geocoder({
+        defaultMarkGeocode: false,
+        placeholder: 'Search Berlin locations'
+    }).addTo(map.value);
 
-      // Add the Test Marker
-      const testLat = 52.53966;
-      const testLng = 13.39465;
-      const marker = L.marker([testLat, testLng]).addTo(this.map);
-      marker.bindPopup("<b>Berlin Center</b><br>SafePath is active.").openPopup();
+    routeOverlay.value = L.layerGroup().addTo(map.value);
+    renderRoutePreview();
+}
 
-      this.map.flyTo([testLat, testLng], 15);
-    },
-    initChat() {
-        // 1. Create the script element
-      const script = document.createElement('script');
-      script.src = "https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js";
-      
-      script.onload = () => {
-        // 2. Inject the custom element once the library is ready
-        const chatContainer = document.getElementById('chat-container');
-        if (chatContainer) {
-          chatContainer.innerHTML = `
-            <langflow-chat
-              window_title="Simple Agent"
-              flow_id="dd195420-870e-4896-8b6c-794902b319b1"
-              host_url="http://localhost:7860"
-              api_key="sk-XZOSAs4iJxFFXp0081ugpVHcgqko-eR68ZHlaoyNcAY">
-            </langflow-chat>
-          `;
+function initChat() {
+    mountLangflowChat('chat-container');
+}
+
+function openRouteDetails(routeId) {
+    router.push({
+        name: 'route-details',
+        params: { routeId },
+        query: {
+            start: startLocation.value.trim(),
+            destination: destination.value.trim()
         }
-      };
-      
-      // 3. Append to body to trigger the download
-      document.body.appendChild(script);
+    });
+}
 
-    },
+function searchRoute() {
+    startTouched.value = true;
+    destinationTouched.value = true;
 
-    toggleSidebar() {
-      this.sidebarCollapsed = !this.sidebarCollapsed;
+    const startValidation = validateBerlinLocation(startLocation.value);
+    const destinationValidation = validateBerlinLocation(destination.value);
+
+    if (startValidation || destinationValidation) {
+        showResults.value = false;
+        searchError.value = 'This map is intended for Berlin City only.';
+        return;
     }
-  }
-};
 
+    searchError.value = '';
+    showResults.value = true;
+    renderRoutePreview();
+}
+
+onMounted(() => {
+    initMap();
+    initChat();
+});
+
+onBeforeUnmount(() => {
+    if (map.value) {
+        map.value.remove();
+        map.value = null;
+    }
+});
 </script>
 
-<style>
-body {
-  margin: 0;
-  background: #f3f6fb;
-  font-family: Inter, Arial, sans-serif;
+<style scoped>
+:global(body) {
+    margin: 0;
+    background: var(--color-bg);
 }
 
-.home-layout {
-  min-height: 100vh;
-  display: flex;
+.page-shell {
+    min-height: 100vh;
+    display: flex;
+    color: var(--color-text);
 }
 
 .sidebar {
-  width: 280px;
-  background: white;
-  padding: 28px;
-  border-right: 1px solid #e5e7eb;
-}
-
-.brand-section {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.logo-box {
-  width: 48px;
-  height: 58px;
-  border: 4px solid #16a34a;
-  border-radius: 16px;
-  display: grid;
-  place-items: center;
-  color: #16a34a;
-  font-weight: bold;
-}
-
-.nav-menu {
-  margin-top: 42px;
-  display: grid;
-  gap: 12px;
-}
-
-.nav-item {
-  padding: 16px;
-  border-radius: 12px;
-  background: #f8fafc;
-}
-
-.main-content {
-  flex: 1;
-  padding: 28px;
-}
-
-.topbar h2 {
-  font-size: 42px;
-  margin-bottom: 10px;
-}
-
-.content-grid {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 24px;
-}
-
-.search-panel,
-.map-wrapper {
-  background: white;
-  border-radius: 22px;
-  padding: 24px;
-}
-
-.input-box {
-  height: 60px;
-  border: 1px solid #dbe2ea;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  padding: 0 14px;
-  margin-bottom: 18px;
-}
-
-.input-box input {
-  flex: 1;
-  border: 0;
-  outline: 0;
-}
-
-.search-btn {
-  width: 100%;
-  height: 58px;
-  border: 0;
-  border-radius: 12px;
-  background: #247ad2;
-  color: white;
-  font-weight: 700;
-}
-
-#map {
-  width: 100%;
-  height: 700px;
-  border-radius: 18px;
-}
-
-.chatbot-btn {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  border: 0;
-  background: #247ad2;
-  color: white;
-  font-size: 30px;
-}
-
-/* Sidebar collapsed styles */
-.sidebar {
-  transition: width 200ms ease;
+    width: 248px;
+    flex-shrink: 0;
+    padding: 24px 18px;
+    border-right: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(14px);
+    transition: width 200ms ease, padding 200ms ease;
 }
 
 .sidebar.collapsed {
-  width: 72px;
-  padding: 16px;
+    width: 36px;
+    padding: 16px;
 }
 
-.sidebar.collapsed .brand-section > div {
-  display: none;
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 
-.sidebar.collapsed .logo-box {
-  width: 40px;
-  height: 40px;
-  border-width: 2px;
+.brand-copy {
+    min-width: 0;
+}
+
+.brand-copy p,
+.panel-header p,
+.topbar p,
+.route-summary,
+.route-pair,
+.muted,
+.helper-copy,
+.premium-card p {
+    color: var(--color-text-secondary);
+}
+
+.sidebar.collapsed .brand-copy,
+.sidebar.collapsed .nav-menu,
+.sidebar.collapsed .premium-card {
+    display: none;
+}
+
+.logo-box {
+    width: 48px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--color-success);
+    border-radius: 16px;
+    color: var(--color-success);
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.08);
 }
 
 .sidebar-toggle {
-  border: 0;
-  background: transparent;
-  font-size: 20px;
-  cursor: pointer;
-  color: #374151;
-  margin-left: auto;
+    margin-left: auto;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.nav-menu {
+    display: grid;
+    gap: 10px;
+    margin-top: 32px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    background: #f8fafc;
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.nav-item.active {
+    border-color: rgba(99, 102, 241, 0.22);
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--color-primary);
+}
+
+.premium-card {
+    margin-top: 28px;
+    padding: 18px;
+}
+
+.premium-label,
+.eyebrow,
+.route-type {
+    margin: 0 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+    color: var(--color-neutral);
+}
+
+.premium-btn {
+    margin-top: 12px;
+}
+
+.main-content {
+    flex: 1;
+    padding: 28px;
+}
+
+.topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.status-badge,
+.results-count,
+.map-route-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.search-panel,
+.map-panel,
+.premium-card,
+.empty-results,
+.route-card,
+.suggestion-list {
+    background: var(--color-surface);
+}
+
+.search-panel,
+.map-panel {
+    padding: 12px;
+}
+
+.panel-header {
+    margin-bottom: 18px;
+}
+
+.search-form {
+    display: grid;
+    gap: 10px;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    min-height: 56px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: #fff;
+}
+
+.input-wrap.invalid {
+    border-color: rgba(239, 68, 68, 0.6);
+}
+
+.search-input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    font: inherit;
+    color: var(--color-text);
+    background: transparent;
+}
+
+.search-input::placeholder {
+    color: var(--color-neutral);
+}
+
+.suggestion-list {
+    list-style: none;
+    margin: -4px 0 4px;
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+}
+
+.suggestion-list li+li {
+    margin-top: 4px;
+}
+
+.suggestion-list button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    padding: 10px 12px;
+    text-align: left;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--color-text);
+}
+
+.suggestion-list button:hover {
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--color-primary);
+}
+
+.field-error,
+.global-error,
+.helper-copy {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.field-error,
+.global-error {
+    color: var(--color-error);
+}
+
+.search-btn {
+    margin-top: 6px;
+}
+
+.results-block {
+    margin-top: 7px;
+}
+
+.results-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.route-card-list {
+    display: grid;
+    gap: 14px;
+}
+
+.route-card {
+    padding: 18px;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.route-card:hover {
+    box-shadow: var(--shadow-hover-card);
+    transform: translateY(-2px);
+}
+
+.route-card-top,
+.route-meta,
+.route-footer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.route-card h4,
+.map-header h3 {
+    margin: 0;
+}
+
+.score-pill {
+    min-width: 76px;
+    padding: 8px 10px;
+    border-radius: var(--radius-pill);
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.route-meta {
+    margin: 14px 0 10px;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}
+
+.score-track {
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: #eef2f7;
+    overflow: hidden;
+}
+
+.score-track span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+}
+
+.route-summary {
+    margin: 12px 0 16px;
+}
+
+.route-footer {
+    align-items: center;
+}
+
+.view-details-btn {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.empty-results {
+    padding: 18px;
+    border: 1px dashed var(--color-border);
+}
+
+.map-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+#map-container {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    height: 400px;
+}
+
+#home-map {
+    width: 100%;
+    height: 100%;
+}
+
+.chatbot-btn {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: 72px;
+    height: 72px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 30px;
+    box-shadow: var(--shadow-primary-glow);
+}
+
+@media (max-width: 1180px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #home-map {
+        height: 520px;
+    }
+}
+
+@media (max-width: 860px) {
+    .page-shell {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 20;
+        width: auto;
+        max-height: 72vh;
+        overflow-y: auto;
+        border-right: 0;
+        border-top: 1px solid var(--color-border);
+        border-radius: 18px 18px 0 0;
+        background: var(--color-surface);
+        box-shadow: 0 -18px 36px rgba(15, 23, 42, 0.16);
+        transition: transform 240ms ease;
+    }
+
+    .sidebar.collapsed {
+        width: 72px;
+        padding: 16px;
+    }
+
+    .sidebar.collapsed .brand-copy,
+    .sidebar.collapsed .nav-menu,
+    .sidebar.collapsed .premium-card {
+        display: block;
+    }
+
+    .brand-section {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        padding-bottom: 8px;
+        background: var(--color-surface);
+    }
+
+    .sidebar-toggle {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        border: 1px solid var(--color-border);
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .main-content {
+        padding: 18px;
+        padding-bottom: 110px;
+    }
+
+    .topbar,
+    .results-header,
+    .route-card-top,
+    .route-footer,
+    .map-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .chatbot-btn {
+        right: 16px;
+        bottom: 92px;
+    }
 }
 </style>
