@@ -11,7 +11,7 @@ const berlinGeocodingEntries = [
   { label: 'Charlottenburg', aliases: ['charlottenburg'] },
   { label: 'Wilmersdorf', aliases: ['wilmersdorf'] },
   { label: 'Neukolln', aliases: ['neukolln', 'neukoelln', 'neukölln'] },
-  { label: 'Schoneberg', aliases: ['schoneberg', 'schöneberg'] },
+  { label: 'Schöneberg', aliases: ['schoneberg', 'schöneberg'] },
   { label: 'Moabit', aliases: ['moabit'] },
   { label: 'Gorlitzer Park', aliases: ['gorlitzer park', 'görlitzer park'] },
   { label: 'Humboldt Forum', aliases: ['humboldt forum'] },
