@@ -168,6 +168,7 @@
                 </section>
             </section>
         </main>
+        <div id="chat-container"></div>
     </div>
 </template>
 
