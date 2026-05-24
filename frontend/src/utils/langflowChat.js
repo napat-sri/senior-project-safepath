@@ -1,6 +1,6 @@
 const LANGFLOW_SCRIPT_ID = 'langflow-embedded-chat-script';
 const LANGFLOW_SCRIPT_SRC = 'https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js';
-const LANGFLOW_WINDOW_TITLE = 'Simple Agent';
+const LANGFLOW_WINDOW_TITLE = 'SafePath Agent';
 const LANGFLOW_FLOW_ID = '125fb9da-a804-4347-ae7d-b7c8b350c015';
 const LANGFLOW_HOST_URL = 'http://localhost:7860';
 // const LANGFLOW_API_KEY = 'sk-XZOSAs4iJxFFXp0081ugpVHcgqko-eR68ZHlaoyNcAY';
@@ -13,7 +13,15 @@ function mountChatWidget(containerId) {
       <langflow-chat
         window_title="${LANGFLOW_WINDOW_TITLE}"
         flow_id="${LANGFLOW_FLOW_ID}"
-        host_url="${LANGFLOW_HOST_URL}">
+        host_url="${LANGFLOW_HOST_URL}"
+
+        chat_position="bottom-left" 
+  
+        width="450" 
+        height="600"
+
+        chat_window_style='{"boxShadow": "0px 4px 12px rgba(0,0,0,0.5)", "borderRadius": "12px"}'
+        chat_trigger_style='{"backgroundColor": "#6366f1"}'>
       </langflow-chat>
     `;
   }

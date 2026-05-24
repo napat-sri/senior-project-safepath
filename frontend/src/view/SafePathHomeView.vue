@@ -159,7 +159,7 @@
 
                 <section class="map-panel card">
                     <div class="panel-header map-header">
-                            <h3>Berlin Safety Map</h3>
+                        <h3>Berlin Safety Map</h3>
                     </div>
 
                     <div id="map-container">
@@ -756,19 +756,6 @@ label {
     height: 100%;
 }
 
-.chatbot-btn {
-    position: fixed;
-    right: 24px;
-    bottom: 24px;
-    width: 72px;
-    height: 72px;
-    border: 0;
-    border-radius: 50%;
-    background: var(--color-primary);
-    color: #fff;
-    font-size: 30px;
-    box-shadow: var(--shadow-primary-glow);
-}
 
 @media (max-width: 1180px) {
     .content-grid {
@@ -841,11 +828,6 @@ label {
     .map-header {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .chatbot-btn {
-        right: 16px;
-        bottom: 92px;
     }
 }
 </style>
