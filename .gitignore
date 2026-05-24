@@ -1,3 +1,5 @@
+# Prevent committing secrets
+.env
 # Node.js dependencies
 node_modules/
 
@@ -26,6 +28,10 @@ docker-compose.override.yml
 
 # Keep the env template committed so teammates know what to fill in
 !.env.example
+
+# Python
+__pycache__/
+*.pyc
 
 # Build output
 dist/

@@ -25,7 +25,7 @@ docker run -p 8080:80 -v berlin-data:/data/database/ -d overv/openstreetmap-tile
 The tiles will avaliable on http://localhost:8080.
 
 
-## Langflow 💬
+## 💬 Langflow 
 Langflow is a powerful and intuitive platform designed for building, iterating, and deploying AI applications. Leveraging a visual interface, users can effortlessly create flows by dragging and connecting components, making AI app development accessible and efficient.
 
 <ins>Getting Started</ins>
@@ -46,4 +46,18 @@ Access Langflow at http://localhost:7860 in your web browser.
 2. `get_lighting_density` – returns the street-lamp density (lamps per km²) for the area covered by a route, sourced from OpenStreetMap.
 "OVERPASS_API_URL", "https://overpass-api.de/api/interpreter"
 
+# Technical Stack
+
+| Layer            | Technology                  |
+| ---------------- | --------------------------- |
+| Frontend         | Vue.js                      |
+| Backend          | FastAPI                     |
+| Database         | PostgreSQL                  |
+| AI Workflow      | Langflow                    |
+| Maps             | OpenStreetMap + Leaflet     |
+| Authentication   | JWT                         |
+| Containerization | Docker & Docker Compose     |
+| CI/CD            | GitHub Actions              |
+| Version Control  | GitHub                      |
+| Deployment       | 				 |
 

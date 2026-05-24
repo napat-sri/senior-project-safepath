@@ -2,23 +2,43 @@ services:
   # ----------------------------------------------------------------------------
   # SafePath Vue.js frontend
   # ----------------------------------------------------------------------------
-  safepath-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    stdin_open: true
-    tty: true
-    env_file:
+     
+    
+  frontend:
+      build: ./frontend
+      command: npm run dev
+      ports:
+        - "8080:8080"
+      volumes:
+         - ./frontend:/app
+         - /app/node_modules
+      stdin_open: true
+      tty: true
+      env_file:
       - .env
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - langflow
+      environment:
+        CHOKIDAR_USEPOLLING: "true" #
+        WATCHPACK_POLLING: "true" #
+        NODE_ENV: development
+      depends_on:
+        - backend
+        - langflow
+    
+  backend:
+      build: ./backend
+      ports:
+        - "9000:9000"
+      networks:
+        default:
+          aliases:
+            - backend.local
+      volumes:
+        - ./backend:/app
+      environment:
+        - ENV=development
+      depends_on:
+        - langflow
+
 
   # ----------------------------------------------------------------------------
   # OpenStreetMap tile server (run-only)
@@ -73,19 +93,16 @@ services:
     ports:
       - "7860:7860"
     environment:
-      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       LANGFLOW_LOAD_FLOWS_PATH: /app/flows
       LANGFLOW_AUTO_LOGIN: 'true'
       LANGFLOW_SKIP_AUTH_AUTO_LOGIN: 'true'
-      LANGFLOW_CORS_ORIGINS: '["http://localhost:8080", "http://127.0.0.1:8080"]'
-      LANGFLOW_CORS_ALLOW_METHODS: '["GET","POST","PUT","PATCH","DELETE","OPTIONS"]'
-      LANGFLOW_CORS_ALLOW_HEADERS: '["Content-Type","Authorization","x-api-key"]'
-      LANGFLOW_CORS_ALLOW_CREDENTIALS: 'True'
-      LANGFLOW_API_KEY_SOURCE: env
-      LANGFLOW_API_KEY: ${VUE_APP_LANGFLOW_API_KEY}
+      LANGFLOW_CORS_ORIGINS: 'http://localhost:8080,http://127.0.0.1:8080'
+      LANGFLOW_CORS_ALLOW_METHODS: 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+      LANGFLOW_CORS_ALLOW_HEADERS: 'Content-Type,Authorization,x-api-key'
+      LANGFLOW_CORS_ALLOW_CREDENTIALS: 'True' 
+      LANGFLOW_SSRF_ALLOWED_HOSTS: 'backend.local,backend,host.docker.internal'     
     volumes:
       - ./langflow/flows:/app/flows
-      - langflow-data:/app/langflow
     restart: unless-stopped
 
 volumes:
