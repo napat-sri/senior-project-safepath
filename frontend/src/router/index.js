@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import SafePathLoginView from '../../src/view/SafePathLoginView.vue';
-import SafePathRegisterView from '../../src/view/SafePathRegisterView.vue';
-import SafePathHomeView from '../../src/view/SafePathHomeView.vue';
-import SafePathRouteDetailsView from '../../src/view/SafePathRouteDetailsView.vue';
+import SafePathLoginView from '../view/SafePathLoginView.vue';
+import SafePathRegisterView from '../view/SafePathRegisterView.vue';
+import SafePathHomeView from '../view/SafePathHomeView.vue';
+import SafePathRouteDetailsView from '../view/SafePathRouteDetailsView.vue';
 
 const routes = [
   {
