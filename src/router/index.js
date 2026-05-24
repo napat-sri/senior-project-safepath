@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import SafePathLoginView from '../../src/view/SafePathLoginView.vue';
 import SafePathRegisterView from '../../src/view/SafePathRegisterView.vue';
 import SafePathHomeView from '../../src/view/SafePathHomeView.vue';
+import SafePathRouteDetailsView from '../../src/view/SafePathRouteDetailsView.vue';
 
 const routes = [
   {
@@ -19,7 +20,14 @@ const routes = [
   },
   {
     path: '/home',
+    name: 'home',
     component: SafePathHomeView
+  },
+  {
+    path: '/route-details/:routeId',
+    name: 'route-details',
+    component: SafePathRouteDetailsView,
+    props: true
   }
 ];
 
