@@ -1,9 +1,9 @@
 const LANGFLOW_SCRIPT_ID = 'langflow-embedded-chat-script';
 const LANGFLOW_SCRIPT_SRC = 'https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js';
 const LANGFLOW_WINDOW_TITLE = 'Simple Agent';
-const LANGFLOW_FLOW_ID = 'dd195420-870e-4896-8b6c-794902b319b1';
+const LANGFLOW_FLOW_ID = '125fb9da-a804-4347-ae7d-b7c8b350c015';
 const LANGFLOW_HOST_URL = 'http://localhost:7860';
-const LANGFLOW_API_KEY = 'sk-XZOSAs4iJxFFXp0081ugpVHcgqko-eR68ZHlaoyNcAY';
+// const LANGFLOW_API_KEY = 'sk-XZOSAs4iJxFFXp0081ugpVHcgqko-eR68ZHlaoyNcAY';
 
 function mountChatWidget(containerId) {
   const chatContainer = document.getElementById(containerId);
@@ -13,11 +13,11 @@ function mountChatWidget(containerId) {
       <langflow-chat
         window_title="${LANGFLOW_WINDOW_TITLE}"
         flow_id="${LANGFLOW_FLOW_ID}"
-        host_url="${LANGFLOW_HOST_URL}"
-        api_key="${LANGFLOW_API_KEY}">
+        host_url="${LANGFLOW_HOST_URL}">
       </langflow-chat>
     `;
   }
+  console.log('Langflow chat widget mounted in container:', chatContainer.innerHTML);
 }
 
 export function mountLangflowChat(containerId) {
