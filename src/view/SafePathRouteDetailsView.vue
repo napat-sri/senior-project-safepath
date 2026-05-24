@@ -13,25 +13,25 @@
             </div>
 
             <nav class="nav-menu" aria-label="Primary navigation">
-                <a class="nav-item active">
+                <button type="button" class="nav-item active" aria-current="page">
                     <span>🗺️</span>
                     Dashboard
-                </a>
+                </button>
 
-                <a class="nav-item">
+                <button type="button" class="nav-item">
                     <span>👤</span>
                     Profile
-                </a>
+                </button>
 
-                <a class="nav-item">
+                <button type="button" class="nav-item">
                     <span>⚠️</span>
                     Report Incident
-                </a>
+                </button>
 
-                <a class="nav-item">
+                <button type="button" class="nav-item">
                     <span>📋</span>
                     Community Reports
-                </a>
+                </button>
             </nav>
 
             <div class="premium-card card">
