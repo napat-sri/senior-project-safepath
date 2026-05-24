@@ -17,7 +17,7 @@ const berlinGeocodingEntries = [
   { label: 'Humboldt Forum', aliases: ['humboldt forum'] },
   { label: 'East Side Gallery', aliases: ['east side gallery'] },
   { label: 'Gendarmenmarkt', aliases: ['gendarmenmarkt'] },
-  { label: 'Kurfurstendamm', aliases: ['kurfurstendamm', 'kurfuerstendamm', 'kudamm'] },
+  { label: 'Kurfürstendamm', aliases: ['kurfurstendamm', 'kurfuerstendamm', 'kudamm'] },
   { label: 'Berlin City Center', aliases: ['berlin', 'berlin city center', 'mitte'] }
 ];
 
