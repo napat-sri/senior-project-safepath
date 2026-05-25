@@ -1,24 +1,24 @@
 const berlinGeocodingEntries = [
-  { label: 'Alexanderplatz', aliases: ['alexanderplatz', 'alexander platz', 'alexanderplatz berlin'] },
-  { label: 'Brandenburg Gate', aliases: ['brandenburg gate', 'brandenburger tor'] },
-  { label: 'Potsdamer Platz', aliases: ['potsdamer platz'] },
-  { label: 'Berlin Central Station', aliases: ['berlin central station', 'hauptbahnhof', 'berlin hauptbahnhof'] },
-  { label: 'Museum Island', aliases: ['museum island', 'museumsinsel'] },
-  { label: 'Friedrichstrasse', aliases: ['friedrichstrasse', 'friedrichstraße'] },
-  { label: 'Tiergarten', aliases: ['tiergarten'] },
-  { label: 'Kreuzberg', aliases: ['kreuzberg'] },
-  { label: 'Prenzlauer Berg', aliases: ['prenzlauer berg'] },
-  { label: 'Charlottenburg', aliases: ['charlottenburg'] },
-  { label: 'Wilmersdorf', aliases: ['wilmersdorf'] },
-  { label: 'Neukolln', aliases: ['neukolln', 'neukoelln', 'neukölln'] },
-  { label: 'Schöneberg', aliases: ['schoneberg', 'schöneberg'] },
-  { label: 'Moabit', aliases: ['moabit'] },
-  { label: 'Gorlitzer Park', aliases: ['gorlitzer park', 'görlitzer park'] },
-  { label: 'Humboldt Forum', aliases: ['humboldt forum'] },
-  { label: 'East Side Gallery', aliases: ['east side gallery'] },
-  { label: 'Gendarmenmarkt', aliases: ['gendarmenmarkt'] },
-  { label: 'Kurfürstendamm', aliases: ['kurfurstendamm', 'kurfuerstendamm', 'kudamm'] },
-  { label: 'Berlin City Center', aliases: ['berlin', 'berlin city center', 'mitte'] }
+  // { label: 'Alexanderplatz', aliases: ['alexanderplatz', 'alexander platz', 'alexanderplatz berlin'] },
+  // { label: 'Brandenburg Gate', aliases: ['brandenburg gate', 'brandenburger tor'] },
+  // { label: 'Potsdamer Platz', aliases: ['potsdamer platz'] },
+  // { label: 'Berlin Central Station', aliases: ['berlin central station', 'hauptbahnhof', 'berlin hauptbahnhof'] },
+  // { label: 'Museum Island', aliases: ['museum island', 'museumsinsel'] },
+  // { label: 'Friedrichstrasse', aliases: ['friedrichstrasse', 'friedrichstraße'] },
+  // { label: 'Tiergarten', aliases: ['tiergarten'] },
+  // { label: 'Kreuzberg', aliases: ['kreuzberg'] },
+  // { label: 'Prenzlauer Berg', aliases: ['prenzlauer berg'] },
+  // { label: 'Charlottenburg', aliases: ['charlottenburg'] },
+  // { label: 'Wilmersdorf', aliases: ['wilmersdorf'] },
+  // { label: 'Neukolln', aliases: ['neukolln', 'neukoelln', 'neukölln'] },
+  // { label: 'Schöneberg', aliases: ['schoneberg', 'schöneberg'] },
+  // { label: 'Moabit', aliases: ['moabit'] },
+  // { label: 'Gorlitzer Park', aliases: ['gorlitzer park', 'görlitzer park'] },
+  // { label: 'Humboldt Forum', aliases: ['humboldt forum'] },
+  // { label: 'East Side Gallery', aliases: ['east side gallery'] },
+  // { label: 'Gendarmenmarkt', aliases: ['gendarmenmarkt'] },
+  // { label: 'Kurfürstendamm', aliases: ['kurfurstendamm', 'kurfuerstendamm', 'kudamm'] },
+  // { label: 'Berlin City Center', aliases: ['berlin', 'berlin city center', 'mitte'] }
 ];
 
 const routeSuggestions = [
@@ -99,23 +99,6 @@ const routeSuggestions = [
   }
 ];
 
-function normalizeText(value) {
-  return String(value || '')
-    .toLowerCase()
-    .trim()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(/\s+/g, ' ');
-}
-
-function matchesEntry(query, entry) {
-  const normalizedQuery = normalizeText(query);
-  return [entry.label, ...entry.aliases].some((candidate) =>
-    normalizedQuery.includes(normalizeText(candidate))
-  );
-}
-
 export function getSafetyTone(score) {
   if (score >= 85) {
     return {
@@ -140,29 +123,9 @@ export function getSafetyTone(score) {
   };
 }
 
-export function getGeocodingSuggestions(query, limit = 6) {
-  const normalizedQuery = normalizeText(query);
-
-  if (!normalizedQuery) {
-    return berlinGeocodingEntries.slice(0, limit).map((entry) => entry.label);
-  }
-
-  return berlinGeocodingEntries
-    .filter((entry) => matchesEntry(normalizedQuery, entry) || normalizeText(entry.label).includes(normalizedQuery))
-    .map((entry) => entry.label)
-    .slice(0, limit);
-}
-
 export function validateBerlinLocation(value) {
   if (!String(value || '').trim()) {
     return 'This field is required.';
-  }
-
-  const normalizedValue = normalizeText(value);
-  const isBerlinMatch = berlinGeocodingEntries.some((entry) => matchesEntry(normalizedValue, entry));
-
-  if (!isBerlinMatch) {
-    return 'This map is intended for Berlin City only.';
   }
 
   return '';

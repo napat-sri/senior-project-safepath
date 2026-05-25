@@ -72,9 +72,9 @@
                         </div>
 
                         <ul v-if="startSuggestions.length && startFocused" class="suggestion-list card">
-                            <li v-for="suggestion in startSuggestions" :key="`start-${suggestion}`">
+                            <li v-for="suggestion in startSuggestions" :key="`start-${suggestion.name}`">
                                 <button type="button" @mousedown.prevent="selectSuggestion('start', suggestion)">
-                                    {{ suggestion }}
+                                    {{ suggestion.name }}
                                 </button>
                             </li>
                         </ul>
@@ -91,9 +91,9 @@
                         </div>
 
                         <ul v-if="destinationSuggestions.length && destinationFocused" class="suggestion-list card">
-                            <li v-for="suggestion in destinationSuggestions" :key="`destination-${suggestion}`">
+                            <li v-for="suggestion in destinationSuggestions" :key="`destination-${suggestion.name}`">
                                 <button type="button" @mousedown.prevent="selectSuggestion('destination', suggestion)">
-                                    {{ suggestion }}
+                                    {{ suggestion.name }}
                                 </button>
                             </li>
                         </ul>
@@ -106,8 +106,12 @@
 
                         <p v-if="searchError" class="global-error">{{ searchError }}</p>
 
-                        <button type="submit" class="search-btn btn btn-primary">
+                        <!--<button @click="searchRoute" class="search-btn btn btn-primary">
                             Search Safe Route
+                        </button>-->
+                        <button type="submit" class="search-btn btn btn-primary" :disabled="searchLoading">
+                            <span v-if="searchLoading" class="spinner"></span>
+                            {{ searchLoading ? 'Analyzing...' : 'Search Safe Route' }}
                         </button>
                     </form>
 
@@ -154,6 +158,9 @@
                                 </div>
                             </article>
                         </div>
+                        <div v-if="showResults && routes.length === 0" class="empty-results">
+                            No routes found.
+                        </div>
                     </section>
                 </section>
 
@@ -173,7 +180,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -183,12 +190,15 @@ import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 import {
-    getGeocodingSuggestions,
+    // getGeocodingSuggestions,
     getRouteSuggestions,
     getSafetyTone,
     validateBerlinLocation
 } from '../data/routeAnalysis';
 import { mountLangflowChat } from '../utils/langflowChat';
+
+import { placeService, routeService } from '../services/api';
+
 
 const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png';
 
@@ -214,11 +224,12 @@ const destinationFocused = ref(false);
 const showResults = ref(false);
 const searchError = ref('');
 
-const routes = computed(() => getRouteSuggestions());
-const selectedRoute = computed(() => routes.value[0]);
+const searchLoading = ref(false);
 
-const startSuggestions = computed(() => getGeocodingSuggestions(startLocation.value).filter((suggestion) => suggestion !== destination.value));
-const destinationSuggestions = computed(() => getGeocodingSuggestions(destination.value).filter((suggestion) => suggestion !== startLocation.value));
+//const routes = computed(() => getRouteSuggestions());
+const routes = ref([]); // Replace the computed with a ref
+const selectedRoute = computed(() => (routes.value && routes.value.length > 0 ? routes.value[0] : null));
+console.log('Selected route:', selectedRoute.value, routes.value);
 
 const startError = computed(() => {
     if (!startTouched.value) {
@@ -235,6 +246,106 @@ const destinationError = computed(() => {
 
     return validateBerlinLocation(destination.value);
 });
+
+// Fetch geocoding suggestions from API
+
+// Add a simple cache object outside the function
+const suggestionCache = {};
+
+async function fetchSuggestions(query) {
+    if (!query || query.trim().length < 3) return [];
+
+    const normalizedQuery = query.trim().toLowerCase();
+
+    // 1. Check if we already fetched this exact query
+    if (suggestionCache[normalizedQuery]) {
+        return suggestionCache[normalizedQuery];
+    }
+
+    try {
+        // 2. If not in cache, fetch from API
+        const { data } = await placeService.search(query);
+        const results = data.places || [];
+        
+        // 3. Save to cache for future use
+        suggestionCache[normalizedQuery] = results;
+        return results;
+    } catch (error) {
+        console.error("Error fetching places:", error);
+        return [];
+    }
+    // const { data } = await placeService.search(query);
+    // return data.places || [];
+}
+
+// Start Location
+const startSuggestions = ref([]);
+const selectedStartPlace = ref(null);
+const skipStartWatch = ref(false);
+let startDebounceTimer = null; // Add timer variable
+
+watch(startLocation, async (value) => {
+    if (skipStartWatch.value) {
+        skipStartWatch.value = false;
+        return;
+    }
+
+    // Clear the existing timer on every keystroke
+    clearTimeout(startDebounceTimer);
+
+    // Set a new timer
+    startDebounceTimer = setTimeout(async () => {
+        const results = await fetchSuggestions(value);
+        startSuggestions.value = results.filter(
+            (item) => item.name !== destination.value
+        );
+    }, 500);
+
+    // startSuggestions.value = (await fetchSuggestions(value)).filter(
+    //     (item) => item.name !== destination.value
+    // );
+});
+
+// Destination
+const destinationSuggestions = ref([]);
+const selectedDestinationPlace = ref(null);
+const skipDestinationWatch = ref(false);
+let destinationDebounceTimer = null; // Add timer variable
+
+watch(destination, async (value) => {
+    if (skipDestinationWatch.value) {
+        skipDestinationWatch.value = false;
+        return;
+    }
+
+    // Clear the existing timer on every keystroke
+    clearTimeout(destinationDebounceTimer);
+
+    // Set a new timer
+    destinationDebounceTimer = setTimeout(async () => {
+        destinationSuggestions.value = (await fetchSuggestions(value)).filter(
+            (item) => item.name !== startLocation.value
+        );
+    }, 500);
+});
+
+function selectSuggestion(type, suggestion) {
+    if (type === 'start') {
+        skipStartWatch.value = true;
+        startLocation.value = suggestion.name;
+        selectedStartPlace.value = suggestion;
+        startSuggestions.value = [];
+        startFocused.value = false;
+    }
+    if (type === 'destination') {
+        skipDestinationWatch.value = true;
+        destination.value = suggestion.name;
+        selectedDestinationPlace.value = suggestion;
+        console.log('Selected destination:', suggestion);
+        destinationSuggestions.value = [];
+        destinationFocused.value = false;
+    }
+}
 
 function scorePillStyle(score) {
     const tone = getSafetyTone(score);
@@ -269,58 +380,94 @@ function handleFieldBlur(field) {
         }
     }, 120);
 }
+//----- Get Safe Route Logic -----
+async function fetchSafeRoute() {
 
-function selectSuggestion(field, suggestion) {
-    if (field === 'start') {
-        startLocation.value = suggestion;
-        startTouched.value = true;
-        startFocused.value = false;
-        return;
+    searchLoading.value = true;
+    try {
+        // --- Call backend with hardcoded coordinates ---
+        const startCoords = selectedStartPlace.value
+        const destCoords = selectedDestinationPlace.value
+        console.log('Fetching safe route with coordinates:', {
+            start: startCoords,
+            destination: destCoords
+        });
+        const payload = {
+            start: { lat: startCoords.lat, lng: startCoords.lng },
+            destination: { lat: destCoords.lat, lng: destCoords.lng },
+            startName: startLocation.value,
+            destinationName: destination.value
+        };
+        console.log("Requesting safe routes with payload:", payload);
+        const res = await fetch("http://localhost:9000/api/routes/safe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("API error: " + res.status);
+        const data = await res.json();
+        routes.value = data.route_suggestions || [];
+        searchResult.value = data;
+        showResults.value = routes.value.length > 0;
+        console.log("/api/routes/safe search result:", data);
+        renderRoutePreview();
+    } catch (err) {
+        searchResult.value = { error: err.message };
+        console.error("/api/routes/safe search error:", err);
+    } finally {
+        searchLoading.value = false;
     }
 
-    destination.value = suggestion;
-    destinationTouched.value = true;
-    destinationFocused.value = false;
 }
 
-function renderRoutePreview(route = selectedRoute.value) {
-    if (!map.value || !route) {
-        return;
-    }
+// 
 
-    const tone = getSafetyTone(route.safetyScore);
+function renderRoutePreview() {
+    if (!map.value || !routes.value.length) return;
 
+    // Clear previous overlays
     if (routeOverlay.value) {
         routeOverlay.value.clearLayers();
     }
 
-    const path = L.polyline(route.coordinates, {
-        color: tone.color,
-        weight: 6,
-        opacity: 0.95
+    routes.value.forEach((route, idx) => {
+        const tone = getSafetyTone(route.safetyScore);
+        const color = route.accentColor || tone.color;
+
+        // Draw route polyline
+        const path = L.polyline(route.coordinates, {
+            color: color,
+            weight: 6,
+            opacity: 0.7 + (idx === 0 ? 0.2 : 0), // Highlight first route a bit more
+        });
+        routeOverlay.value.addLayer(path);
+
+        // Start marker
+        const startMarker = L.circleMarker(route.coordinates[0], {
+            radius: 9,
+            color: '#FFFFFF',
+            weight: 3,
+            fillColor: color,
+            fillOpacity: 1
+        });
+        routeOverlay.value.addLayer(startMarker);
+
+        // End marker
+        const endMarker = L.circleMarker(route.coordinates[route.coordinates.length - 1], {
+            radius: 9,
+            color: '#FFFFFF',
+            weight: 3,
+            fillColor: '#0A0A0A',
+            fillOpacity: 1
+        });
+        routeOverlay.value.addLayer(endMarker);
     });
 
-    routeOverlay.value.addLayer(path);
-
-    const startMarker = L.circleMarker(route.coordinates[0], {
-        radius: 9,
-        color: '#FFFFFF',
-        weight: 3,
-        fillColor: tone.color,
-        fillOpacity: 1
-    });
-
-    const endMarker = L.circleMarker(route.coordinates[route.coordinates.length - 1], {
-        radius: 9,
-        color: '#FFFFFF',
-        weight: 3,
-        fillColor: '#0A0A0A',
-        fillOpacity: 1
-    });
-
-    routeOverlay.value.addLayer(startMarker);
-    routeOverlay.value.addLayer(endMarker);
-    map.value.fitBounds(path.getBounds().pad(0.2));
+    // Fit map to all routes
+    const allCoords = routes.value.flatMap(r => r.coordinates);
+    if (allCoords.length) {
+        map.value.fitBounds(allCoords, { padding: [40, 40] });
+    }
 }
 
 function initMap() {
@@ -357,8 +504,8 @@ function openRouteDetails(routeId) {
         name: 'route-details',
         params: { routeId },
         query: {
-            start: startLocation.value.trim(),
-            destination: destination.value.trim()
+            start: selectedStartPlace.value?.name || '',
+            destination: selectedDestinationPlace.value?.name || ''
         }
     });
 }
@@ -367,19 +514,23 @@ function searchRoute() {
     startTouched.value = true;
     destinationTouched.value = true;
 
-    const startValidation = validateBerlinLocation(startLocation.value);
-    const destinationValidation = validateBerlinLocation(destination.value);
+    const startValidation = selectedStartPlace.value;
+    const destinationValidation = selectedDestinationPlace.value;
+    console.log('Start validation:', startValidation);
+    console.log('Destination validation:', destinationValidation);
 
-    if (startValidation || destinationValidation) {
-        showResults.value = false;
-        searchError.value = 'This map is intended for Berlin City only.';
-        return;
-    }
+    // if (startValidation || destinationValidation) {
+    //     showResults.value = false;
+    //     searchError.value = 'This map is intended for Berlin City only.';
+    //     return;
+    // }
 
     searchError.value = '';
     showResults.value = true;
-    renderRoutePreview();
+    fetchSafeRoute();
 }
+// --- Safe Route Search Result State ---
+const searchResult = ref(null);
 
 onMounted(() => {
     initMap();
@@ -756,6 +907,23 @@ label {
     height: 100%;
 }
 
+.spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    border-top-color: #6366f1;
+    animation: spin 0.7s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 @media (max-width: 1180px) {
     .content-grid {
