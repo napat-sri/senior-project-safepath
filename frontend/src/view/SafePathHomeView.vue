@@ -190,8 +190,6 @@ import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 import {
-    // getGeocodingSuggestions,
-    getRouteSuggestions,
     getSafetyTone,
     validateBerlinLocation
 } from '../data/routeAnalysis';
