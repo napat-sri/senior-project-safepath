@@ -11,6 +11,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
+import re
+import time
 
 app = FastAPI(title="SafePath API")
 
@@ -27,6 +29,9 @@ app.add_middleware(
 # fine to get routes on the map now. For a pedestrian "safe walking" app we'll
 # later switch to a walking profile (self-hosted OSRM-foot or OpenRouteService).
 OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
+OSRM_FOOT_URL = "https://router.project-osrm.org/route/v1/foot"
+FLOW_ID = "63a16f8d-0f9e-4930-91c0-e41ec7e842fd" 
+LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}" 
 
 
 class Point(BaseModel):
@@ -36,6 +41,8 @@ class Point(BaseModel):
 class RouteRequest(BaseModel):
     start: Point
     destination: Point
+    startName: str | None = None
+    destinationName: str | None = None
 
 
 @app.get("/")
@@ -92,6 +99,7 @@ def search_places(query: str):
 
     return {"places": places}
 
+'''
 @app.post("/api/routes")
 def get_routes(req: RouteRequest):
     """Return candidate routes between start and destination.
@@ -129,15 +137,14 @@ def get_routes(req: RouteRequest):
         )
 
     return {"routes": routes}
+'''
 
 
 
-
-FLOW_ID = "63a16f8d-0f9e-4930-91c0-e41ec7e842fd" 
-LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}" 
 
 @app.post("/api/routes/safe")
 async def get_safe_routes(req: RouteRequest):
+    api_start = time.perf_counter()
     """
     1. Fetches candidate routes from OSRM.
     2. Sends route summaries to Langflow for safety analysis.
@@ -145,124 +152,279 @@ async def get_safe_routes(req: RouteRequest):
     """
     s, d = req.start, req.destination
     osrm_url = f"{OSRM_URL}/{s.lng},{s.lat};{d.lng},{d.lat}"
-    params = {"overview": "full", "geometries": "geojson", "alternatives": "true"}
+    params = {"overview": "full","geometries": "geojson","alternatives": "true"}
 
-    # --- STEP 1: Get Raw Routes from OSRM ---
+    # ---------------------------------------------------
+    # STEP 1: FETCH ROUTES FROM OSRM
+    # ---------------------------------------------------
+    osrm_start = time.perf_counter()
     async with httpx.AsyncClient() as client:
         try:
-            resp = await client.get(osrm_url, params=params, timeout=20.0)
+            resp = await client.get(osrm_url,params=params,timeout=20.0)
+            osrm_end = time.perf_counter()
+            print(
+                f"[TIME] OSRM request: "
+                f"{osrm_end - osrm_start:.2f} sec"
+            )
             resp.raise_for_status()
             osrm_data = resp.json()
         except httpx.HTTPError as exc:
-            raise HTTPException(status_code=502, detail=f"Routing service error: {exc}")
+            raise HTTPException(
+                status_code=502,
+                detail=f"Routing service error: {exc}"
+            )
 
-    if osrm_data.get("code") != "Ok" or not osrm_data.get("routes"):
-        raise HTTPException(status_code=404, detail="No routes found.")
+    if osrm_data.get("code") != "Ok":
+        raise HTTPException(status_code=404,detail="No routes found.")
+
+    raw_routes = osrm_data.get("routes", [])
+    if not raw_routes:
+        raise HTTPException(
+            status_code=404,
+            detail="No routes found."
+        )
 
     routes = []
-    llm_summaries = [] # This is what we will send to Langflow
+    llm_summaries = [] # Send to Langflow
+    process_routes_start = time.perf_counter()
+    for i, route in enumerate(raw_routes):
+        route_id = f"route-{i+1}"
+        coordinates = [
+            [lat, lng]
+            for lng, lat in route["geometry"]["coordinates"]
+        ]
 
-    for i, route in enumerate(osrm_data["routes"]):
-        route_id = f"route-{i + 1}"
-        coords = [[lat, lng] for lng, lat in route["geometry"]["coordinates"]]
-        
-        # Save the full data for the frontend
-        routes.append({
+        distance_km = round(route["distance"] / 1000, 1)
+        duration_min = round(route["duration"] / 60)
+
+        backend_route = {
             "id": route_id,
-            "geometry": coords,
+            "coordinates": coordinates,
+            "distance": f"{distance_km} km",
+            "duration": f"{duration_min} min",
             "distance_m": round(route["distance"]),
             "duration_s": round(route["duration"]),
-        })
-        
-        # Save a lightweight summary for the AI
+        }
+
+        routes.append(backend_route)
+
+        # Only lightweight data to AI
         llm_summaries.append({
             "id": route_id,
-            "distance_meters": round(route["distance"]),
-            "duration_seconds": round(route["duration"]),
-            # Note: In a real scenario, you'd add hazard data or street names here!
+            "distance_km": distance_km,
+            "duration_min": duration_min
         })
-
-    # --- STEP 2: Ask Langflow for the Safest Route ---
-    # We ask Langflow to return a strict JSON response
     
-    
-    # prompt = f"""
-    # Analyze these routes and pick the safest one for a pedestrian. 
-    # Right now, just pick the shortest/fastest one as a baseline.
-    # Routes: {json.dumps(llm_summaries)}
-    
-    # You MUST return your answer in this exact JSON format:
-    # {{"recommended_route_id": "route-X", "reasoning": "Explain why here."}}
-    # """
+    process_routes_end = time.perf_counter()
+    print(
+    f"[TIME] Route processing: "
+    f"{process_routes_end - process_routes_start:.2f} sec"
+)
+    # ---------------------------------------------------
+    # STEP 2: AI SAFETY ANALYSIS
+    # ---------------------------------------------------
 
-    # langflow_payload = {
-    #     "input_value": prompt,
-    #     "output_type": "chat",
-    #     "input_type": "chat",
-    # }
-    
-    prompt = f"""
-    You are SafePath Berlin, a safety-first navigation assistant for students, tourists, and commuters.
-    Routes:
-    {json.dumps(llm_summaries)}
+    prompt = f""" You are SafePath Berlin, a safety-first navigation assistant for students, tourists, and commuters in Berlin.
+    FROM:
+    {s.lat}, {s.lng}
+    TO:
+    {d.lat}, {d.lng}
 
-    Rank ALL routes from safest to least safe. For each route explain:
-    - Why it is safer or riskier than the others (lighting, crime exposure, road type, time on exposed streets)
-    - Any trade-offs (e.g. slightly longer but significantly safer)
-    - One practical tip for travelling this route
+    ROUTES:
+    {json.dumps(llm_summaries, indent=2)}
+    Rules:
+    - accident risk 35%
+    - crime level 35%
+    - street lighting 30%
 
-     You MUST return your answer in this exact JSON format:
-     {{
-        "ranked_routes": [
-            {{
-            "route_id": "route-X",
-            "rank": 1,
-            "safety_score": <0-100, higher = safer>,
-            "reasoning": "2-3 sentences on why this rank.",
-            "trade_offs": "e.g. 4 min longer but avoids Hermannplatz at night.",
-            "tip": "One practical tip for this specific route."
-            }}
-        ],
-        "recommended_route_id": "route-X",
-        "summary": "One sentence explaining the overall recommendation."
-    }}"""
+    Color:
+    85+ = #10B981
+    70-84 = #F59E0B
+    <70 = #EF4444    
+    Return ONLY valid JSON array.
+    [
+    {{
+        "id": "route-1",
+        "name": "Route 1",
+        "safetyScore": 85,
+        "summary": "2 sentences: why this rank and one trade-off vs the other routes.",
+        "accentColor": "<hex per rules above>",
+        "breakdown": [
+        {{
+            "label": "Accident Risk",
+            "score": 80
+        }},
+        {{
+            "label": "Crime Level",
+            "score": 90
+        }},
+        {{
+            "label": "Street Lighting",
+            "score": 85
+        }}
+        ]
+    }}
+    ]
+    """
 
     langflow_payload = {
-    "input_value": prompt,
-    "output_type": "chat",
-    "input_type": "chat",
-    "tweaks": {
-        "Agent-xyz": {
-            "system_message": (
-                "You are SafePath Berlin. Always prioritise personal safety over speed. "
-                "Never recommend a route purely because it is shortest or fastest. "
-                "Return only valid JSON."
-            )
-        }
+        "input_value": prompt,
+        "output_type": "chat",
+        "input_type": "chat",
     }
-}
 
+    ai_routes = []
     async with httpx.AsyncClient() as client:
         try:
-            lf_resp = await client.post(LANGFLOW_URL, json=langflow_payload, timeout=30.0)
-            lf_resp.raise_for_status()
-            lf_data = lf_resp.json()
-            
-            # Extract the AI's text response (You may need to adjust this path based on your specific Langflow output structure)
-            ai_message = lf_data["outputs"][0]["outputs"][0]["results"]["message"]["text"]
-            
-            # Parse the AI's JSON output
-            ai_decision = json.loads(ai_message)
-            
-        except (httpx.HTTPError, KeyError, json.JSONDecodeError) as exc:
-            # Fallback if Langflow fails or returns bad formatting
-            ai_decision = {
-                "recommended_route_id": "route-1",
-                "reasoning": f"Defaulted to route-1. AI analysis failed: {exc}"
-            }
+            langflow_start = time.perf_counter()
+            lf_resp = await client.post(
+                LANGFLOW_URL,
+                json=langflow_payload,
+                timeout=45.0
+            )
 
-    # --- STEP 3: Combine and Return ---
-    return {
-        "ai_recommendation": ai_decision,
-        "all_routes": routes
+            lf_resp.raise_for_status()
+            langflow_end = time.perf_counter()
+            print(
+                f"[TIME] Langflow request: "
+                f"{langflow_end - langflow_start:.2f} sec"
+            )
+            lf_data = lf_resp.json()
+            json_parse_start = time.perf_counter()
+            raw_text = (
+                lf_data["outputs"][0]
+                ["outputs"][0]
+                ["results"]["message"]["text"]
+            )
+
+            # ---------------------------------------------
+            # CLEAN AI RESPONSE
+            # ---------------------------------------------
+
+            raw_text = raw_text.strip()
+            # Remove markdown fences
+            raw_text = re.sub(
+                r"^```(?:json)?|```$",
+                "",
+                raw_text,
+                flags=re.MULTILINE
+            ).strip()
+
+            # Extract JSON array safely
+            match = re.search(r"\[.*\]", raw_text, re.DOTALL)
+            if not match:
+                raise ValueError("No JSON array found")
+
+            json_text = match.group(0)
+            ai_routes = json.loads(json_text)
+            json_parse_end = time.perf_counter()
+            print(
+                f"[TIME] JSON parsing: "
+                f"{json_parse_end - json_parse_start:.2f} sec"
+            )
+            if not isinstance(ai_routes, list):
+                raise ValueError("AI response is not a list")
+
+        except Exception as exc:
+            print("Langflow parsing error:", exc)
+            ai_routes = []
+
+    # ---------------------------------------------------
+    # STEP 3: MERGE AI + OSRM DATA
+    # ---------------------------------------------------
+
+    route_lookup = {
+        route["id"]: route
+        for route in routes
     }
+
+    route_suggestions = []
+    merge_start = time.perf_counter()
+    if ai_routes:
+        for ai_route in ai_routes:
+            route_id = ai_route.get("id")
+            backend_route = route_lookup.get(route_id)
+            if not backend_route:
+                continue
+
+            route_suggestions.append({
+                "id": route_id,
+                "name": ai_route.get(
+                    "name",
+                    route_id
+                ),
+                "origin": f"{s.lat:.4f}, {s.lng:.4f}",
+                "destination": f"{d.lat:.4f}, {d.lng:.4f}",
+                "routeType": ai_route.get("routeType", "driving"),
+                "safetyScore": ai_route.get(
+                    "safetyScore",
+                    50
+                ),
+
+                "distance": backend_route["distance"],
+                "duration": backend_route["duration"],
+                "summary": ai_route.get(
+                    "summary",
+                    "No analysis available."
+                ),
+                "accentColor": ai_route.get(
+                    "accentColor",
+                    "#F59E0B"
+                ),
+                "coordinates": backend_route["coordinates"],
+                "breakdown": ai_route.get(
+                    "breakdown",
+                    []
+                )
+            })
+    merge_end = time.perf_counter()
+
+    print(
+        f"[TIME] Merge routes: "
+        f"{merge_end - merge_start:.2f} sec"
+    )
+    # ---------------------------------------------------
+    # FALLBACK
+    # ---------------------------------------------------
+
+    if not route_suggestions:
+        for i, route in enumerate(routes):
+            route_suggestions.append({
+                "id": route["id"],
+                "name": f"Route {i+1}",
+                "origin": f"{s.lat:.4f}, {s.lng:.4f}",
+                "destination": f"{d.lat:.4f}, {d.lng:.4f}",
+                "safetyScore": 50,
+                "distance": route["distance"],
+                "duration": route["duration"],
+                "routeType": "driving",
+                "summary": "AI analysis unavailable. Showing raw route data.",
+                "accentColor": "#F59E0B",
+                "coordinates": route["coordinates"],
+                "breakdown": [
+                    {
+                        "label": "Accident Risk",
+                        "score": 50
+                    },
+                    {
+                        "label": "Crime Level",
+                        "score": 50
+                    },
+                    {
+                        "label": "Street Lighting",
+                        "score": 50
+                    }
+                ]
+            })
+    api_end = time.perf_counter()
+
+    print(
+        f"[TIME] TOTAL API: "
+        f"{api_end - api_start:.2f} sec"
+    )
+    return {
+        "route_suggestions": route_suggestions
+    }
+
+
+
