@@ -25,7 +25,6 @@ function mountChatWidget(containerId) {
       </langflow-chat>
     `;
   }
-  console.log('Langflow chat widget mounted in container:', chatContainer.innerHTML);
 }
 
 export function mountLangflowChat(containerId) {
