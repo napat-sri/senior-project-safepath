@@ -137,6 +137,7 @@
                 </article>
             </section>
         </main>
+        <div id="chat-container"></div>
     </div>
 </template>
 
@@ -502,20 +503,6 @@ onBeforeUnmount(() => {
     height: 540px;
 }
 
-.chatbot-btn {
-    position: fixed;
-    right: 24px;
-    bottom: 24px;
-    width: 72px;
-    height: 72px;
-    border: 0;
-    border-radius: 50%;
-    background: var(--color-primary);
-    color: #fff;
-    font-size: 30px;
-    box-shadow: var(--shadow-primary-glow);
-}
-
 @media (max-width: 1180px) {
     .detail-grid {
         grid-template-columns: 1fr;
@@ -561,11 +548,6 @@ onBeforeUnmount(() => {
 
     #detail-map {
         height: 420px;
-    }
-
-    .chatbot-btn {
-        right: 16px;
-        bottom: 16px;
     }
 }
 </style>
