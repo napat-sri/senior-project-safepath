@@ -8,7 +8,7 @@ import SafePathRouteDetailsView from '../view/SafePathRouteDetailsView.vue';
 const routes = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/home'
   },
   {
     path: '/login',
