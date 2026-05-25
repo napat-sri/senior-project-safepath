@@ -13,10 +13,8 @@ export const placeService = {
 };
 
 export const routeService = {
-  analyze: (origin, destination) =>
-    api.post('/routes', { origin, destination }),
-  safe: (origin, destination) =>
-    api.post('/routes/safe', { origin, destination }),
+  safe: (payload) =>
+    api.post('/routes/safe', payload),
 };
 
 export default api;
