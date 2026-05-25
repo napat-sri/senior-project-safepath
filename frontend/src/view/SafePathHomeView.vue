@@ -397,13 +397,11 @@ async function fetchSafeRoute() {
             destinationName: destination.value
         };
         // console.log("Requesting safe routes with payload:", payload);
-        const res = await fetch("http://localhost:9000/api/routes/safe", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error("API error: " + res.status);
-        const data = await res.json();
+        const res = await routeService.safe(payload);
+        // console.log("API response for safe route:", res);
+        
+        if (res.status !== 200) throw new Error("API error: " + res.status);
+        const data = await res.data;
         routes.value = data.route_suggestions || [];
         searchResult.value = data;
         showResults.value = routes.value.length > 0;
