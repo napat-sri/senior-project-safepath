@@ -229,7 +229,7 @@ const searchLoading = ref(false);
 //const routes = computed(() => getRouteSuggestions());
 const routes = ref([]); // Replace the computed with a ref
 const selectedRoute = computed(() => (routes.value && routes.value.length > 0 ? routes.value[0] : null));
-console.log('Selected route:', selectedRoute.value, routes.value);
+// console.log('Selected route:', selectedRoute.value, routes.value);
 
 const startError = computed(() => {
     if (!startTouched.value) {
@@ -341,7 +341,7 @@ function selectSuggestion(type, suggestion) {
         skipDestinationWatch.value = true;
         destination.value = suggestion.name;
         selectedDestinationPlace.value = suggestion;
-        console.log('Selected destination:', suggestion);
+        // console.log('Selected destination:', suggestion);
         destinationSuggestions.value = [];
         destinationFocused.value = false;
     }
@@ -388,17 +388,17 @@ async function fetchSafeRoute() {
         // --- Call backend with hardcoded coordinates ---
         const startCoords = selectedStartPlace.value
         const destCoords = selectedDestinationPlace.value
-        console.log('Fetching safe route with coordinates:', {
-            start: startCoords,
-            destination: destCoords
-        });
+        // console.log('Fetching safe route with coordinates:', {
+        //     start: startCoords,
+        //     destination: destCoords
+        // });
         const payload = {
             start: { lat: startCoords.lat, lng: startCoords.lng },
             destination: { lat: destCoords.lat, lng: destCoords.lng },
             startName: startLocation.value,
             destinationName: destination.value
         };
-        console.log("Requesting safe routes with payload:", payload);
+        // console.log("Requesting safe routes with payload:", payload);
         const res = await fetch("http://localhost:9000/api/routes/safe", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -409,11 +409,11 @@ async function fetchSafeRoute() {
         routes.value = data.route_suggestions || [];
         searchResult.value = data;
         showResults.value = routes.value.length > 0;
-        console.log("/api/routes/safe search result:", data);
+        // console.log("/api/routes/safe search result:", data);
         renderRoutePreview();
     } catch (err) {
         searchResult.value = { error: err.message };
-        console.error("/api/routes/safe search error:", err);
+        // console.error("/api/routes/safe search error:", err);
     } finally {
         searchLoading.value = false;
     }
@@ -516,8 +516,8 @@ function searchRoute() {
 
     const startValidation = selectedStartPlace.value;
     const destinationValidation = selectedDestinationPlace.value;
-    console.log('Start validation:', startValidation);
-    console.log('Destination validation:', destinationValidation);
+    // console.log('Start validation:', startValidation);
+    // console.log('Destination validation:', destinationValidation);
 
     // if (startValidation || destinationValidation) {
     //     showResults.value = false;
