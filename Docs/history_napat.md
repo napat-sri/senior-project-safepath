@@ -65,3 +65,15 @@
 ### RAG (Cont.)
 - I've reviewed from yesterday I missed about indexing, chunking, collecting, and embedding the data. Then, I've tried to ask this agent and it can answer deeper compare with last week's workflow.
 - I've learned how to create an agent which can be another choice to integrate in the project.
+
+## ✅ 26 May 2026
+### Project Updates
+- Last week, we continued the project to proof our main features are making a conversation with a chatbot and suggesting the safe routes using an agent.
+- My main task is on the frontend part of this application which according to these issues on the sprint:
+* [Create Homepage UI](https://github.com/napat-sri/senior-project-safepath/issues/24) (contributed with May)
+* [Create a basic information card](https://github.com/napat-sri/senior-project-safepath/issues/52)
+* [Create a route analysis service](https://github.com/napat-sri/senior-project-safepath/issues/70)
+* [Create a route options service](https://github.com/napat-sri/senior-project-safepath/issues/75)
+- Another task is on the Langflow agent that I have to [create a chatbot button](https://github.com/napat-sri/senior-project-safepath/issues/55) and [create a chatbot agent](https://github.com/napat-sri/senior-project-safepath/issues/54) for answering the question about navigation and information about Berlin.
+- During I created the frontend part and the Langflow agent, Pantida responsed in a backend to create APIs and integrated with my part, and May was not only assisted my part but also processed the specific data in Berlin - crime, accident, lighting - to train it and integrated to the app in the next sprint.
+- My next step is enhancing the route detail page. This page will show the insight of the selected route to see how much safety score breakdown in each category.
