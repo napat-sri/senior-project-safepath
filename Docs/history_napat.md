@@ -68,7 +68,7 @@
 
 ## ✅ 26 May 2026
 ### Project Updates
-- Last week, we continued the project to proof our main features are making a conversation with a chatbot and suggesting the safe routes using an agent.
+- Last week, we continued the project to prove our main features are making a conversation with a chatbot and suggesting the safe routes using an agent.
 - My main task is on the frontend part of this application which according to these issues on the sprint:
 * [Create Homepage UI](https://github.com/napat-sri/senior-project-safepath/issues/24) (contributed with May)
 * [Create a basic information card](https://github.com/napat-sri/senior-project-safepath/issues/52)
