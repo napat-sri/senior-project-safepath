@@ -264,7 +264,7 @@ async function fetchSuggestions(query) {
         // 2. If not in cache, fetch from API
         const { data } = await placeService.search(query);
         const results = data.places || [];
-        
+
         // 3. Save to cache for future use
         suggestionCache[normalizedQuery] = results;
         return results;
@@ -399,7 +399,7 @@ async function fetchSafeRoute() {
         // console.log("Requesting safe routes with payload:", payload);
         const res = await routeService.safe(payload);
         // console.log("API response for safe route:", res);
-        
+
         if (res.status !== 200) throw new Error("API error: " + res.status);
         const data = await res.data;
         routes.value = data.route_suggestions || [];
@@ -632,6 +632,7 @@ onBeforeUnmount(() => {
     background: #f8fafc;
     color: var(--color-text);
     text-decoration: none;
+    cursor: pointer;
 }
 
 .nav-item.active {
@@ -921,47 +922,29 @@ label {
     }
 }
 
-@media (max-width: 1180px) {
+@media (width >=1440px) {
     .content-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 3fr;
     }
 
-    #home-map {
-        height: 520px;
+    #home-map,
+    #map-container {
+        height: 850px;
     }
 }
 
-@media (max-width: 860px) {
-    .page-shell {
+@media (max-width: 1379px) {
+    /* .page-shell {
         flex-direction: column;
+    } */
+
+    .content-grid {
+        grid-template-columns: 2fr;
     }
 
-    .sidebar {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 20;
-        width: auto;
-        max-height: 72vh;
-        overflow-y: auto;
-        border-right: 0;
-        border-top: 1px solid var(--color-border);
-        border-radius: 18px 18px 0 0;
-        background: var(--color-surface);
-        box-shadow: 0 -18px 36px rgba(15, 23, 42, 0.16);
-        transition: transform 240ms ease;
-    }
-
-    .sidebar.collapsed {
-        width: 72px;
-        padding: 16px;
-    }
-
-    .sidebar.collapsed .brand-copy,
-    .sidebar.collapsed .nav-menu,
-    .sidebar.collapsed .premium-card {
-        display: block;
+    #home-map,
+    #map-container {
+        height: 400px;
     }
 
     .brand-section {
@@ -992,6 +975,14 @@ label {
     .map-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+}
+
+@media (max-width: 1440px) {
+
+    #home-map,
+    #map-container {
+        height: 450px;
     }
 }
 </style>
