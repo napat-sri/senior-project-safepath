@@ -62,4 +62,9 @@ What I've learned today:
 - I implemented chatbot in my project with a simple prompt template.
 - I've continued to work on backend development and connected the map.
 
+# 26 May 2026
+What I've learned today:
+- My team and I demonstrated our project to the professor and received feedback.
+- We discussed the feedback and planned the next steps for our project development.
+- We will continue to work on improving our project and prepare for midterm presentation.
 
