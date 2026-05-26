@@ -922,7 +922,7 @@ label {
     }
 }
 
-@media (width >=1440px) {
+@media (min-width: 1440px) {
     .content-grid {
         grid-template-columns: 1fr 3fr;
     }
