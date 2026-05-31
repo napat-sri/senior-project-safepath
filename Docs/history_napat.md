@@ -83,5 +83,6 @@
 - I've learned about a concept and cores of MCP server which acts as a connection between AI application and external systems.
 - I've tried to build an MCP server with the US weather API and connect to Claude Desktop. I followed the instructions and my server worked.
     * An example of the MCP server testing (US weather API)
+<img width="2560" height="1504" alt="image" src="https://github.com/user-attachments/assets/8efb1b6e-9f1e-47fe-a331-facdac05e078" />
 
 - My group have to adapt MCP server with creating our own one into the project.
