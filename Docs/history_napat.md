@@ -77,3 +77,12 @@
 - Another task is on the Langflow agent that I have to [create a chatbot button](https://github.com/napat-sri/senior-project-safepath/issues/55) and [create a chatbot agent](https://github.com/napat-sri/senior-project-safepath/issues/54) for answering the question about navigation and information about Berlin.
 - During I created the frontend part and the Langflow agent, Pantida responded in a backend to create APIs and integrated with my part, and May was not only assisted my part but also processed the specific data in Berlin - crime, accident, lighting - to train it and integrated to the app in the next sprint.
 - My next step is enhancing the route detail page. This page will show the insight of the selected route to see how much safety score breakdown in each category.
+
+## ✅ 27 May 2026
+### MCP (Model Context Protocol)
+- I've learned about a concept and cores of MCP server which acts as a connection between AI application and external systems.
+- I've tried to build an MCP server with the US weather API and connect to Claude Desktop. I followed the instructions and my server worked.
+    * An example of the MCP server testing (US weather API)
+<img width="2560" height="1504" alt="image" src="https://github.com/user-attachments/assets/8efb1b6e-9f1e-47fe-a331-facdac05e078" />
+
+- My group have to adapt MCP server with creating our own one into the project.
