@@ -86,3 +86,12 @@
 <img width="2560" height="1504" alt="image" src="https://github.com/user-attachments/assets/8efb1b6e-9f1e-47fe-a331-facdac05e078" />
 
 - My group have to adapt MCP server with creating our own one into the project.
+
+## ✅ 1 Jun 2026
+### Deploying to Production
+- I've learned about the process of how to deploy the project on production to publish to public users. There are several tools include in this process:
+    * VPS (Virtual Private Server) and hosting provider: Choose a server service provider and obtain your own IP address to connect to the server. (In this case, we use [Contabo](https://contabo.com/en/) because it is affordable and suits our project’s size.)
+    * Server setup and SSH access: After we got a server IP address, we set the server to allow connecting via SSH authentication instead of password. This action will let our project more secure because each user has own private key and public key.
+    * Docker and Reverse Proxy: We install [Docker on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04) on the server (Ubuntu). Then we use [Caddy Docker Proxy](https://github.com/lucaslorentz/caddy-docker-proxy) as a reverse proxy to route HTTP/HTTPS traffic (ports 80/443) to our containers; SSH (port 22) remains for server administration (ideally restricted by firewall/security group).
+    * Register a dynamic DNS (Domain Name Server): We use [Duck DNS](https://www.duckdns.org/) which is a free dynamic DNS hosted to set the domain name for the project. Then we use "ping" in command prompt to check the connection to the host and try to connect the server using this instead of a server IP address.
+- I was glad to act as a professor's assistant by demonstrating the process to my classmates step-by-step and helping those who had issues configuring their own servers.
