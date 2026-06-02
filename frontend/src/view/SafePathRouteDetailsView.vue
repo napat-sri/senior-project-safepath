@@ -149,8 +149,9 @@ import 'leaflet/dist/leaflet.css';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
-import { getRouteById, getSafetyTone } from '../data/routeAnalysis';
+import { getRouteById, getSafetyTone, getRouteSuggestions } from '../data/routeAnalysis';
 import { mountLangflowChat } from '../utils/langflowChat';
+
 
 const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png';
 
@@ -170,10 +171,14 @@ const routeOverlay = ref(null);
 const sidebarCollapsed = ref(true);
 
 const selectedRoute = computed(() => getRouteById(route.params.routeId));
+// const selectedRoute = route.params.routeId;
+console.log(route.value);
 
 const displayJourney = computed(() => {
+    console.log(getRouteSuggestions());
     const start = String(route.query.start || selectedRoute.value.origin).trim();
     const destination = String(route.query.destination || selectedRoute.value.destination).trim();
+    console.log(selectedRoute.value, route.query);
     return `${start} to ${destination}`;
 });
 
@@ -275,6 +280,7 @@ watch(
 );
 
 onMounted(() => {
+    console.log(route.value);
     initMap();
     initChat();
 });

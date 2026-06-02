@@ -191,7 +191,9 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 import {
     getSafetyTone,
-    validateBerlinLocation
+    getRouteSuggestions,
+    validateBerlinLocation,
+    setRouteSuggestions,
 } from '../data/routeAnalysis';
 import { mountLangflowChat } from '../utils/langflowChat';
 
@@ -401,15 +403,18 @@ async function fetchSafeRoute() {
         // console.log("API response for safe route:", res);
 
         if (res.status !== 200) throw new Error("API error: " + res.status);
+
         const data = await res.data;
         routes.value = data.route_suggestions || [];
         searchResult.value = data;
         showResults.value = routes.value.length > 0;
-        // console.log("/api/routes/safe search result:", data);
+        setRouteSuggestions(routes.value); // Update the route suggestions in the data module
+        console.log("/api/routes/safe search result:", data);
+        console.log("Extracted saferoutes:", routes.value);
         renderRoutePreview();
     } catch (err) {
         searchResult.value = { error: err.message };
-        // console.error("/api/routes/safe search error:", err);
+        console.error("/api/routes/safe search error:", err);
     } finally {
         searchLoading.value = false;
     }
@@ -504,6 +509,7 @@ function openRouteDetails(routeId) {
             destination: selectedDestinationPlace.value?.name || ''
         }
     });
+    console.log(routeId, router);
 }
 
 function searchRoute() {
@@ -523,6 +529,7 @@ function searchRoute() {
 
     searchError.value = '';
     showResults.value = true;
+    // routes.value = [];
     fetchSafeRoute();
 }
 // --- Safe Route Search Result State ---
