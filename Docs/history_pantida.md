@@ -68,3 +68,20 @@ What I've learned today:
 - We discussed the feedback and planned the next steps for our project development.
 - We will continue to work on improving our project and prepare for midterm presentation.
 
+# 1 June 2026
+What I've learned today:
+- I discussed with my team about the update of our project during scrum meeting. For my part, I have been working on the backend and integrating mcp server.
+- My team and I started setting up and configuring our production server by using Contabo.
+- We are installing necessary software and dependencies like ssh, docker, dns, and Caddy(reverse proxy) on the server.
+
+# 2 June 2026
+What I've learned today:
+We continued to set up and configure our production server.
+  1. Caddy Reverse Proxy
+  2. Dns Configuration(duckdns)
+  2. Webhook
+  3. Deploying script
+  4. Prod Branch
+  5. Docker compose
+
+
