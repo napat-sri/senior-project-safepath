@@ -95,3 +95,10 @@
     * Docker and Reverse Proxy: We install [Docker on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04) on the server (Ubuntu). Then we use [Caddy Docker Proxy](https://github.com/lucaslorentz/caddy-docker-proxy) as a reverse proxy to route HTTP/HTTPS traffic (ports 80/443) to our containers; SSH (port 22) remains for server administration (ideally restricted by firewall/security group).
     * Register a dynamic DNS (Domain Name Server): We use [Duck DNS](https://www.duckdns.org/) which is a free dynamic DNS hosted to set the domain name for the project. Then we use "ping" in command prompt to check the connection to the host and try to connect the server using this instead of a server IP address.
 - I was glad to act as a professor's assistant by demonstrating the process to my classmates step-by-step and helping those who had issues configuring their own servers.
+
+## ✅ 2 Jun 2026
+### Deploying to Production (Cont.)
+- We've continued the process of deploying to production:
+    * Git branch strategy: We cannot deploy directly from the main branch, so we created a new branch called "prod" specifically to trigger auto-deploy. We also cloned our GitHub repository onto our server.
+    * GitHub webhook: We set up a config file on the server and used [Webhook](https://github.com/adnanh/webhook/) with GitHub. This webhook will call our server on every `git push` to the "prod" branch.
+    * Webhook container & deploy script: We created a Dockerfile for the webhook service and added it to Docker Compose on our server. We also created a deploy script to pull the latest changes and restart the project's services.
