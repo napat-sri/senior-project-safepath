@@ -99,6 +99,6 @@
 ## ✅ 2 Jun 2026
 ### Deploying to Production (Cont.)
 - We've continued the process of deploying to production:
-    * Git branch strategy: We cannot deploy with a main branch directly, so we created an new branch called "prod" which is especially for triggers auto-deploy. And also clone our Github repository into our server.
-    * Github webhook: We set a config file on the server and create [Webhook](https://github.com/adnanh/webhook/) on Github. This webhook will callour server on every "git push" on "prod" branch.
-    * Webhook container & Deploy script: We created a Dockerfile for webhook and a webhook service on docker compose in our server. And we also created a deploy script for running to pull and restart the project's services.
+    * Git branch strategy: We cannot deploy directly from the main branch, so we created a new branch called "prod" specifically to trigger auto-deploy. We also cloned our GitHub repository onto our server.
+    * GitHub webhook: We set up a config file on the server and used [Webhook](https://github.com/adnanh/webhook/) with GitHub. This webhook will call our server on every `git push` to the "prod" branch.
+    * Webhook container & deploy script: We created a Dockerfile for the webhook service and added it to Docker Compose on our server. We also created a deploy script to pull the latest changes and restart the project's services.
