@@ -1,7 +1,7 @@
 # 🚀 Deploying to Production
 
 ## VPS (Virtual Private Server)
-- VPS hosting is a service that provides users with virtual machines running on a physical server, each with dedicated virtual resources, its own operating system, and independent configuration. [1](https://www.hostinger.com/tutorials/what-is-vps-hosting?utm_source=google&utm_medium=cpc&utm_id=16184995375&utm_campaign=Generic-Tutorials-DSA-t1|NT:Se|Lang:EN|LO:DE&utm_term=&utm_content=712735054242&gad_source=1&gad_campaignid=16184995375&gclid=Cj0KCQjwio_RBhDMARIsAJPveNNrkryWBzxKMA6BBy0Hc3eSGqwoSZK8lZZi08Nn8xeNQspOZ9dPvIUaArqwEALw_wcB)
+- VPS hosting is a service that provides users with virtual machines running on a physical server, each with dedicated virtual resources, its own operating system, and independent configuration. [1](https://www.hostinger.com/tutorials/what-is-vps-hosting)
 - There are several service providers in different budget and technical needs. In this case, we use a "Cloud VPS 20" package from [Contabo](https://contabo.com/en/vps/) that offer Linux VPS with full root access.
     > The specifications of this package are:
     > - Cores: 6 vCPU Cores
