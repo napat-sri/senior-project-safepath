@@ -30,17 +30,17 @@
     - The system will require to create a new password - type and confirm it.
     - It will have a user information form, you have unnecessary to do it - just "Enter" and type "Y"
 
-    3. Generate SSH key and place into the server
+    3. Generate (or locate) an SSH key pair on your local machine
     ```
-    sudo mkdir /home/NEWUSERNAME/.ssh
+    ssh-keygen -t ed25519
+    # View/copy your public key:
+    cat ~/.ssh/id_ed25519.pub
+    ```
+    - On the server, add the public key to the new user's `authorized_keys`:
+    ```
+    sudo install -d -m 700 /home/NEWUSERNAME/.ssh
     sudo nano /home/NEWUSERNAME/.ssh/authorized_keys
     ```
-    - To find the public key in your machine
-        * Go to new terminal and type:
-        ```
-        /path/to/.ssh   # Find the .ssh directory
-        type id_rsa.pub     # View the public key
-        ```
     * Copy the public key and paste into an authorized_keys file, save and exit.
 
     4. Modify the elements: Permissions and owner
