@@ -201,7 +201,7 @@ git push -u origin prod
 ## Firewall
 - A firewall is a security system that monitors and controls network traffic based on a set of security rules. [3](https://www.cloudflare.com/learning/security/what-is-a-firewall/)
 - UFW (uncomplicated firewall) is a command-line tool designed to simplify firewall management on Linux systems, particularly those based on Ubuntu. [4](https://www.digitalocean.com/community/tutorials/ufw-essentials-common-firewall-rules-and-commands)
-    1. Allow SSH before enabeling UFW
+    1. Allow SSH before enabling UFW
     ```
     sudo ufw allow ssh
     ```
