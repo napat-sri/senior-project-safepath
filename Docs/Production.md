@@ -187,7 +187,7 @@ networks:
     ```
 
 ## Git Branch Strategy
-- In default, when we create a Github repository, it will create a main branch. In addition, if there are many contributors in each repo, they should create their own branch for their coding.
+- In default, when we create a GitHub repository, it will create a main branch. In addition, if there are many contributors in each repo, they should create their own branch for their coding.
 > The main concepts of production are:
 > 1. Never push directly to "prod" - always merge from "main"
 > 2. Before merging to "prod", you should use pull requests to review code first
