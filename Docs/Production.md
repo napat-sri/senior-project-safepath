@@ -137,8 +137,8 @@
 sudo nano docker-compose.yml
 ```
 - We use a docker service from [Caddy](https://github.com/lucaslorentz/caddy-docker-proxy)
+- Create the external Docker network used by Caddy (one-time): `docker network create caddy`
 - Complete the service detail with your hostname from DuckDNS:
-```
 services:
   whoami:
     image: traefik/whoami
