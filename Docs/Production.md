@@ -60,7 +60,7 @@
         **PubkeyAuthentication yes** # Keys are the only allowed method
     - When you finish, save and exit
 
-    6. Restart the server
+    6. Restart the SSH service
     ```
     sudo systemctl restart ssh
     ```
