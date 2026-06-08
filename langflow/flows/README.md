@@ -21,6 +21,4 @@ the Langflow UI by hand.
 3. Overwrite the existing file in this folder.
 4. Commit the change so teammates pick it up on their next pull.
 
-This is the test for trigger
-THis is the test for webhook
-This is the test for config
+This is the test for creating a new webhook
