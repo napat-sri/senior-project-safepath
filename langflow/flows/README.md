@@ -23,3 +23,4 @@ the Langflow UI by hand.
 
 This is the test for trigger
 THis is the test for webhook
+This is the test for config
