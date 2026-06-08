@@ -20,7 +20,7 @@
     ```
     ssh root@YOURHOSTIPADDRESS
     ```
-        This is the first connection, which means a host isn't established. It will ask "Are you sure you want to continue connecting (yes/no/[fingerprint]), type "yes" then it required to type a password.
+  * This is the first connection, which means a host isn't established. It will ask "Are you sure you want to continue connecting (yes/no/[fingerprint]), type "yes" then it required to type a password.
     
     2. Create a new user and modify into the server
     ```
@@ -33,7 +33,6 @@
     3. Generate (or locate) an SSH key pair on your local machine
     ```
     ssh-keygen -t ed25519
-    # View/copy your public key:
     cat ~/.ssh/id_ed25519.pub
     ```
     - On the server, add the public key to the new user's `authorized_keys`:
@@ -55,9 +54,9 @@
     sudo nano /etc/ssh/sshd_config
     ```
     - Find the parameters in this file and set the config:
-        **PasswordAuthentication no** # Disable password authentication
-        **PermitRootLogin no** # Block root login
-        **PubkeyAuthentication yes** # Keys are the only allowed method
+        - **PasswordAuthentication no** -> Disable password authentication
+        - **PermitRootLogin no** -> Block root login
+        - **PubkeyAuthentication yes** -> Keys are the only allowed method
     - When you finish, save and exit
 
     6. Restart the SSH service
@@ -139,6 +138,7 @@ sudo nano docker-compose.yml
 - We use a docker service from [Caddy](https://github.com/lucaslorentz/caddy-docker-proxy)
 - Create the external Docker network used by Caddy (one-time): `docker network create caddy`
 - Complete the service detail with your hostname from DuckDNS:
+```
 services:
   whoami:
     image: traefik/whoami
