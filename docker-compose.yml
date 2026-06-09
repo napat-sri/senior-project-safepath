@@ -127,3 +127,7 @@ services:
 volumes:
   langflow-data:
   berlin-data:
+
+networks:
+  caddy:
+    external: true
