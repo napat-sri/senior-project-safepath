@@ -111,28 +111,34 @@ services:
 langflow:
     image: langflowai/langflow:latest
     container_name: langflow
-    # ports:
-    #   - "7860:7860"
     environment:
-      #LANGFLOW_LOAD_FLOWS_PATH: /app/flows
       DO_NOT_TRACK: "true"
+      # Keep config and database in /app/langflow
       LANGFLOW_CONFIG_DIR: /app/langflow
       LANGFLOW_DATABASE_URL: sqlite:////app/langflow/langflow.db
+      # UNCOMMENT THIS: Tell Langflow where to scan for your JSON files
+      LANGFLOW_LOAD_FLOWS_PATH: /app/flows
       LANGFLOW_AUTO_LOGIN: 'true'
       LANGFLOW_SKIP_AUTH_AUTO_LOGIN: 'true'
-      LANGFLOW_CORS_ORIGINS: 'http://localhost:8080,http://127.0.0.1:8080'
+      # Update to your actual external Caddy domain name
+      LANGFLOW_CORS_ORIGINS: 'https://langflow.safepath.duckdns.org,http://localhost:8080'
       LANGFLOW_CORS_ALLOW_METHODS: 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
       LANGFLOW_CORS_ALLOW_HEADERS: 'Content-Type,Authorization,x-api-key'
       LANGFLOW_CORS_ALLOW_CREDENTIALS: 'True'
       LANGFLOW_SSRF_ALLOWED_HOSTS: 'backend.local,backend,host.docker.internal'
     volumes:
-      - ./langflow/flows:/app/langflow
+      # 1. Mount your JSON flows to /app/flows (matches LANGFLOW_LOAD_FLOWS_PATH)
+      - /opt/apps/senior-project-safepath/langflow/flows:/app/flows
+      
+      # 2. Mount a persistent volume to /app/langflow so your database persists
+      - langflow-data:/app/langflow
     restart: unless-stopped
     networks:
       - caddy
     labels:
       caddy: langflow.safepath.duckdns.org
       caddy.reverse_proxy: "{{upstreams 7860}}"
+      
 volumes:
   langflow-data:
   berlin-data:
