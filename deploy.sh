@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 cd /app
 git pull origin prod
 docker compose up -d --build
