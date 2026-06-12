@@ -100,6 +100,7 @@ services:
     container_name: langflow
     environment:
       - LANGFLOW_LOAD_FLOWS_PATH=/app/flows
+      - LANGFLOW_FLOWS_PATH=/app/flows
       - LANGFLOW_AUTO_LOGIN=true
       - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true
       # Add a secure fallback string so the auto-login token stops generating "Invalid Token" exceptions
