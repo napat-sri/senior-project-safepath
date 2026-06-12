@@ -95,6 +95,7 @@ services:
   # teammate cloning the repo gets the same agent without rebuilding it in
   # the UI. Export updated flows from the Langflow UI and commit the JSON.
   # ----------------------------------------------------------------------------
+  
   langflow:
     image: langflowai/langflow:latest
     container_name: langflow
