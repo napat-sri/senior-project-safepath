@@ -34,12 +34,12 @@ services:
     # ports:
     #   - "9000:9000"
     networks:
-      default:
-        aliases:
-          - backend.local
-          - caddy
+      # default:
+      #   aliases:
+      #     - backend.local
+      - caddy
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
     environment:
       - ENV=development
     depends_on:
