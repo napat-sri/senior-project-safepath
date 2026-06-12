@@ -101,10 +101,11 @@ services:
     # ports:
     #   - "7860:7860"
     environment:
-     #LANGFLOW_LOAD_FLOWS_PATH: /app/langflow/flows
+     LANGFLOW_LOAD_FLOWS_PATH: /app/langflow/flows
      DO_NOT_TRACK: "true"
      LANGFLOW_CONFIG_DIR: /langflow-data
      LANGFLOW_DATABASE_URL: sqlite:////langflow-data/langflow.db
+   
      #LANGFLOW_LOAD_FLOWS_PATH: /flows
      LANGFLOW_AUTO_LOGIN: 'true'
      LANGFLOW_SKIP_AUTH_AUTO_LOGIN: 'true'
@@ -115,7 +116,6 @@ services:
      LANGFLOW_SSRF_ALLOWED_HOSTS: 'backend.local,backend,host.docker.internal'
     volumes:
       - ./langflow/flows:/app/langflow/flows
-      - langflow-data:/langflow-data
     restart: unless-stopped
     networks:
       - caddy
