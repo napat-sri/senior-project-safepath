@@ -2,7 +2,8 @@ const LANGFLOW_SCRIPT_ID = 'langflow-embedded-chat-script';
 const LANGFLOW_SCRIPT_SRC = 'https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js';
 const LANGFLOW_WINDOW_TITLE = 'SafePath Agent';
 const LANGFLOW_FLOW_ID = '125fb9da-a804-4347-ae7d-b7c8b350c015';
-const LANGFLOW_HOST_URL = 'http://localhost:7860';
+const LANGFLOW_HOST_URL = 'https://langflow.safepath.duckdns.org'; // for production
+// const LANGFLOW_HOST_URL = 'http://localhost:7860'; // for development
 // const LANGFLOW_API_KEY = 'sk-XZOSAs4iJxFFXp0081ugpVHcgqko-eR68ZHlaoyNcAY';
 
 function mountChatWidget(containerId) {
