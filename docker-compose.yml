@@ -105,6 +105,7 @@ services:
       DO_NOT_TRACK: "true"
       LANGFLOW_CONFIG_DIR: /langflow-data
       LANGFLOW_DATABASE_URL: sqlite:////langflow-data/langflow.db
+      LANGFLOW_LOAD_FLOWS_PATH: /flows
       LANGFLOW_AUTO_LOGIN: 'true'
       LANGFLOW_SKIP_AUTH_AUTO_LOGIN: 'true'
       LANGFLOW_CORS_ORIGINS: 'https://safepath.duckdns.org,http://localhost:8080,http://127.0.0.1:8080'
