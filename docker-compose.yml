@@ -104,7 +104,7 @@ services:
       # LANGFLOW_LOAD_FLOWS_PATH: /app/langflow/flows
       DO_NOT_TRACK: "true"
       LANGFLOW_CONFIG_DIR: /app/langflow/flows
-      LANGFLOW_DATABASE_URL: sqlite:////app/langflow/flows/langflow.db
+      # LANGFLOW_DATABASE_URL: sqlite:////app/langflow/flows/langflow.db
       LANGFLOW_AUTO_LOGIN: 'true'
       LANGFLOW_SKIP_AUTH_AUTO_LOGIN: 'true'
       LANGFLOW_CORS_ORIGINS: 'http://localhost:8080,http://127.0.0.1:8080'
