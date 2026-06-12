@@ -100,7 +100,7 @@ services:
     image: langflowai/langflow:latest
     container_name: langflow
     environment:
-      - LANGFLOW_LOAD_FLOWS_PATH=/app/flows
+      - LANGFLOW_LOAD_FLOWS_PATH=/app/langflow/flows
       - LANGFLOW_AUTO_LOGIN=true
       - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true
       # Add a secure fallback string so the auto-login token stops generating "Invalid Token" exceptions
@@ -111,7 +111,7 @@ services:
       - LANGFLOW_CORS_ALLOW_CREDENTIALS=True
       - LANGFLOW_SSRF_ALLOWED_HOSTS=backend.local,backend,host.docker.internal
     volumes:
-      - ./langflow/flows:/app/flows
+      - ./langflow/flows:/app/langflow/flows
       - langflow-data:/root/.cache/langflow
     restart: unless-stopped
     networks:
@@ -119,7 +119,7 @@ services:
     labels:
       caddy: langflow.safepath.duckdns.org
       caddy.reverse_proxy: "{{upstreams 7860}}"
-      
+
 # langflow:
 #     image: langflowai/langflow:latest
 #     container_name: langflow
