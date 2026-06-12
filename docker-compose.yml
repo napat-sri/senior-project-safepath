@@ -100,7 +100,6 @@ services:
     container_name: langflow
     environment:
       - LANGFLOW_LOAD_FLOWS_PATH=/app/flows
-      - LANGFLOW_FLOWS_PATH=/app/flows
       - LANGFLOW_AUTO_LOGIN=true
       - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true
       # Add a secure fallback string so the auto-login token stops generating "Invalid Token" exceptions
@@ -111,7 +110,7 @@ services:
       - LANGFLOW_CORS_ALLOW_CREDENTIALS=True
       - LANGFLOW_SSRF_ALLOWED_HOSTS=backend.local,backend,host.docker.internal
     volumes:
-      - /opt/apps/senior-project-safepath/langflow/flows:/app/flows #./langflow/flows:/app/flows
+      - ./langflow/flows:/app/flows
       - langflow-data:/root/.cache/langflow
     restart: unless-stopped
     networks:
