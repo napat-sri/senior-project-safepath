@@ -103,7 +103,7 @@ services:
     environment:
      #LANGFLOW_LOAD_FLOWS_PATH: /app/langflow/flows
      DO_NOT_TRACK: "true"
-     #LANGFLOW_CONFIG_DIR: /langflow-data
+     LANGFLOW_CONFIG_DIR: /langflow-data
      LANGFLOW_DATABASE_URL: sqlite:////langflow-data/langflow.db
      #LANGFLOW_LOAD_FLOWS_PATH: /flows
      LANGFLOW_AUTO_LOGIN: 'true'
