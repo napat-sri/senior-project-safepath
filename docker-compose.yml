@@ -113,7 +113,7 @@ services:
       LANGFLOW_CORS_ALLOW_CREDENTIALS: 'True'
       LANGFLOW_SSRF_ALLOWED_HOSTS: 'backend.local,backend,host.docker.internal'
     volumes:
-      - ./langflow/flows:/app/langflow/flows
+      - ./langflow/flows:/app/langflow/flows:z
     restart: unless-stopped
     networks:
       - caddy
