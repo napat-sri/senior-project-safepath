@@ -110,7 +110,7 @@ services:
       - LANGFLOW_CORS_ALLOW_CREDENTIALS=True
       - LANGFLOW_SSRF_ALLOWED_HOSTS=backend.local,backend,host.docker.internal
     volumes:
-      - ./langflow/flows:/app/flows
+      - /opt/apps/senior-project-safepath/langflow/flows:/app/flows #./langflow/flows:/app/flows
       - langflow-data:/root/.cache/langflow
     restart: unless-stopped
     networks:
