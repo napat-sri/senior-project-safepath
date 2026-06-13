@@ -23,7 +23,7 @@ services:
     environment:
       - ENV=production
     depends_on:
-      - mcp-server
+      - langflow
     labels:
       caddy: api.safepath.duckdns.org
       caddy.reverse_proxy: "{{upstreams 9000}}"
