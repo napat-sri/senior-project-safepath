@@ -1,12 +1,10 @@
 #!/bin/sh
-cd /app
+set -e
 
-# 1. Fetch the latest history from the remote repository
-git fetch origin
+cd /opt/apps/senior-project-safepath
 
-# 2. Force the local prod branch to exactly match the remote prod branch
-# This automatically wipes out any accidental local changes on the server!
+git fetch origin prod
 git reset --hard origin/prod
+git clean -fd
 
-# 3. Rebuild and restart the Docker containers
 docker compose up -d --build
