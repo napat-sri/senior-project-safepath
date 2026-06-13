@@ -58,13 +58,17 @@ services:
   openstreetmap:
     image: overv/openstreetmap-tile-server
     container_name: openstreetmap
-    ports:
-      - "8081:80"
+    #ports:
+    #  - "8081:80"
     volumes:
       - berlin-data:/data/database/
     command: run
     restart: always
-
+    networks:
+      - caddy
+    labels:
+      caddy: osm.safepath.duckdns.org
+      caddy.reverse_proxy: "{{upstreams 80}}"
   # ----------------------------------------------------------------------------
   # OpenStreetMap tile server (one-shot import)
   #
