@@ -64,6 +64,9 @@ services:
       - berlin-data:/data/database/
     command: run
     restart: always
+    environment:
+      - ALLOW_CORS=enabled
+      - SSL_POLICY=none
     networks:
       - caddy
     labels:
