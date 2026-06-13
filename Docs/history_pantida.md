@@ -85,3 +85,16 @@ We continued to set up and configure our production server.
   5. Docker compose
 
 
+# 8 June 2026
+What I've learned today:
+We continued setting up the server.
+- How to initialize langflow by getting the data from sqlite.
+- Fixing some issue about webhook.
+- Setting up portainer container to manage docker containers easily.
+
+# 9 June 2026
+What I've learned today:
+Prof. reviewed all configuration that we have done so far.
+- We fixed some issues about langflow database.
+- We tested our webhook.
+- We started update docker compose for the rest of our services like frontend and backend.
