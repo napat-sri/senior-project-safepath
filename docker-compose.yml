@@ -142,6 +142,8 @@ services:
 volumes:
   langflow-data:
   berlin-data:
+    external: true
+    name: senior-project-safepath_berlin-data
 
 networks:
   caddy:
