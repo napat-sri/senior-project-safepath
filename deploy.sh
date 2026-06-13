@@ -8,3 +8,4 @@ git reset --hard origin/prod
 git clean -fd
 
 docker compose up -d --build
+
