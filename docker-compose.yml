@@ -18,19 +18,12 @@ services:
 
   backend:
     build: ./backend
-    # ports:
-    #   - "9000:9000"
     networks:
-      # default:
-      #   aliases:
-      #     - backend.local
       - caddy
-    volumes:
-      - ./backend:/app/backend
     environment:
-      - ENV=development
+      - ENV=production
     depends_on:
-      - langflow
+      - mcp-server
     labels:
       caddy: api.safepath.duckdns.org
       caddy.reverse_proxy: "{{upstreams 9000}}"
