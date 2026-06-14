@@ -109,6 +109,6 @@
     * We started configuring Docker Compose for our app images (frontend, backend, openstreetmap, and langflow). Langflow was the first service we configured, using Caddy's reverse proxy for production deployment.
 ## ✅ 9 Jun 2026
 ### Deploying to Production (Cont.)
-- We've recap all the processes of deploying to production workflow - From choosing the VPS provider to deploying the script.
-- We did a revision quiz to check our understanding. The quiz has 22 questions which took only 15 minutes.
-- We've continued the langflow configuration, there were some conflicts to find solutions that can fit our program.
+- We've recapped the full production deployment workflow — from choosing the VPS provider to deploying the script.
+- We did a revision quiz to check our understanding. The quiz had 22 questions and took only 15 minutes.
+- We've continued the langflow configuration; we encountered some conflicts and worked on solutions that fit our program.
