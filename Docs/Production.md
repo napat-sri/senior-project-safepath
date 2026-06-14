@@ -33,7 +33,7 @@
     3. Generate (or locate) an SSH key pair on your local machine
     ```
     ssh-keygen -t ed25519
-    cat ~/.ssh/id_ed25519.pub
+    cat ~/.ssh/id_ed25519.pub  # View/copy your public key
     ```
     - On the server, add the public key to the new user's `authorized_keys`:
     ```
