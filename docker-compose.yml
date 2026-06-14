@@ -98,6 +98,7 @@ services:
       - LANGFLOW_SSRF_ALLOWED_HOSTS=backend.local,backend,host.docker.internal
     volumes:
       - /opt/apps/senior-project-safepath/langflow/flows:/app/flows
+      - langflow-db:/root/.cache/langflow
     restart: unless-stopped
     networks:
       - caddy
@@ -126,7 +127,7 @@ volumes:
   berlin-data:
     external: true
     name: senior-project-safepath_berlin-data
-
+  langflow-db:
 networks:
   caddy:
     external: true
