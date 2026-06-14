@@ -90,6 +90,7 @@ services:
     environment:
       - LANGFLOW_LOAD_FLOWS_PATH=/app/flows
       - LANGFLOW_AUTO_LOGIN=true
+      - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true
       - LANGFLOW_SECRET_KEY=OUekmoSYZHcbwQWtTr9EzRVO1Y37-Zd6tHdXInT1C8A=
       - LANGFLOW_CORS_ORIGINS=https://safepath.duckdns.org,http://localhost:8080,http://127.0.0.1:8080
       - LANGFLOW_CORS_ALLOW_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
@@ -128,7 +129,7 @@ volumes:
     external: true
     name: senior-project-safepath_berlin-data
   langflow-db:
-  
+
 networks:
   caddy:
     external: true
