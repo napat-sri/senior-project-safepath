@@ -128,6 +128,7 @@ volumes:
     external: true
     name: senior-project-safepath_berlin-data
   langflow-db:
+  
 networks:
   caddy:
     external: true
