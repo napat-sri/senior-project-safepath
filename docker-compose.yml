@@ -19,7 +19,9 @@ services:
   backend:
     build: ./backend
     networks:
-      - caddy
+      caddy:
+        aliases:
+          - backend.local
     environment:
       - ENV=production
     depends_on:
