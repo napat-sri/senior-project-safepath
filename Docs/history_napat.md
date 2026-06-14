@@ -105,9 +105,8 @@
 
 ## ✅ 8 Jun 2026
 ### Deploying to Production (Cont.)
-- We've reviewed the process which we did last week and continued further:
-    * We start a config on the docker compose of our project's app image - frontend, backend, openstreetmap, langflow. Langflow was the first image we've config, use Caddy's reverse proxy to deploy on production.
-
+- We've reviewed the process from last week and continued further:
+    * We started configuring Docker Compose for our app images (frontend, backend, openstreetmap, and langflow). Langflow was the first service we configured, using Caddy's reverse proxy for production deployment.
 ## ✅ 9 Jun 2026
 ### Deploying to Production (Cont.)
 - We've recap all the processes of deploying to production workflow - From choosing the VPS provider to deploying the script.
