@@ -88,9 +88,7 @@ services:
     environment:
       - LANGFLOW_LOAD_FLOWS_PATH=/app/langflow/flows
       - LANGFLOW_AUTO_LOGIN=true
-      - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true
-      # Add a secure fallback string so the auto-login token stops generating "Invalid Token" exceptions
-      - LANGFLOW_SECRET_KEY='OUekmoSYZHcbwQWtTr9EzRVO1Y37-Zd6tHdXInT1C8A='
+      - LANGFLOW_SECRET_KEY=OUekmoSYZHcbwQWtTr9EzRVO1Y37-Zd6tHdXInT1C8A=
       - LANGFLOW_CORS_ORIGINS=https://safepath.duckdns.org,http://localhost:8080,http://127.0.0.1:8080
       - LANGFLOW_CORS_ALLOW_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
       - LANGFLOW_CORS_ALLOW_HEADERS=Content-Type,Authorization,x-api-key
