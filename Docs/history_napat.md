@@ -102,3 +102,13 @@
     * Git branch strategy: We cannot deploy directly from the main branch, so we created a new branch called "prod" specifically to trigger auto-deploy. We also cloned our GitHub repository onto our server.
     * GitHub webhook: We set up a config file on the server and used [Webhook](https://github.com/adnanh/webhook/) with GitHub. This webhook will call our server on every `git push` to the "prod" branch.
     * Webhook container & deploy script: We created a Dockerfile for the webhook service and added it to Docker Compose on our server. We also created a deploy script to pull the latest changes and restart the project's services.
+
+## ✅ 8 Jun 2026
+### Deploying to Production (Cont.)
+- We've reviewed the process from last week and continued further:
+    * We started configuring Docker Compose for our app images (frontend, backend, openstreetmap, and langflow). Langflow was the first service we configured, using Caddy's reverse proxy for production deployment.
+## ✅ 9 Jun 2026
+### Deploying to Production (Cont.)
+- We've recapped the full production deployment workflow — from choosing the VPS provider to deploying the script.
+- We did a revision quiz to check our understanding. The quiz had 22 questions and took only 15 minutes.
+- We've continued the langflow configuration; we encountered some conflicts and worked on solutions that fit our program.
