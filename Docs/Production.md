@@ -20,7 +20,7 @@
     ```
     ssh root@YOURHOSTIPADDRESS
     ```
-  * This is the first connection, which means a host isn't established. It will ask "Are you sure you want to continue connecting (yes/no/[fingerprint]), type "yes" then it required to type a password.
+    - On the first connection, the host key isn’t in your `known_hosts` yet. When prompted with `Are you sure you want to continue connecting (yes/no/[fingerprint])?`, type `yes`, then enter the root password.
     
     2. Create a new user and modify into the server
     ```
