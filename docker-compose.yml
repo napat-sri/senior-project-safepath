@@ -86,7 +86,7 @@ services:
     image: langflowai/langflow:latest
     container_name: langflow
     environment:
-      - LANGFLOW_LOAD_FLOWS_PATH=/app/langflow/flows
+      - LANGFLOW_LOAD_FLOWS_PATH=/app/flows
       - LANGFLOW_AUTO_LOGIN=true
       - LANGFLOW_SECRET_KEY=OUekmoSYZHcbwQWtTr9EzRVO1Y37-Zd6tHdXInT1C8A=
       - LANGFLOW_CORS_ORIGINS=https://safepath.duckdns.org,http://localhost:8080,http://127.0.0.1:8080
@@ -95,8 +95,7 @@ services:
       - LANGFLOW_CORS_ALLOW_CREDENTIALS=True
       - LANGFLOW_SSRF_ALLOWED_HOSTS=backend.local,backend,host.docker.internal
     volumes:
-      - ./langflow/flows:/app/langflow/flows
-      - langflow-data:/root/.cache/langflow
+      - /opt/apps/senior-project-safepath/langflow/flows:/app/flows
     restart: unless-stopped
     networks:
       - caddy
@@ -121,7 +120,7 @@ services:
 #       caddy.reverse_proxy: "{{upstreams 7860}}"
 
 volumes:
-  langflow-data:
+  #langflow-data:
   berlin-data:
     external: true
     name: senior-project-safepath_berlin-data
