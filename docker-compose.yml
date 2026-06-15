@@ -6,7 +6,9 @@ services:
 
   frontend:
     build: ./frontend
-    command: npm run dev    
+    command: npm run dev
+    env_file:
+      - .env    
     depends_on:
       - backend
       # - langflow
@@ -18,6 +20,8 @@ services:
 
   backend:
     build: ./backend
+    env_file:
+      - .env
     networks:
       caddy:
         aliases:
