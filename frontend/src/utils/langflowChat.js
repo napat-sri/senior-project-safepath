@@ -3,6 +3,8 @@ const LANGFLOW_SCRIPT_SRC = 'https://cdn.jsdelivr.net/gh/logspace-ai/langflow-em
 const LANGFLOW_WINDOW_TITLE = 'SafePath Bot';
 const LANGFLOW_FLOW_ID = process.env.VUE_APP_LANGFLOW_CHATBOT_FLOW_ID;
 const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY;
+console.log("FLOW_ID: ", LANGFLOW_FLOW_ID);
+console.log("API_KEY: ", LANGFLOW_API_KEY);
 const LANGFLOW_HOST_URL = 'https://langflow.safepath.duckdns.org'; // for production
 // const LANGFLOW_HOST_URL = 'http://localhost:7860'; // for development
 
