@@ -14,6 +14,11 @@ import json
 import re
 import time
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 app = FastAPI(title="SafePath API")
 
 # Allow the Vue dev server to call this API from the browser.
@@ -30,7 +35,7 @@ app.add_middleware(
 # later switch to a walking profile (self-hosted OSRM-foot or OpenRouteService).
 OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
 OSRM_FOOT_URL = "https://router.project-osrm.org/route/v1/foot"
-FLOW_ID = "63a16f8d-0f9e-4930-91c0-e41ec7e842fd" 
+FLOW_ID = os.getenv("VUE_APP_LANGFLOW_ROUTE_AGENT_FLOW_ID")
 LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}" 
 
 
