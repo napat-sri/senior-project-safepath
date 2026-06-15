@@ -7,3 +7,4 @@ git clean -fd
 
 docker compose up -d --build
 
+docker compose up -f docker-compose-langflow.yml -d --build
