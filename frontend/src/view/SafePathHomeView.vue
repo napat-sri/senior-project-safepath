@@ -202,6 +202,7 @@ import { placeService, routeService } from '../services/api';
 
 //const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png'; //dev
 const TILE_URL = process.env.VUE_APP_TILE_URL || 'https://osm.safepath.duckdns.org/tile/{z}/{x}/{y}.png'; //prod
+console.log("TILE_URL: ", TILE_URL);
 
 const DefaultIcon = L.icon({
     iconUrl: icon,
