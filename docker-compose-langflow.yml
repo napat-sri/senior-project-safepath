@@ -18,9 +18,9 @@ services:
       # - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true
       - LANGFLOW_SECRET_KEY=${LANGFLOW_SECRET_KEY}
       - LANGFLOW_CORS_ORIGINS=https://safepath.duckdns.org,http://localhost:8080,http://127.0.0.1:8080
-      # - LANGFLOW_CORS_ALLOW_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
-      # - LANGFLOW_CORS_ALLOW_HEADERS=Content-Type,Authorization,x-api-key
-      # - LANGFLOW_CORS_ALLOW_CREDENTIALS=True
+      - LANGFLOW_CORS_ALLOW_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+      - LANGFLOW_CORS_ALLOW_HEADERS=Content-Type,Authorization,x-api-key
+      - LANGFLOW_CORS_ALLOW_CREDENTIALS=True
       # - LANGFLOW_SSRF_ALLOWED_HOSTS=backend.local,backend,host.docker.internal
     volumes:
       # - /opt/apps/senior-project-safepath/langflow/flows:/app/flows
