@@ -9,7 +9,7 @@ services:
     command: npm run dev    
     depends_on:
       - backend
-      - langflow
+      # - langflow
     networks:
       - caddy
     labels:
@@ -24,8 +24,8 @@ services:
           - backend.local
     environment:
       - ENV=production
-    depends_on:
-      - langflow
+    # depends_on:
+    #   - langflow
     labels:
       caddy: api.safepath.duckdns.org
       caddy.reverse_proxy: "{{upstreams 9000}}"
@@ -84,28 +84,28 @@ services:
   # teammate cloning the repo gets the same agent without rebuilding it in
   # the UI. Export updated flows from the Langflow UI and commit the JSON.
   # ----------------------------------------------------------------------------
-  langflow:
-    image: langflowai/langflow:latest
-    container_name: langflow
-    environment:
-      - LANGFLOW_LOAD_FLOWS_PATH=/app/flows
-      - LANGFLOW_AUTO_LOGIN=true
-      - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true
-      - LANGFLOW_SECRET_KEY=OUekmoSYZHcbwQWtTr9EzRVO1Y37-Zd6tHdXInT1C8A=
-      - LANGFLOW_CORS_ORIGINS=https://safepath.duckdns.org,http://localhost:8080,http://127.0.0.1:8080
-      - LANGFLOW_CORS_ALLOW_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
-      - LANGFLOW_CORS_ALLOW_HEADERS=Content-Type,Authorization,x-api-key
-      - LANGFLOW_CORS_ALLOW_CREDENTIALS=True
-      - LANGFLOW_SSRF_ALLOWED_HOSTS=backend.local,backend,host.docker.internal
-    volumes:
-      - /opt/apps/senior-project-safepath/langflow/flows:/app/flows
-      - langflow-db:/root/.cache/langflow
-    restart: unless-stopped
-    networks:
-      - caddy
-    labels:
-      caddy: langflow.safepath.duckdns.org
-      caddy.reverse_proxy: "{{upstreams 7860}}"
+  # langflow:
+  #   image: langflowai/langflow:latest
+  #   container_name: langflow
+  #   environment:
+  #     - LANGFLOW_LOAD_FLOWS_PATH=/app/flows
+  #     - LANGFLOW_AUTO_LOGIN=true
+  #     - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true
+  #     - LANGFLOW_SECRET_KEY=OUekmoSYZHcbwQWtTr9EzRVO1Y37-Zd6tHdXInT1C8A=
+  #     - LANGFLOW_CORS_ORIGINS=https://safepath.duckdns.org,http://localhost:8080,http://127.0.0.1:8080
+  #     - LANGFLOW_CORS_ALLOW_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+  #     - LANGFLOW_CORS_ALLOW_HEADERS=Content-Type,Authorization,x-api-key
+  #     - LANGFLOW_CORS_ALLOW_CREDENTIALS=True
+  #     - LANGFLOW_SSRF_ALLOWED_HOSTS=backend.local,backend,host.docker.internal
+  #   volumes:
+  #     - /opt/apps/senior-project-safepath/langflow/flows:/app/flows
+  #     - langflow-db:/root/.cache/langflow
+  #   restart: unless-stopped
+  #   networks:
+  #     - caddy
+  #   labels:
+  #     caddy: langflow.safepath.duckdns.org
+  #     caddy.reverse_proxy: "{{upstreams 7860}}"
 
 # langflow:
 #     image: langflowai/langflow:latest
@@ -128,7 +128,7 @@ volumes:
   berlin-data:
     external: true
     name: senior-project-safepath_berlin-data
-  langflow-db:
+  # langflow-db:
 
 networks:
   caddy:
