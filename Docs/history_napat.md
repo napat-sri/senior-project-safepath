@@ -112,3 +112,10 @@
 - We've recapped the full production deployment workflow — from choosing the VPS provider to deploying the script.
 - We did a revision quiz to check our understanding. The quiz had 22 questions and took only 15 minutes.
 - We've continued the langflow configuration; we encountered some conflicts and worked on solutions that fit our program.
+
+## ✅ 15 Jun 2026
+### Deploying to Production (Cont.)
+- We've created a new docker compose file only for langflow, to separate with other services. This config will help us bring our own workflows into our production. And also provide an authentication to connect with own workflow list.
+- We also updated commands inside the deploy script that include with docker compose configurations.
+- We can bring our project's workflow into production completely.
+- Previously, we used Portainer with internal authentication which can be concerned in security issue if there is any unpredicted case happen. To prevent this issue, we've learned about [Keycloak](https://www.keycloak.org/) which is an open source for authentication to applications and secure services using Single-Sign On (SSO) and OAuth protocol.
