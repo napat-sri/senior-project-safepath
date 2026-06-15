@@ -2,6 +2,7 @@ const LANGFLOW_SCRIPT_ID = 'langflow-embedded-chat-script';
 const LANGFLOW_SCRIPT_SRC = 'https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js';
 const LANGFLOW_WINDOW_TITLE = 'SafePath Bot';
 const LANGFLOW_FLOW_ID = process.env.VUE_APP_LANGFLOW_CHATBOT_FLOW_ID;
+const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY;
 const LANGFLOW_HOST_URL = 'https://langflow.safepath.duckdns.org'; // for production
 // const LANGFLOW_HOST_URL = 'http://localhost:7860'; // for development
 
@@ -14,6 +15,7 @@ function mountChatWidget(containerId) {
         window_title="${LANGFLOW_WINDOW_TITLE}"
         flow_id="${LANGFLOW_FLOW_ID}"
         host_url="${LANGFLOW_HOST_URL}"
+        api_key="${LANGFLOW_API_KEY}"
 
         chat_position="bottom-left" 
   
