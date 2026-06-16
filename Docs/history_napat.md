@@ -119,3 +119,9 @@
 - We also updated commands inside the deploy script that include with docker compose configurations.
 - We can bring our project's workflow into production completely.
 - Previously, we used Portainer with internal authentication which can be concerned in security issue if there is any unpredicted case happen. To prevent this issue, we've learned about [Keycloak](https://www.keycloak.org/) which is an open source for authentication to applications and secure services using Single-Sign On (SSO) and OAuth protocol.
+
+## ✅ 16 Jun 2026
+### Preparing before Midterm
+- Yesterday, we used Keycloak for authentication service, however, an issue was when we connected, a dashboard was empty because the user role wasn't correct. Today, we set the role of our user to be an "administrator", so right now we can access to the Portainer dashboard successfully.
+- Our main event is to finalize services on our project which we will present on Midterm next week. Make sure our docker compose files: one for Langflow and one for other services combined together and all of them should be connected.
+- Before the presentation day, we will prepare all relevant items: Slide, Demo application, and Features to be done and get ready for Q&A session which includes what we've learned from day one.
