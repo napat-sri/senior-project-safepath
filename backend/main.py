@@ -73,7 +73,7 @@ def langflow_health():
     return {
         "status": "ok",
         "langflow_target": LANGFLOW_URL,
-        "auth_configured": bool(LANGFLOW_API_KEY)
+        "auth_configured": LANGFLOW_API_KEY
     }
 
 @app.get("/api/places")
