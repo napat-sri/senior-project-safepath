@@ -36,7 +36,10 @@ app.add_middleware(
 OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
 OSRM_FOOT_URL = "https://router.project-osrm.org/route/v1/foot"
 FLOW_ID = os.getenv("VUE_APP_LANGFLOW_ROUTE_AGENT_FLOW_ID")
-LANGFLOW_URL = "https://langflow.safepath.duckdns.org/api/v1/run/9266cadd-2e89-47ec-84ba-edec99b3046f" 
+#LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}" 
+LANGFLOW_URL = f"https://langflow.safepath.duckdns.org/api/v1/run/{FLOW_ID}" 
+# Authentication Key for Langflow (Required if login is enabled in the Langflow UI)
+LANGFLOW_API_KEY = os.getenv("LANGFLOW_API_KEY")
 
 
 
@@ -64,6 +67,14 @@ def health():
 @app.get("/api/test")
 def test():
     return {"data": [{"id": 1,"name": "Route 1"}, {"id": 2,"name": "Route 2"}, {"id": 3,"name": "Route 3"   }]}
+@app.get("/api/health")
+
+def langflow_health():
+    return {
+        "status": "ok",
+        "langflow_target": LANGFLOW_URL,
+        "auth_configured": bool(LANGFLOW_API_KEY)
+    }
 
 @app.get("/api/places")
 def search_places(query: str):
@@ -279,6 +290,15 @@ async def get_safe_routes(req: RouteRequest):
         "output_type": "chat",
         "input_type": "chat",
     }
+    # Setup headers, injecting API keys securely if available
+    headers = {
+        "Content-Type": "application/json"
+    }
+    if LANGFLOW_API_KEY:
+        headers["x-api-key"] = LANGFLOW_API_KEY
+        print("[LANGFLOW] Auth initialized with API Key.")
+    else:
+        print("[LANGFLOW] WARNING: No API Key found in .env. Requests will fail if Langflow has login enabled.")
 
     ai_routes = []
     async with httpx.AsyncClient() as client:
@@ -287,6 +307,7 @@ async def get_safe_routes(req: RouteRequest):
             lf_resp = await client.post(
                 LANGFLOW_URL,
                 json=langflow_payload,
+                headers=headers,
                 timeout=45.0
             )
 
