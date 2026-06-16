@@ -67,8 +67,8 @@ def health():
 @app.get("/api/test")
 def test():
     return {"data": [{"id": 1,"name": "Route 1"}, {"id": 2,"name": "Route 2"}, {"id": 3,"name": "Route 3"   }]}
-@app.get("/api/health")
 
+@app.get("/api/langflow/health")
 def langflow_health():
     return {
         "status": "ok",
