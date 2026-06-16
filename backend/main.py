@@ -39,7 +39,7 @@ FLOW_ID = os.getenv("VUE_APP_LANGFLOW_ROUTE_AGENT_FLOW_ID")
 #LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}" 
 LANGFLOW_URL = f"https://langflow.safepath.duckdns.org/api/v1/run/{FLOW_ID}" 
 # Authentication Key for Langflow (Required if login is enabled in the Langflow UI)
-LANGFLOW_API_KEY = os.getenv("LANGFLOW_API_KEY")
+LANGFLOW_API_KEY = os.getenv("VUE_APP_LANGFLOW_API_KEY")
 
 
 
