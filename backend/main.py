@@ -36,7 +36,7 @@ app.add_middleware(
 OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
 OSRM_FOOT_URL = "https://router.project-osrm.org/route/v1/foot"
 FLOW_ID = os.getenv("VUE_APP_LANGFLOW_ROUTE_AGENT_FLOW_ID")
-LANGFLOW_URL = f"https://langflow.safepath.duckdns.org/api/v1/run/{FLOW_ID}" 
+LANGFLOW_URL = "https://langflow.safepath.duckdns.org/api/v1/run/9266cadd-2e89-47ec-84ba-edec99b3046f" 
 
 
 
