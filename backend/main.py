@@ -87,10 +87,18 @@ def search_places(query: str):
         return {"places": []}
 
     url = "https://nominatim.openstreetmap.org/search"
+    # params = {
+    #     "q": query,
+    #     "format": "json",
+    #     "limit": 5, 
+    # }
     params = {
         "q": query,
         "format": "json",
         "limit": 5, 
+        "countrycodes": "de",                          # Germany only
+        "viewbox":      "13.0883,52.3383,13.7611,52.6755",  # Berlin bounding box
+        "bounded":      1,          
     }
     
     # IMPORTANT: Nominatim requires a User-Agent header, otherwise they block the request.
