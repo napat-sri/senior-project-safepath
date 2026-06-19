@@ -106,12 +106,12 @@
 
                         <p v-if="searchError" class="global-error">{{ searchError }}</p>
 
-                        <!--<button @click="searchRoute" class="search-btn btn btn-primary">
-                            Search Safe Route
-                        </button>-->
                         <button type="submit" class="search-btn btn btn-primary" :disabled="searchLoading">
                             <span v-if="searchLoading" class="spinner"></span>
                             {{ searchLoading ? 'Analyzing...' : 'Search Safe Route' }}
+                        </button>
+                        <button type="button" @click="searchClear()" class="search-btn btn">
+                            Clear
                         </button>
                     </form>
 
@@ -230,19 +230,15 @@ const routes = ref([]); // Replace the computed with a ref
 const selectedRoute = computed(() => (routes.value && routes.value.length > 0 ? routes.value[0] : null));
 // console.log('Selected route:', selectedRoute.value, routes.value);
 
-const startError = computed(() => {
-    if (!startTouched.value) {
-        return '';
-    }
+const hasSearched = ref(false);
 
+const startError = computed(() => {
+    if (!hasSearched.value) return '';
     return validateBerlinLocation(startLocation.value);
 });
 
 const destinationError = computed(() => {
-    if (!destinationTouched.value) {
-        return '';
-    }
-
+    if (!hasSearched.value) return '';
     return validateBerlinLocation(destination.value);
 });
 
@@ -385,6 +381,7 @@ function handleFieldBlur(field) {
 async function fetchSafeRoute() {
 
     searchLoading.value = true;
+
     try {
         // --- Call backend with hardcoded coordinates ---
         const startCoords = selectedStartPlace.value
@@ -519,16 +516,23 @@ function openRouteDetails(routeId) {
 }
 
 function searchRoute() {
-    startTouched.value = true;
-    destinationTouched.value = true;
-
-    const startValidation = selectedStartPlace.value;
-    const destinationValidation = selectedDestinationPlace.value;
-
+    hasSearched.value = true;
     searchError.value = '';
     showResults.value = true;
     fetchSafeRoute();
 }
+
+function searchClear() {
+    hasSearched.value = false;
+    searchError.value = '';
+    startLocation.value = '';
+    destination.value = '';
+    routes.value = [];
+    selectedStartPlace.value = null;
+    selectedDestinationPlace.value = null;
+    showResults.value = false;
+}
+
 // --- Safe Route Search Result State ---
 const searchResult = ref(null);
 
@@ -547,7 +551,7 @@ onMounted(() => {
 
         sessionStorage.removeItem('searchState');
     }
-    
+
     initMap();
     initChat();
 });

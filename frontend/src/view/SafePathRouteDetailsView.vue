@@ -279,7 +279,6 @@ watch(
 );
 
 onMounted(() => {
-    console.log(route.value);
     initMap();
     initChat();
 });
