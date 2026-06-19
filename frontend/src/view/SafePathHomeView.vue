@@ -226,7 +226,6 @@ const searchError = ref('');
 
 const searchLoading = ref(false);
 
-//const routes = computed(() => getRouteSuggestions());
 const routes = ref([]); // Replace the computed with a ref
 const selectedRoute = computed(() => (routes.value && routes.value.length > 0 ? routes.value[0] : null));
 // console.log('Selected route:', selectedRoute.value, routes.value);
@@ -265,13 +264,15 @@ async function fetchSuggestions(query) {
     try {
         // 2. If not in cache, fetch from API
         const { data } = await placeService.search(query);
+        // console.log("query: ", query)
+        // console.log("data: ", data)
         const results = data.places || [];
 
         // 3. Save to cache for future use
         suggestionCache[normalizedQuery] = results;
         return results;
     } catch (error) {
-        console.error("Error fetching places:", error);
+        // console.error("Error fetching places:", error);
         return [];
     }
     // const { data } = await placeService.search(query);
@@ -388,10 +389,7 @@ async function fetchSafeRoute() {
         // --- Call backend with hardcoded coordinates ---
         const startCoords = selectedStartPlace.value
         const destCoords = selectedDestinationPlace.value
-        // console.log('Fetching safe route with coordinates:', {
-        //     start: startCoords,
-        //     destination: destCoords
-        // });
+
         const payload = {
             start: { lat: startCoords.lat, lng: startCoords.lng },
             destination: { lat: destCoords.lat, lng: destCoords.lng },
@@ -409,19 +407,18 @@ async function fetchSafeRoute() {
         searchResult.value = data;
         showResults.value = routes.value.length > 0;
         setRouteSuggestions(routes.value); // Update the route suggestions in the data module
-        console.log("/api/routes/safe search result:", data);
-        console.log("Extracted saferoutes:", routes.value);
+        // console.log("/api/routes/safe search result:", data);
+        // console.log("Extracted saferoutes:", routes.value);
         renderRoutePreview();
     } catch (err) {
         searchResult.value = { error: err.message };
-        console.error("/api/routes/safe search error:", err);
+        // console.error("/api/routes/safe search error:", err);
     } finally {
         searchLoading.value = false;
     }
 
 }
 
-// 
 
 function renderRoutePreview() {
     if (!map.value || !routes.value.length) return;
@@ -501,6 +498,16 @@ function initChat() {
 }
 
 function openRouteDetails(routeId) {
+    // Save search state to sessionStorage before navigating
+    sessionStorage.setItem('searchState', JSON.stringify({
+        startLocation: startLocation.value,
+        destination: destination.value,
+        routes: routes.value,
+        selectedStartPlace: selectedStartPlace.value,
+        selectedDestinationPlace: selectedDestinationPlace.value,
+        showResults: showResults.value
+    }));
+
     router.push({
         name: 'route-details',
         params: { routeId },
@@ -509,7 +516,6 @@ function openRouteDetails(routeId) {
             destination: selectedDestinationPlace.value?.name || ''
         }
     });
-    console.log(routeId, router);
 }
 
 function searchRoute() {
@@ -518,24 +524,30 @@ function searchRoute() {
 
     const startValidation = selectedStartPlace.value;
     const destinationValidation = selectedDestinationPlace.value;
-    // console.log('Start validation:', startValidation);
-    // console.log('Destination validation:', destinationValidation);
-
-    // if (startValidation || destinationValidation) {
-    //     showResults.value = false;
-    //     searchError.value = 'This map is intended for Berlin City only.';
-    //     return;
-    // }
 
     searchError.value = '';
     showResults.value = true;
-    // routes.value = [];
     fetchSafeRoute();
 }
 // --- Safe Route Search Result State ---
 const searchResult = ref(null);
 
 onMounted(() => {
+    // Restore search data from sessionStorage if available
+    const saved = sessionStorage.getItem('searchState');
+    if (saved) {
+        const searchData = JSON.parse(saved);
+        startLocation.value = searchData.startLocation;
+        destination.value = searchData.destination;
+        routes.value = searchData.routes;
+        selectedStartPlace.value = searchData.selectedStartPlace;
+        selectedDestinationPlace.value = searchData.selectedDestinationPlace;
+        showResults.value = searchData.showResults;
+
+
+        sessionStorage.removeItem('searchState');
+    }
+    
     initMap();
     initChat();
 });

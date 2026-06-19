@@ -171,14 +171,13 @@ const routeOverlay = ref(null);
 const sidebarCollapsed = ref(true);
 
 const selectedRoute = computed(() => getRouteById(route.params.routeId));
-// const selectedRoute = route.params.routeId;
-console.log(route.value);
+// console.log(route.value);
 
 const displayJourney = computed(() => {
-    console.log(getRouteSuggestions());
+    // console.log(getRouteSuggestions());
     const start = String(route.query.start || selectedRoute.value.origin).trim();
     const destination = String(route.query.destination || selectedRoute.value.destination).trim();
-    console.log(selectedRoute.value, route.query);
+    // console.log(selectedRoute.value, route.query);
     return `${start} to ${destination}`;
 });
 
@@ -203,7 +202,7 @@ function toggleSidebar() {
 }
 
 function goHome() {
-    router.push({ name: 'home' });
+    router.back(); // Browser history will restore the page naturally
 }
 
 function renderRoute(routeData = selectedRoute.value) {
