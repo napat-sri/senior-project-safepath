@@ -125,3 +125,9 @@
 - Yesterday, we used Keycloak for authentication service, however, an issue was when we connected, a dashboard was empty because the user role wasn't correct. Today, we set the role of our user to be an "administrator", so right now we can access to the Portainer dashboard successfully.
 - Our main event is to finalize services on our project which we will present on Midterm next week. Make sure our docker compose files: one for Langflow and one for other services combined together and all of them should be connected.
 - Before the presentation day, we will prepare all relevant items: Slide, Demo application, and Features to be done and get ready for Q&A session which includes what we've learned from day one.
+
+## 🎯 22 Jun 2026
+### Midterm Presentation
+- We presented the progress of our project from kick-off until Midterm here.
+- The presentation took 15 minutes including these topics: Problem statement, Target users, Project timeline, Architecture diagram, Live demo, Sprint 1 progress & backlog, and The next steps.
+- After the presentation, it was a Q&A part which other groups asked us to clarify, and also our professor asked and gave us a comment.
