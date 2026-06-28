@@ -5,7 +5,10 @@ const LANGFLOW_FLOW_ID = process.env.VUE_APP_LANGFLOW_CHATBOT_FLOW_ID;
 const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY;
 // console.log("FLOW_ID: ", LANGFLOW_FLOW_ID);
 // console.log("API_KEY: ", LANGFLOW_API_KEY);
-const LANGFLOW_HOST_URL = 'https://langflow.safepath.duckdns.org'; // for production
+// Langflow is private. The chat widget reaches it through the public frontend
+// gateway, which proxies /langflow/* to langflow:7860 (prefix stripped). This
+// keeps the call same-origin (no mixed-content / CORS issues).
+const LANGFLOW_HOST_URL = process.env.VUE_APP_LANGFLOW_HOST || 'https://safepath.duckdns.org/langflow';
 // const LANGFLOW_HOST_URL = 'http://localhost:7860'; // for development
 
 function mountChatWidget(containerId) {

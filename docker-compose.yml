@@ -11,21 +11,26 @@ services:
       - .env
     depends_on:
       - backend
-      # - langflow
+      - langflow
     networks:
       - caddy
     labels:
       # Public entry point. Caddy serves the UI and reverse-proxies the
       # browser-facing backends so they can stay private (no public domain):
-      #   /api/*  -> backend:9000      (REST API)
-      #   /tile/* -> openstreetmap:80  (map tiles)
+      #   /api/*      -> backend:9000      (REST API)
+      #   /tile/*     -> openstreetmap:80  (map tiles)
+      #   /langflow/* -> langflow:7860     (chat API; /langflow prefix stripped)
       # Everything else falls through to the Vue dev server on 8080.
+      # handle blocks evaluate in numeric order; first match wins.
       caddy: safepath.duckdns.org
-      caddy.@api.path: /api/*
-      caddy.@tiles.path: /tile/*
-      caddy.0_reverse_proxy: "@api backend:9000"
-      caddy.1_reverse_proxy: "@tiles openstreetmap:80"
-      caddy.2_reverse_proxy: "{{upstreams 8080}}"
+      caddy.1_handle: /api/*
+      caddy.1_handle.reverse_proxy: backend:9000
+      caddy.2_handle: /tile/*
+      caddy.2_handle.reverse_proxy: openstreetmap:80
+      caddy.3_handle_path: /langflow/*
+      caddy.3_handle_path.reverse_proxy: langflow:7860
+      caddy.4_handle: /*
+      caddy.4_handle.reverse_proxy: "{{upstreams 8080}}"
 
   backend:
     build: ./backend
@@ -143,60 +148,14 @@ services:
     environment:
       - DOWNLOAD_PBF=https://download.geofabrik.de/europe/germany/berlin-latest.osm.pbf
       - DOWNLOAD_POLY=https://download.geofabrik.de/europe/germany/berlin.poly
-    command: import
-
-  # ----------------------------------------------------------------------------
-  # Langflow (AI agent / chatbot)
-  #
-  # Flows committed under ./langflow/flows are auto-loaded on startup so any
-  # teammate cloning the repo gets the same agent without rebuilding it in
-  # the UI. Export updated flows from the Langflow UI and commit the JSON.
-  # ----------------------------------------------------------------------------
-  # langflow:
-  #   image: langflowai/langflow:latest
-  #   container_name: langflow
-  #   environment:
-  #     - LANGFLOW_LOAD_FLOWS_PATH=/app/flows
-  #     - LANGFLOW_AUTO_LOGIN=true
-  #     - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true
-  #     - LANGFLOW_SECRET_KEY=OUekmoSYZHcbwQWtTr9EzRVO1Y37-Zd6tHdXInT1C8A=
-  #     - LANGFLOW_CORS_ORIGINS=https://safepath.duckdns.org,http://localhost:8080,http://127.0.0.1:8080
-  #     - LANGFLOW_CORS_ALLOW_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
-  #     - LANGFLOW_CORS_ALLOW_HEADERS=Content-Type,Authorization,x-api-key
-  #     - LANGFLOW_CORS_ALLOW_CREDENTIALS=True
-  #     - LANGFLOW_SSRF_ALLOWED_HOSTS=backend.local,backend,host.docker.internal
-  #   volumes:
-  #     - /opt/apps/senior-project-safepath/langflow/flows:/app/flows
-  #     - langflow-db:/root/.cache/langflow
-  #   restart: unless-stopped
-  #   networks:
-  #     - caddy
-  #   labels:
-  #     caddy: langflow.safepath.duckdns.org
-  #     caddy.reverse_proxy: "{{upstreams 7860}}"
-
-# langflow:
-#     image: langflowai/langflow:latest
-#     container_name: langflow
-#     environment:
-#       DO_NOT_TRACK: "true"
-#       LANGFLOW_CONFIG_DIR: /app/langflow
-#       LANGFLOW_DATABASE_URL: sqlite:////app/langflow/langflow.db
-#     volumes:
-#       - ./langflow/flows:/app/langflow
-#     restart: unless-stopped
-#     networks:
-#       - caddy
-#     labels:
-#       caddy: langflow.safepath.duckdns.org
-#       caddy.reverse_proxy: "{{upstreams 7860}}"
+    command: import 
 
 volumes:
-  #langflow-data:
   berlin-data:
     external: true
     name: senior-project-safepath_berlin-data
-  # langflow-db:
+  langflow-data:       # Langflow config dir
+  langflow-postgres:   # Langflow Postgres data
   wg-easy-data:        # persists WireGuard keys & client configs
 
 networks:
@@ -209,3 +168,6 @@ networks:
     ipam:
       config:
         - subnet: 172.28.0.0/24
+  # Private link between Langflow and its Postgres database.
+  langflow-net:
+    driver: bridge
