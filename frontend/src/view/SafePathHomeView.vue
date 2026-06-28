@@ -2,28 +2,35 @@
     <div class="page-shell">
         <aside :class="['sidebar', { collapsed: sidebarCollapsed }]">
             <div class="brand-section">
+                <img class="brand-logo" :src="safePathLogo" alt="SafePath Berlin logo" />
 
                 <div class="brand-copy">
                     <h2>SafePath</h2>
                     <span>Berlin</span>
                 </div>
 
-                <button class="sidebar-toggle" type="button" @click="toggleSidebar"
-                    aria-label="Toggle sidebar">☰</button>
+                <button 
+                    class="sidebar-toggle" 
+                    type="button" 
+                    @click="toggleSidebar"
+                    aria-label="Toggle sidebar"
+                >
+                    ☰
+                </button>
             </div>
 
             <nav class="nav-menu" aria-label="Primary navigation">
-                <button type="button" class="nav-item active">
+                <button type="button" class="nav-item active" aria-label="Dashboard" @click="$router.push('/')">
                     <span>🗺️</span>
                     Dashboard
                 </button>
 
-                <button type="button" class="nav-item">
+                <button type="button" class="nav-item" aria-label="Profile" @click="$router.push('/profile')">
                     <span>👤</span>
                     Profile
                 </button>
 
-                <button type="button" class="nav-item">
+                <button type="button" class="nav-item" aria-label="Report Incident" @click="$router.push('/incident')">
                     <span>⚠️</span>
                     Report Incident
                 </button>
@@ -34,7 +41,7 @@
                 </button>
             </nav>
 
-            <div class="premium-card card">
+            <!-- <div class="premium-card card">
                 <p class="premium-label">Premium Safety+</p>
                 <h3>Unlock predictive safety alerts</h3>
                 <p>
@@ -42,7 +49,7 @@
                 </p>
 
                 <button type="button" class="premium-btn btn btn-ghost">Upgrade</button>
-            </div>
+            </div> -->
         </aside>
 
         <main class="main-content">
@@ -180,20 +187,20 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
 import 'leaflet-control-geocoder';
+import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import 'leaflet/dist/leaflet.css';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import safePathLogo from '../assets/Berlin.png';
 
 import {
     getSafetyTone,
-    getRouteSuggestions,
-    validateBerlinLocation,
     setRouteSuggestions,
+    validateBerlinLocation
 } from '../data/routeAnalysis';
 import { mountLangflowChat } from '../utils/langflowChat';
 
@@ -581,8 +588,25 @@ onBeforeUnmount(() => {
     gap: 14px;
 }
 
+.brand-logo {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+}
+
 .brand-copy {
     min-width: 0;
+}
+
+.brand-copy span {
+    display: block;
+    margin-top: 2px;
+    color: var(--color-primary);
+    font-weight: 700;
 }
 
 .brand-copy p,
@@ -595,14 +619,14 @@ onBeforeUnmount(() => {
 .premium-card p {
     color: var(--color-text-secondary);
 }
-
+.sidebar.collapsed .brand-logo,
 .sidebar.collapsed .brand-copy,
 .sidebar.collapsed .nav-menu,
 .sidebar.collapsed .premium-card {
     display: none;
 }
 
-.logo-box {
+/* .logo-box {
     width: 48px;
     height: 56px;
     display: grid;
@@ -612,7 +636,7 @@ onBeforeUnmount(() => {
     color: var(--color-success);
     font-weight: 700;
     background: rgba(16, 185, 129, 0.08);
-}
+} */
 
 .sidebar-toggle {
     margin-left: auto;

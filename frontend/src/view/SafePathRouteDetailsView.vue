@@ -23,7 +23,7 @@
                     Profile
                 </button>
 
-                <button type="button" class="nav-item">
+                <button type="button" class="nav-item" aria-label="Report an incident" $@click="goToIncidentReport">
                     <span>⚠️</span>
                     Report Incident
                 </button>
@@ -142,14 +142,14 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import 'leaflet/dist/leaflet.css';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-import { getRouteById, getSafetyTone, getRouteSuggestions } from '../data/routeAnalysis';
+import { getRouteById, getRouteSuggestions, getSafetyTone } from '../data/routeAnalysis';
 import { mountLangflowChat } from '../utils/langflowChat';
 
 
