@@ -131,3 +131,11 @@
 - We presented the progress of our project from kick-off until Midterm here.
 - The presentation took 15 minutes including these topics: Problem statement, Target users, Project timeline, Architecture diagram, Live demo, Sprint 1 progress & backlog, and The next steps.
 - After the presentation, it was a Q&A part which other groups asked us to clarify, and also our professor asked and gave us a comment.
+
+## ✅ 23 Jun 2026
+### End-user Feedbacks
+- Our class tried to use applications to give feedbacks each other. This action would understand the experiences from the real end-user and took their comments to plan our next sprint again.
+
+### Virtual Private Network (VPN)
+- I've learned about VPN that we use to separate the main domain that should be public for everyone with the subdomains which must be in VPN to prevent the cyber attack from anonymous users.
+- We researched VPN service providers to find which one is fit for our project (WireGuard, OpenVPN, or Headscale). Then, tried to understand our system architecture before install VPN into the project.

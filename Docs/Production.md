@@ -218,3 +218,87 @@ git push -u origin prod
     ```
     sudo ufw status verbose
     ```
+
+## Webhook
+1. Go to /opt/docker and edit the docker compose file
+```
+cd /opt/docker
+sudo nano docker-compose.yml
+```
+2. Add a webhook's config service
+```
+  webhook:
+    build: {context: /opt/docker,
+      dockerfile: Dockerfile.webhook}
+    command: -verbose -hooks=/etc/webhook/hooks.json -port=9000
+    volumes:
+      - /opt/apps/yourrepo:/app
+      - /opt/docker/hooks:/etc/webhook
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.ssh:/root/.ssh:ro
+    networks:
+      - caddy
+    labels:
+      caddy: webhook.yourdomain.com
+      caddy.reverse_proxy: "{{upstreams 9000}}"
+```
+3. Create a file `Dockerfile.webhook`
+```
+sudo nano Dockerfile.webhook
+```
+* Add a config into the file
+```
+    FROM golang:alpine AS builder
+
+    RUN apk add --no-cache wget tar
+
+    RUN wget -O webhook.tar.gz \
+    https://github.com/adnanh/webhook/archive/refs/tags/2.8.3.tar.gz \
+    && tar -xzf webhook.tar.gz \
+    && cd webhook-2.8.3 \
+    && go build -o /usr/local/bin/webhook
+
+    FROM alpine:latest
+    RUN apk add --no-cache git docker-cli docker-cli-compose wget openssh-client
+    COPY --from=builder /usr/local/bin/webhook /usr/local/bin/webhook
+
+    ENTRYPOINT ["/usr/local/bin/webhook"]
+```
+4. Create a path `hooks`
+```
+sudo mkdir hooks
+```
+5. Generate a hex code as a `secret token`
+```
+openssl rand -hex 32
+```
+6. Create a file `hooks.json` in the path /opt/docker/hooks
+```
+sudo nano hooks.json
+```
+* Add a config into the file
+```
+[
+  {
+    "id": "pull",
+    "execute-command": "/bin/sh",
+    "pass-arguments-to-command": [
+  {
+    "source": "string",
+    "name": "/app/deploy.sh"
+  }
+],
+    "command-working-directory": "/app",
+    "trigger-rule": {
+      "match": {
+        "type": "payload-hmac-sha256",
+        "secret": "your-secret-token",
+        "parameter": {
+          "source": "header",
+          "name": "X-Hub-Signature-256"
+        }
+      }
+    }
+  }
+]
+```
