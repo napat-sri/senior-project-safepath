@@ -1,8 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import SafePathLoginView from '../view/SafePathLoginView.vue';
-import SafePathRegisterView from '../view/SafePathRegisterView.vue';
+import SafePathAdminDashboardOverview from '../view/SafePathAdminDashboardOverview.vue';
 import SafePathHomeView from '../view/SafePathHomeView.vue';
+import SafePathIncidentView from '../view/SafePathIncidentView.vue';
+import SafePathLoginView from '../view/SafePathLoginView.vue';
+import SafePathProfileView from '../view/SafePathProfileView.vue';
+import SafePathRegisterView from '../view/SafePathRegisterView.vue';
 import SafePathRouteDetailsView from '../view/SafePathRouteDetailsView.vue';
 
 const routes = [
@@ -27,7 +30,22 @@ const routes = [
     path: '/route-details/:routeId',
     name: 'route-details',
     component: SafePathRouteDetailsView,
-    props: true
+
+  },
+  {
+    path: '/incident',
+    name: 'incident',
+    component: SafePathIncidentView,
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: SafePathProfileView,
+  },
+  {
+    path: '/overview',
+    name: 'overview',
+    component: SafePathAdminDashboardOverview,
   }
 ];
 
@@ -37,3 +55,4 @@ const router = createRouter({
 });
 
 export default router;
+

@@ -98,3 +98,25 @@ Prof. reviewed all configuration that we have done so far.
 - We fixed some issues about langflow database.
 - We tested our webhook.
 - We started update docker compose for the rest of our services like frontend and backend.
+
+# 15 June 2026
+What I've learned today:
+- Continuing to update langflow database and setting up authentication for langflow.
+- Importing our flows to production server.
+- Setting up keycloak for authentication and authorization for portainer.
+
+# 16 June 2026
+What I've learned today:
+- Fixing keycloak configuration.
+- Fixing backend and frontend to connect to langflow and resolving issues about database connection and authentication.
+- Testing our application and preparing for mid-term presentation.
+
+# 22 June 2026
+ Midterm presentation day. 
+ - We presented our project to the professor and our classmates. 
+ - We received feedback and suggestions for improvement. 
+
+# 23 June 2026
+What I've learned today:
+- We demo and tested the project with other teams and received feedback.
+- We discussed about vpn configuration and thought about how to implement it in our project.
