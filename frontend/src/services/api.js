@@ -4,8 +4,8 @@ import axios from 'axios';
 //   process.env.VUE_APP_API_URL || 'http://localhost:9000/api'; // for development
 
   const apiBaseUrl =
-  //process.env.VUE_APP_API_URL || 'https://api.safepath.duckdns.org/api'; // for production
-  'http://172.28.0.10:9000/api'
+  process.env.VUE_APP_API_URL || 'https://api.safepath.duckdns.org/api'; // for production
+  //'http://172.28.0.10:9000/api'
 
 const api = axios.create({
   baseURL: apiBaseUrl,

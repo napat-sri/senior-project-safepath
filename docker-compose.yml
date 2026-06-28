@@ -13,17 +13,19 @@ services:
       - backend
       # - langflow
     networks:
-      caddy:
-      # Also join the VPN network so the frontend can be loaded over plain
-      # HTTP through the tunnel (http://172.28.0.20:8080), avoiding the
-      # HTTPS->HTTP mixed-content block when it calls the VPN-only backend.
-      vpn:
-        ipv4_address: 172.28.0.20
+      - caddy
     labels:
-      # Public UI over HTTPS. Note: the API calls from this public origin
-      # will NOT work (backend is VPN-only). Use the VPN URL below instead.
+      # Public entry point. Caddy serves the UI and reverse-proxies the
+      # browser-facing backends so they can stay private (no public domain):
+      #   /api/*  -> backend:9000      (REST API)
+      #   /tile/* -> openstreetmap:80  (map tiles)
+      # Everything else falls through to the Vue dev server on 8080.
       caddy: safepath.duckdns.org
-      caddy.reverse_proxy: "{{upstreams 8080}}"
+      caddy.@api.path: /api/*
+      caddy.@tiles.path: /tile/*
+      caddy.0_reverse_proxy: "@api backend:9000"
+      caddy.1_reverse_proxy: "@tiles openstreetmap:80"
+      caddy.2_reverse_proxy: "{{upstreams 8080}}"
 
   backend:
     build: ./backend
@@ -118,9 +120,8 @@ services:
       - SSL_POLICY=none
     networks:
       - caddy
-    labels:
-      caddy: osm.safepath.duckdns.org
-      caddy.reverse_proxy: "{{upstreams 80}}"
+    # Private: no public Caddy labels. Tiles are reached only through the
+    # frontend gateway at safepath.duckdns.org/tile/* (and via VPN for admin).
   # ----------------------------------------------------------------------------
   # OpenStreetMap tile server (one-shot import)
   #

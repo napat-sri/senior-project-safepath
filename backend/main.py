@@ -28,7 +28,6 @@ app.add_middleware(
         "https://safepath.duckdns.org",
         "http://localhost:8080",
         "http://127.0.0.1:8080",
-        "http://172.28.0.20:8080",  # frontend loaded over the WireGuard VPN
     ],
     allow_credentials=True,
     allow_methods=["*"],
