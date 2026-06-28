@@ -20,7 +20,7 @@
                     Dashboard
                 </button>
 
-                <button type="button" class="nav-item active">
+                <button type="button" class="nav-item active" @click="$router.push('/profile')">
                     <span>👤</span>
                     Profile
                 </button>
@@ -28,6 +28,11 @@
                 <button type="button" class="nav-item" @click="goToIncident">
                     <span>⚠️</span>
                     Report Incident
+                </button>
+
+                <button type="button" class="nav-item" aria-label="Overview Dashboard" @click="$router.push('/overview')">
+                    <span>📊</span>
+                    Overview Dashboard
                 </button>
 
                 <button type="button" class="nav-item">
@@ -299,6 +304,10 @@ const deleteAccount = () => {
 
 
 <style scoped>
+/* =========================
+   Global Page Setup
+========================= */
+
 :global(body) {
     margin: 0;
     background: var(--color-bg);
@@ -309,6 +318,11 @@ const deleteAccount = () => {
     display: flex;
     color: var(--color-text);
 }
+
+
+/* =========================
+   Sidebar Container
+========================= */
 
 .sidebar {
     width: 248px;
@@ -321,9 +335,14 @@ const deleteAccount = () => {
 }
 
 .sidebar.collapsed {
-    width: 76px;
+    width: auto;
     padding: 16px;
 }
+
+
+/* =========================
+   Sidebar Brand / Logo Area
+========================= */
 
 .brand-section {
     display: flex;
@@ -333,11 +352,11 @@ const deleteAccount = () => {
 }
 
 .brand-logo {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    object-fit: cover;
+    width: 48px;
+    height: 48px;
     flex-shrink: 0;
+    border-radius: 14px;
+    object-fit: cover;
     border: 1px solid var(--color-border);
     background: var(--color-surface);
 }
@@ -347,18 +366,47 @@ const deleteAccount = () => {
     min-width: 0;
 }
 
-.brand-copy h2 {
-    margin: 0;
-}
-
 .brand-copy span {
+    display: block;
+    margin-top: 2px;
     color: var(--color-primary);
     font-weight: 700;
 }
 
+.brand-copy p,
+.panel-header p,
+.topbar p,
+.route-summary,
+.route-pair,
+.muted,
+.helper-copy,
+.premium-card p {
+    color: var(--color-text-secondary);
+}
+
+
+/* =========================
+   Sidebar Collapsed State
+========================= */
+
+.sidebar.collapsed .brand-logo,
+.sidebar.collapsed .brand-copy,
+.sidebar.collapsed .nav-menu,
+.sidebar.collapsed .side-note {
+    display: grid;
+}
+
+.sidebar.collapsed .premium-card {
+    display: none;
+}
+
+
+/* =========================
+   Sidebar Toggle Button
+========================= */
+
 .sidebar-toggle {
     margin-left: auto;
-    flex-shrink: 0;
     border: 0;
     background: transparent;
     color: var(--color-text-secondary);
@@ -366,11 +414,10 @@ const deleteAccount = () => {
     cursor: pointer;
 }
 
-.sidebar.collapsed .brand-copy,
-.sidebar.collapsed .nav-menu,
-.sidebar.collapsed .side-note {
-    display: none;
-}
+
+/* =========================
+   Sidebar Navigation Menu
+========================= */
 
 .nav-menu {
     display: grid;
@@ -389,7 +436,6 @@ const deleteAccount = () => {
     color: var(--color-text);
     text-decoration: none;
     cursor: pointer;
-    font: inherit;
 }
 
 .nav-item.active {
@@ -403,6 +449,9 @@ const deleteAccount = () => {
     padding: 18px;
 }
 
+.side-note h3 {
+    margin: 0 0 8px;
+}
 .side-label,
 .eyebrow {
     margin: 0 0 6px;
@@ -417,9 +466,29 @@ const deleteAccount = () => {
     color: var(--color-text-secondary);
 }
 
+/* =========================
+    Main Content Layout
+========================= */
+
 .main-content {
     flex: 1;
     padding: 28px;
+}
+
+.topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
 }
 
 .topbar {

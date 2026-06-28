@@ -2,14 +2,21 @@
     <div class="page-shell">
         <aside :class="['sidebar', { collapsed: sidebarCollapsed }]">
             <div class="brand-section">
+                <img class="brand-logo" :src="safePathLogo" alt="SafePath Berlin logo" />
 
                 <div class="brand-copy">
                     <h2>SafePath</h2>
                     <span>Berlin</span>
                 </div>
 
-                <button class="sidebar-toggle" type="button" @click="toggleSidebar"
-                    aria-label="Toggle sidebar">☰</button>
+                <button 
+                    class="sidebar-toggle" 
+                    type="button" 
+                    @click="toggleSidebar"
+                    aria-label="Toggle sidebar"
+                >
+                    ☰
+                </button>
             </div>
 
             <nav class="nav-menu" aria-label="Primary navigation">
@@ -18,14 +25,19 @@
                     Dashboard
                 </button>
 
-                <button type="button" class="nav-item">
+                <button type="button" class="nav-item" aria-label="Profile" @click="$router.push('/profile')">
                     <span>👤</span>
                     Profile
                 </button>
 
-                <button type="button" class="nav-item" aria-label="Report an incident" $@click="goToIncidentReport">
+                <button type="button" class="nav-item" aria-label="Report an incident" @click="goToIncidentReport">
                     <span>⚠️</span>
                     Report Incident
+                </button>
+
+                <button type="button" class="nav-item" aria-label="Overview Dashboard" @click="$router.push('/overview')">
+                    <span>📊</span>
+                    Overview Dashboard
                 </button>
 
                 <button type="button" class="nav-item">

@@ -9,12 +9,7 @@
                     <span>Berlin</span>
                 </div>
 
-                <button 
-                    class="sidebar-toggle" 
-                    type="button" 
-                    @click="toggleSidebar"
-                    aria-label="Toggle sidebar"
-                >
+                <button class="sidebar-toggle" type="button" @click="toggleSidebar" aria-label="Toggle sidebar">
                     ☰
                 </button>
             </div>
@@ -35,10 +30,18 @@
                     Report Incident
                 </button>
 
+                <button type="button" class="nav-item" aria-label="Overview Dashboard"
+                    @click="$router.push('/overview')">
+                    <span>📊</span>
+                    Overview Dashboard
+                </button>
+
                 <button type="button" class="nav-item">
                     <span>📋</span>
                     Community Reports
                 </button>
+
+
             </nav>
 
             <!-- <div class="premium-card card">
@@ -556,6 +559,10 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* =========================
+   Global Page Setup
+========================= */
+
 :global(body) {
     margin: 0;
     background: var(--color-bg);
@@ -566,6 +573,11 @@ onBeforeUnmount(() => {
     display: flex;
     color: var(--color-text);
 }
+
+
+/* =========================
+   Sidebar Container
+========================= */
 
 .sidebar {
     width: 248px;
@@ -578,14 +590,20 @@ onBeforeUnmount(() => {
 }
 
 .sidebar.collapsed {
-    width: 36px;
+    width: auto;
     padding: 16px;
 }
+
+
+/* =========================
+   Sidebar Brand / Logo Area
+========================= */
 
 .brand-section {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+    width: 100%;
 }
 
 .brand-logo {
@@ -599,6 +617,7 @@ onBeforeUnmount(() => {
 }
 
 .brand-copy {
+    flex: 1;
     min-width: 0;
 }
 
@@ -615,28 +634,25 @@ onBeforeUnmount(() => {
 .route-summary,
 .route-pair,
 .muted,
-.helper-copy,
-.premium-card p {
-    color: var(--color-text-secondary);
-}
+.helper-copy
+
+
+/* =========================
+   Sidebar Collapsed State
+========================= */
+
 .sidebar.collapsed .brand-logo,
-.sidebar.collapsed .brand-copy,
-.sidebar.collapsed .nav-menu,
-.sidebar.collapsed .premium-card {
-    display: none;
+.sidebar.collapsed .brand-copy {
+    display: block;
+}
+.sidebar.collapsed .nav-menu {
+    display: grid;
 }
 
-/* .logo-box {
-    width: 48px;
-    height: 56px;
-    display: grid;
-    place-items: center;
-    border: 2px solid var(--color-success);
-    border-radius: 16px;
-    color: var(--color-success);
-    font-weight: 700;
-    background: rgba(16, 185, 129, 0.08);
-} */
+
+/* =========================
+   Sidebar Toggle Button
+========================= */
 
 .sidebar-toggle {
     margin-left: auto;
@@ -646,6 +662,12 @@ onBeforeUnmount(() => {
     font-size: 20px;
     cursor: pointer;
 }
+
+
+/* =========================
+   Sidebar Navigation Menu
+========================= */
+
 
 .nav-menu {
     display: grid;
@@ -671,14 +693,44 @@ onBeforeUnmount(() => {
     background: rgba(99, 102, 241, 0.08);
     color: var(--color-primary);
 }
-
-.premium-card {
+.side-note {
     margin-top: 28px;
     padding: 18px;
 }
 
-.premium-label,
-.eyebrow,
+.side-note h3 {
+    margin: 0 0 8px;
+}
+
+.side-note p,
+.brand-copy p,
+.panel-header p,
+.topbar p,
+.muted {
+    color: var(--color-text-secondary);
+}
+
+.side-label,
+.eyebrow {
+    margin: 0 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+    color: var(--color-neutral);
+}
+
+
+/* =========================
+   Sidebar Premium Card
+========================= */
+.eyebrow {
+    margin: 0 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+    color: var(--color-neutral);
+}
+
 .route-type {
     margin: 0 0 6px;
     text-transform: uppercase;
@@ -687,9 +739,27 @@ onBeforeUnmount(() => {
     color: var(--color-neutral);
 }
 
-.premium-btn {
-    margin-top: 12px;
-}
+
+/* =========================
+   Old Logo Box - Currently Disabled
+========================= */
+
+/* .logo-box {
+    width: 48px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--color-success);
+    border-radius: 16px;
+    color: var(--color-success);
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.08);
+} */
+
+
+/* =========================
+   Main Content Layout
+========================= */
 
 .main-content {
     flex: 1;
@@ -705,6 +775,18 @@ onBeforeUnmount(() => {
     margin-bottom: 12px;
 }
 
+.content-grid {
+    display: grid;
+    grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+
+/* =========================
+   Shared Badges / Tags
+========================= */
+
 .status-badge,
 .results-count,
 .map-route-tag {
@@ -719,12 +801,10 @@ onBeforeUnmount(() => {
     white-space: nowrap;
 }
 
-.content-grid {
-    display: grid;
-    grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
-    gap: 24px;
-    align-items: start;
-}
+
+/* =========================
+   Panels / Cards
+========================= */
 
 .search-panel,
 .map-panel,
@@ -743,6 +823,11 @@ onBeforeUnmount(() => {
 .panel-header {
     margin-bottom: 18px;
 }
+
+
+/* =========================
+   Search Form
+========================= */
 
 .search-form {
     display: grid;
@@ -783,6 +868,28 @@ label {
     color: var(--color-neutral);
 }
 
+.field-error,
+.global-error,
+.helper-copy {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.field-error,
+.global-error {
+    color: var(--color-error);
+}
+
+.search-btn {
+    margin-top: 6px;
+}
+
+
+/* =========================
+   Suggestions Dropdown
+========================= */
+
 .suggestion-list {
     list-style: none;
     margin: -4px 0 4px;
@@ -811,22 +918,10 @@ label {
     color: var(--color-primary);
 }
 
-.field-error,
-.global-error,
-.helper-copy {
-    margin: 0;
-    font-size: 13px;
-    line-height: 1.5;
-}
 
-.field-error,
-.global-error {
-    color: var(--color-error);
-}
-
-.search-btn {
-    margin-top: 6px;
-}
+/* =========================
+   Search Results
+========================= */
 
 .results-block {
     margin-top: 7px;
@@ -869,32 +964,10 @@ label {
     margin: 0;
 }
 
-.score-pill {
-    min-width: 76px;
-    padding: 8px 10px;
-    border-radius: var(--radius-pill);
-    text-align: center;
-    font-size: 13px;
-    font-weight: 700;
-}
-
 .route-meta {
     margin: 14px 0 10px;
     color: var(--color-text-secondary);
     font-size: 13px;
-}
-
-.score-track {
-    height: 8px;
-    border-radius: var(--radius-pill);
-    background: #eef2f7;
-    overflow: hidden;
-}
-
-.score-track span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
 }
 
 .route-summary {
@@ -914,6 +987,38 @@ label {
     padding: 18px;
     border: 1px dashed var(--color-border);
 }
+
+
+/* =========================
+   Safety Score UI
+========================= */
+
+.score-pill {
+    min-width: 76px;
+    padding: 8px 10px;
+    border-radius: var(--radius-pill);
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.score-track {
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: #eef2f7;
+    overflow: hidden;
+}
+
+.score-track span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+}
+
+
+/* =========================
+   Map Section
+========================= */
 
 .map-header {
     display: flex;
@@ -935,6 +1040,11 @@ label {
     height: 100%;
 }
 
+
+/* =========================
+    Loading Spinner
+========================= */
+
 .spinner {
     display: inline-block;
     width: 18px;
@@ -953,6 +1063,11 @@ label {
     }
 }
 
+
+/* =========================
+    Responsive - Large Screens
+========================= */
+
 @media (min-width: 1440px) {
     .content-grid {
         grid-template-columns: 1fr 3fr;
@@ -964,7 +1079,12 @@ label {
     }
 }
 
-@media (max-width: 1379px) {
+
+/* =========================
+    Responsive - Medium Screens
+========================= */
+
+@media (max-width: 1200px) {
     /* .page-shell {
         flex-direction: column;
     } */
@@ -979,19 +1099,19 @@ label {
     }
 
     .brand-section {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-        padding-bottom: 8px;
-        background: var(--color-surface);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
     }
 
     .sidebar-toggle {
-        width: 36px;
-        height: 36px;
-        border-radius: 999px;
-        border: 1px solid var(--color-border);
-        background: rgba(255, 255, 255, 0.9);
+        margin-left: auto;
+        border: 0;
+        background: transparent;
+        color: var(--color-text-secondary);
+        font-size: 20px;
+        cursor: pointer;
     }
 
     .main-content {
@@ -1008,6 +1128,11 @@ label {
         align-items: flex-start;
     }
 }
+
+
+/* =========================
+    Responsive - Below 1440px
+========================= */
 
 @media (max-width: 1440px) {
 
