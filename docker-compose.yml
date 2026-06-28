@@ -8,7 +8,7 @@ services:
     build: ./frontend
     command: npm run dev
     env_file:
-      - .env    
+      - .env
     depends_on:
       - backend
       # - langflow
@@ -23,16 +23,72 @@ services:
     env_file:
       - .env
     networks:
+      # Keep on the caddy network so other containers (e.g. langflow's
+      # SSRF allow-list "backend.local") can still reach it internally.
       caddy:
         aliases:
           - backend.local
+      # Put the backend on the private VPN network with a fixed IP so it is
+      # reachable ONLY by clients connected through WireGuard (see wg-easy).
+      vpn:
+        ipv4_address: 172.28.0.10
     environment:
       - ENV=production
     # depends_on:
     #   - langflow
-    labels:
-      caddy: api.safepath.duckdns.org
-      caddy.reverse_proxy: "{{upstreams 9000}}"
+    # --- VPN-ONLY ---------------------------------------------------------
+    # Public exposure removed: the labels below told Caddy to publish the
+    # backend at https://api.safepath.duckdns.org. With them commented out,
+    # Caddy no longer serves it publicly, so the API is reachable only over
+    # the VPN at http://172.28.0.10:9000.
+    #
+    # NOTE: the browser frontend calls https://api.safepath.duckdns.org/api
+    # (frontend/src/services/api.js). While the backend is VPN-only, the
+    # public site's API calls will fail unless the visitor is on the VPN.
+    # To make this permanent, point the frontend at the VPN address or have
+    # the frontend proxy the API server-side.
+    # labels:
+    #   caddy: api.safepath.duckdns.org
+    #   caddy.reverse_proxy: "{{upstreams 9000}}"
+    # ----------------------------------------------------------------------
+
+  # ----------------------------------------------------------------------------
+  # WireGuard VPN gateway (wg-easy)
+  #
+  # This is the only VPN-related service that stays exposed to the internet,
+  # on UDP 51820. Once a teammate connects with their WireGuard client, they
+  # land on the private 10.8.0.0/24 network and can route into the docker
+  # `vpn` network (172.28.0.0/24) to reach VPN-only services like the backend.
+  #
+  # Admin web UI runs on 51821. Generate client configs / QR codes there.
+  # Set WG_HOST to your public host and PASSWORD_HASH to a bcrypt hash
+  # (create one with:  docker run -it ghcr.io/wg-easy/wg-easy wgpw 'yourpass').
+  # ----------------------------------------------------------------------------
+  wg-easy:
+    image: ghcr.io/wg-easy/wg-easy:14
+    container_name: wg-easy
+    environment:
+      - WG_HOST=safepath.duckdns.org              # public address clients dial
+      - PASSWORD_HASH=$$2a$$12$$uD7dx/sueRb8m4VRKmUcsuOzmjSUfkdLWtLn5riPAf06Tp1SXUs56 # admin UI login
+      - WG_DEFAULT_ADDRESS=10.8.0.x               # VPN client IP range
+      - WG_DEFAULT_DNS=                           # no pushed DNS
+      # Routes pushed to clients: the VPN subnet + the docker `vpn` subnet.
+      # This is what lets a connected client reach the backend at 172.28.0.10.
+      - WG_ALLOWED_IPS=10.8.0.0/24,172.28.0.0/24
+    volumes:
+      - wg-easy-data:/etc/wireguard
+    ports:
+      - "51820:51820/udp"   # WireGuard tunnel (must be public)
+      - "51821:51821/tcp"   # admin web UI (consider firewalling to admins)
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
+    networks:
+      - vpn
 
   # ----------------------------------------------------------------------------
   # OpenStreetMap tile server (run-only)
@@ -115,10 +171,10 @@ services:
 #     image: langflowai/langflow:latest
 #     container_name: langflow
 #     environment:
-#       DO_NOT_TRACK: "true"     
+#       DO_NOT_TRACK: "true"
 #       LANGFLOW_CONFIG_DIR: /app/langflow
 #       LANGFLOW_DATABASE_URL: sqlite:////app/langflow/langflow.db
-#     volumes:       
+#     volumes:
 #       - ./langflow/flows:/app/langflow
 #     restart: unless-stopped
 #     networks:
@@ -133,7 +189,15 @@ volumes:
     external: true
     name: senior-project-safepath_berlin-data
   # langflow-db:
+  wg-easy-data:        # persists WireGuard keys & client configs
 
 networks:
   caddy:
     external: true
+  # Private network for VPN-only services. wg-easy bridges connected
+  # clients into this subnet so they can reach the backend (172.28.0.10).
+  vpn:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
