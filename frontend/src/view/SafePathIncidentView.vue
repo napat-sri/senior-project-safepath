@@ -35,6 +35,11 @@
           Report Incident
         </button>
 
+        <button type="button" class="nav-item" aria-label="Overview Dashboard" @click="$router.push('/overview')">
+          <span>📊</span>
+          Overview Dashboard
+        </button>
+
         <button type="button" class="nav-item">
           <span>📋</span>
           Community Reports
@@ -319,117 +324,146 @@ const formatDateTime = (date, time) => {
 </script>
 
 <style scoped>
+/* =========================
+   Global Page Setup
+========================= */
+
 :global(body) {
-  margin: 0;
-  background: var(--color-bg);
+    margin: 0;
+    background: var(--color-bg);
 }
 
 .page-shell {
-  min-height: 100vh;
-  display: flex;
-  color: var(--color-text);
+    min-height: 100vh;
+    display: flex;
+    color: var(--color-text);
 }
 
+
+/* =========================
+   Sidebar Container
+========================= */
+
 .sidebar {
-  width: 248px;
-  flex-shrink: 0;
-  padding: 24px 18px;
-  border-right: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
-  transition: width 200ms ease, padding 200ms ease;
+    width: 248px;
+    flex-shrink: 0;
+    padding: 24px 18px;
+    border-right: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(14px);
+    transition: width 200ms ease, padding 200ms ease;
 }
 
 .sidebar.collapsed {
-  width: 36px;
-  padding: 16px;
+    width: auto;
+    padding: 16px;
 }
 
+
+/* =========================
+   Sidebar Brand / Logo Area
+========================= */
+
 .brand-section {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
 }
 
 .brand-logo {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border-radius: 14px;
-  object-fit: cover;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
 }
 
 .brand-copy {
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 .brand-copy span {
-  display: block;
-  margin-top: 2px;
-  color: var(--color-primary);
-  font-weight: 700;
+    display: block;
+    margin-top: 2px;
+    color: var(--color-primary);
+    font-weight: 700;
 }
+
+.brand-copy p,
+.panel-header p,
+.topbar p,
+.route-summary,
+.route-pair,
+.muted,
+.helper-copy,
+.premium-card p {
+    color: var(--color-text-secondary);
+}
+
+
+/* =========================
+   Sidebar Collapsed State
+========================= */
 
 .sidebar.collapsed .brand-logo,
 .sidebar.collapsed .brand-copy,
 .sidebar.collapsed .nav-menu,
-.sidebar.collapsed .premium-card {
-  display: none;
+.sidebar.collapsed .side-note {
+    display: grid;
 }
+
+.sidebar.collapsed .premium-card {
+    display: none;
+}
+
+
+/* =========================
+   Sidebar Toggle Button
+========================= */
 
 .sidebar-toggle {
-  margin-left: auto;
-  border: 0;
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-size: 20px;
-  cursor: pointer;
+    margin-left: auto;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 20px;
+    cursor: pointer;
 }
 
+
+/* =========================
+   Sidebar Navigation Menu
+========================= */
+
 .nav-menu {
-  display: grid;
-  gap: 10px;
-  margin-top: 32px;
+    display: grid;
+    gap: 10px;
+    margin-top: 32px;
 }
 
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  background: #f8fafc;
-  color: var(--color-text);
-  text-decoration: none;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    background: #f8fafc;
+    color: var(--color-text);
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .nav-item.active {
-  border-color: rgba(99, 102, 241, 0.22);
-  background: rgba(99, 102, 241, 0.08);
-  color: var(--color-primary);
+    border-color: rgba(99, 102, 241, 0.22);
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--color-primary);
 }
 
-.premium-card {
-  margin-top: 28px;
-  padding: 18px;
-}
-
-.premium-card p,
-.panel-header span,
-.route-summary,
-.route-pair,
-.muted,
-.helper-copy {
-  color: var(--color-text-secondary);
-}
-
-.premium-label,
 .route-type {
   margin: 0 0 6px;
   text-transform: uppercase;
@@ -438,23 +472,29 @@ const formatDateTime = (date, time) => {
   color: var(--color-neutral);
 }
 
+/* =========================
+   Main Content Layout
+========================= */
+
 .main-content {
-  flex: 1;
-  padding: 28px;
+    flex: 1;
+    padding: 28px;
 }
 
 .topbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 18px;
-  margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
 }
 
-.topbar p {
-  margin: 8px 0 0;
-  max-width: 760px;
+.content-grid {
+    display: grid;
+    grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
 }
 
 .content-grid.incident-grid {
