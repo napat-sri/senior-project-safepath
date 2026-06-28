@@ -463,4 +463,5 @@ async def get_safe_routes(req: RouteRequest):
         f"{api_end - api_start:.2f} sec"
     )
     return {
-        "route_suggestions
+        "route_suggestions": route_suggestions
+    }
