@@ -69,7 +69,7 @@ services:
     container_name: wg-easy
     environment:
       - WG_HOST=safepath.duckdns.org              # public address clients dial
-      - PASSWORD_HASH=$$2a$$12$$uD7dx/sueRb8m4VRKmUcsuOzmjSUfkdLWtLn5riPAf06Tp1SXUs56 # admin UI login
+      - PASSWORD_HASH=$$2a$$12$$6g6Eev0O.ABGxZPWw8lI1eBPbC3KNFSZ5YI1Fks.Yd6D.UqYh6jHy # admin UI login
       - WG_DEFAULT_ADDRESS=10.8.0.x               # VPN client IP range
       - WG_DEFAULT_DNS=                           # no pushed DNS
       # Routes pushed to clients: the VPN subnet + the docker `vpn` subnet.
