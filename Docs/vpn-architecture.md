@@ -108,22 +108,6 @@ VUE_APP_LANGFLOW_HOST=https://safepath.duckdns.org/langflow
 LANGFLOW_SECRET_KEY=<long-random-string>   # keep stable across restarts
 ```
 
-## Deploy / apply
-
-```bash
-# 1. VPN gateway
-docker compose up -d wg-easy
-#    -> open http://<host>:51821, create a client, scan the QR
-
-# 2. App + data services
-docker compose up -d --build backend frontend
-docker compose up -d postgres langflow
-
-# Verify
-docker compose logs --tail=30 backend
-docker compose logs -f langflow
-```
-
 - Public app: `https://safepath.duckdns.org` (no VPN).
 - Admin (VPN connected): backend `http://172.28.0.10:9000`,
   Langflow builder `http://172.28.0.30:7860`.
@@ -151,5 +135,3 @@ docker compose logs -f langflow
   `hot`/`liveReload`).
 - **Mixed content error:** HTTPS page calling an HTTP backend; solved by the
   same-origin gateway proxy.
-- **Backend down:** `main.py` was truncated mid-`return` on save; restored the
-  final `return { "route_suggestions": route_suggestions }`.
