@@ -13,8 +13,15 @@ services:
       - backend
       # - langflow
     networks:
-      - caddy
+      caddy:
+      # Also join the VPN network so the frontend can be loaded over plain
+      # HTTP through the tunnel (http://172.28.0.20:8080), avoiding the
+      # HTTPS->HTTP mixed-content block when it calls the VPN-only backend.
+      vpn:
+        ipv4_address: 172.28.0.20
     labels:
+      # Public UI over HTTPS. Note: the API calls from this public origin
+      # will NOT work (backend is VPN-only). Use the VPN URL below instead.
       caddy: safepath.duckdns.org
       caddy.reverse_proxy: "{{upstreams 8080}}"
 
