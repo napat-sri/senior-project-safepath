@@ -6,12 +6,12 @@
             <v-container fluid class="pa-4 pa-md-6">
                 <v-card class="mb-4" rounded="lg" elevation="2">
                     <v-card-text>
-                        <h2 class="text-h5 text-md-h4">Find your safest Berlin route</h2>
-                        <p class="text-medium-emphasis mt-2">
+                        <v-card-title>Find your safest Berlin route</v-card-title>
+                        <v-card-subtitle>
                             Compare route options, validate Berlin-only locations, and inspect detailed route safety
                             before you
                             go.
-                        </p>
+                        </v-card-subtitle>
                     </v-card-text>
                 </v-card>
 
@@ -19,10 +19,10 @@
                     <v-col cols="12" lg="5">
                         <v-card rounded="lg" elevation="2" class="mb-4">
                             <v-card-title>Route Search</v-card-title>
-                            <v-card-subtitle>Search safer paths using live route intelligence.</v-card-subtitle>
+                            <v-card-subtitle>Search safer paths using live route intelligence. Type a Berlin district, station, or landmark to see suggestions.</v-card-subtitle>
                             <v-card-text>
                                 <v-form @submit.prevent="searchRoute">
-                                    <v-text-field v-model="startLocation" label="Start Location"
+                                    <v-text-field v-model="startLocation" label="📍 Start Location"
                                         placeholder="e.g., Alexanderplatz" variant="outlined" density="comfortable"
                                         :error-messages="startError ? [startError] : []" @focus="startFocused = true"
                                         @blur="handleFieldBlur('start')" />
@@ -34,7 +34,7 @@
                                             @mousedown.prevent="selectSuggestion('start', suggestion)" />
                                     </v-list>
 
-                                    <v-text-field v-model="destination" label="Destination"
+                                    <v-text-field v-model="destination" label="🚩 Destination"
                                         placeholder="e.g., Brandenburg Gate" variant="outlined" density="comfortable"
                                         :error-messages="destinationError ? [destinationError] : []"
                                         @focus="destinationFocused = true" @blur="handleFieldBlur('destination')" />
@@ -45,10 +45,6 @@
                                             :key="`destination-${suggestion.name}`" :title="suggestion.name"
                                             @mousedown.prevent="selectSuggestion('destination', suggestion)" />
                                     </v-list>
-
-                                    <p class="text-caption text-medium-emphasis mb-3">
-                                        Type a Berlin district, station, or landmark to see geocoding suggestions.
-                                    </p>
 
                                     <v-alert v-if="searchError" type="error" variant="tonal" density="compact"
                                         class="mb-3">
@@ -84,7 +80,7 @@
                                                 <h4 class="text-h6">{{ route.name }}</h4>
                                             </div>
                                             <v-chip :style="scorePillStyle(route.safetyScore)">{{ route.safetyScore
-                                                }}/100</v-chip>
+                                            }}/100</v-chip>
                                         </div>
 
                                         <div
@@ -100,8 +96,6 @@
                                         <p class="text-body-2 mb-3">{{ route.summary }}</p>
 
                                         <div class="d-flex justify-space-between align-center">
-                                            <span class="text-caption text-medium-emphasis">{{ route.origin }} to {{
-                                                route.destination }}</span>
                                             <v-btn size="small" variant="tonal" color="primary"
                                                 @click="openRouteDetails(route.id)">
                                                 View Details
@@ -124,8 +118,8 @@
                         </v-card>
                     </v-col>
                 </v-row>
+                <div id="chat-container"></div>
             </v-container>
-            <div id="chat-container"></div>
         </v-main>
     </v-layout>
 </template>
@@ -428,6 +422,7 @@ function searchClear() {
     routes.value = [];
     selectedStartPlace.value = null;
     selectedDestinationPlace.value = null;
+    routeOverlay.value.clearLayers();
     showResults.value = false;
 }
 
@@ -462,6 +457,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .app-shell {
     min-height: 100vh;
+    background-color: white;
 }
 
 .suggestion-list {
@@ -479,5 +475,22 @@ onBeforeUnmount(() => {
     width: 100%;
     height: 70vh;
     min-height: 420px;
+}
+
+/*
+ * The Langflow widget is injected into #chat-container. By default the div is a
+ * full-width block at the bottom of <v-main>, so it overlaps the page and blocks
+ * clicks. Pin it to a corner and shrink it to the widget's own size.
+ * Adjust right/bottom to move the button; raise z-index if it sits under a card.
+ */
+#chat-container {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: -webkit-fit-content;
+    width: fit-content;
+    height: -webkit-fit-content;
+    height: fit-content;
+    z-index: 2000;
 }
 </style>

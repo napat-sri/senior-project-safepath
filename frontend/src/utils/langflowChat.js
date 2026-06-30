@@ -15,7 +15,7 @@ function mountChatWidget(containerId) {
         flow_id="${LANGFLOW_FLOW_ID}"
         host_url="${LANGFLOW_HOST_URL}"
 
-        chat_position="bottom-left" 
+        chat_position="top-left" 
   
         width="450" 
         height="600"
