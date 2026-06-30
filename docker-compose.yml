@@ -85,7 +85,7 @@ services:
       - WG_HOST=safepath.duckdns.org              # public address clients dial
       - PASSWORD_HASH=$$2a$$12$$6g6Eev0O.ABGxZPWw8lI1eBPbC3KNFSZ5YI1Fks.Yd6D.UqYh6jHy # admin UI login
       - WG_DEFAULT_ADDRESS=10.8.0.x               # VPN client IP range
-      - WG_DEFAULT_DNS=                           # no pushed DNS
+      - WG_DEFAULT_DNS=172.28.0.53                        # no pushed DNS
       # Routes pushed to clients: the VPN subnet + the docker `vpn` subnet.
       # This is what lets a connected client reach the backend at 172.28.0.10.
       - WG_ALLOWED_IPS=10.8.0.0/24,172.28.0.0/24
