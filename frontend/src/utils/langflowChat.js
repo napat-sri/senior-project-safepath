@@ -20,7 +20,7 @@ function mountChatWidget(containerId) {
         width="450" 
         height="600"
 
-        chat_window_style='{"boxShadow": "0px 4px 12px rgba(0,0,0,0.5)", "borderRadius": "12px"}'
+        chat_window_style='{"boxShadow": "0px 4px 12px rgba(255,255,255)", "borderRadius": "12px"}'
         chat_trigger_style='{"backgroundColor": "#6366f1"}'>
       </langflow-chat>
     `;

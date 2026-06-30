@@ -1,250 +1,96 @@
 <template>
-  <main class="login-page">
-    <section class="login-card">
-      <aside class="brand-panel">
-        <div class="brand-header">
-          <img class="brand-logo" :src="safepathLogo" alt="SafePath Berlin logo" />
-          <div>
-            <h1>SafePath</h1>
-            <p>Berlin</p>
-          </div>
-        </div>
+    <v-container fluid class="auth-page pa-4 pa-md-8">
+        <v-row class="fill-height" align="center" justify="center">
+            <v-col cols="12" lg="10" xl="9">
+                <v-card elevation="10" rounded="xl" class="overflow-hidden">
+                    <v-row no-gutters>
+                        <v-col cols="12" md="6" class="brand-panel pa-8 pa-md-12">
+                            <v-sheet color="transparent" class="d-flex align-center ga-4 mb-8">
+                                <v-avatar size="72" rounded="lg">
+                                    <v-img :src="safepathLogo" alt="SafePath Berlin logo" cover />
+                                </v-avatar>
+                                <div>
+                                    <h1 class="text-h4 text-high-emphasis">SafePath</h1>
+                                    <p class="text-primary text-subtitle-1 font-weight-bold">Berlin</p>
+                                </div>
+                            </v-sheet>
 
-        <h2>Your trusted companion<br />for safe routes</h2>
+                            <h2 class="text-h4 text-md-h3 mb-8">Your trusted companion for safer routes</h2>
 
-        <div class="feature-list">
-          <div class="feature-item">
-            <span class="feature-icon">🛡️</span>
-            <div>
-              <h3>Safe Routes</h3>
-              <p>Find the safest routes in real-time</p>
-            </div>
-          </div>
+                            <v-list bg-color="transparent" density="comfortable" class="pa-0">
+                                <v-list-item>
+                                    <template #prepend>
+                                        <v-avatar color="primary" variant="tonal" size="36">S</v-avatar>
+                                    </template>
+                                    <v-list-item-title class="font-weight-bold">Safe Routes</v-list-item-title>
+                                    <v-list-item-subtitle>Find the safest routes in real-time</v-list-item-subtitle>
+                                </v-list-item>
+                                <v-list-item>
+                                    <template #prepend>
+                                        <v-avatar color="warning" variant="tonal" size="36">A</v-avatar>
+                                    </template>
+                                    <v-list-item-title class="font-weight-bold">Smart Alerts</v-list-item-title>
+                                    <v-list-item-subtitle>Get notified about risks and incidents</v-list-item-subtitle>
+                                </v-list-item>
+                            </v-list>
+                        </v-col>
 
-          <div class="feature-item">
-            <span class="feature-icon">🔔</span>
-            <div>
-              <h3>Smart Alerts</h3>
-              <p>Get notified about risks & incidents</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+                        <v-col cols="12" md="6" class="pa-8 pa-md-12 d-flex align-center">
+                            <v-sheet width="100%" max-width="460" class="mx-auto" color="transparent">
+                                <h2 class="text-h4 mb-2">Welcome Back</h2>
+                                <p class="text-medium-emphasis mb-8">Login to continue to your account</p>
 
-      <section class="form-panel">
-        <div class="form-content">
-          <div class="form-heading">
-            <h2>Welcome Back</h2>
-            <p>Login to continue to your account</p>
-          </div>
+                                <v-form @submit.prevent="handleLogin">
+                                    <v-text-field v-model="email" type="email" label="Email"
+                                        placeholder="Enter your email" variant="outlined" density="comfortable"
+                                        class="mb-3" required />
 
-          <form @submit.prevent="handleLogin" class="login-form">
-            <label>Email *</label>
-            <input v-model="email" type="email" placeholder="Enter your email" />
+                                    <v-text-field v-model="password" type="password" label="Password"
+                                        placeholder="Enter your password" variant="outlined" density="comfortable"
+                                        class="mb-6" required />
 
-            <label>Password *</label>
-            <input v-model="password" type="password" placeholder="Enter your password" />
+                                    <v-btn color="primary" block size="large" type="submit" class="mb-4">LOGIN</v-btn>
 
-            <button class="login-btn" type="submit">LOGIN</button>
-            <p class="register-link">
-              Don’t have an account?
-              <button type="button" @click="goToRegister">Click to register</button>
-            </p>
-          </form>
-        </div>
-      </section>
-    </section>
-  </main>
+                                    <p class="text-center text-medium-emphasis">
+                                        Don't have an account?
+                                        <v-btn variant="text" color="primary" @click="goToRegister">Click to
+                                            register</v-btn>
+                                    </p>
+                                </v-form>
+                            </v-sheet>
+                        </v-col>
+                    </v-row>
+                </v-card>
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import safepathLogo from '../assets/Berlin.png'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import safepathLogo from '../assets/Berlin.png';
 
-const email = ref('')
-const password = ref('')
-const router = useRouter()
+const email = ref('');
+const password = ref('');
+const router = useRouter();
 
 const handleLogin = () => {
-  console.log(email.value, password.value)
-}
+    console.log(email.value, password.value);
+};
+
 const goToRegister = () => {
-  router.push('/register')
-}
+    router.push('/register');
+};
 </script>
 
 <style scoped>
-.login-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #eef2ff, #eff6ff);
-  font-family: 'DM Sans', Inter, sans-serif;
-}
-
-.login-card {
-  width: 1100px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+.auth-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #eef2ff, #eff6ff);
 }
 
 .brand-panel {
-  padding: 50px;
-  background: linear-gradient(180deg, #eef2ff, #c7d2fe);
-}
-
-.brand-header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.brand-logo {
-  width: 74px;
-  height: 74px;
-  object-fit: cover;
-  border-radius: 18px;
-  border: 1px solid #e8e8ec;
-  background: #ffffff;
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.18);
-}
-
-.brand-header h1 {
-  margin: 0;
-  color: #0a0a0a;
-}
-
-.brand-header p {
-  margin: 4px 0 0;
-  color: #6366f1;
-  font-weight: 700;
-}
-
-.brand-panel h2 {
-  margin-top: 70px;
-  font-size: 34px;
-  line-height: 1.2;
-  color: #111827;
-}
-
-.feature-list {
-  margin-top: 42px;
-  display: grid;
-  gap: 22px;
-}
-
-.feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.feature-icon {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  background: rgba(99, 102, 241, 0.12);
-}
-
-.feature-item h3 {
-  margin: 0 0 4px;
-  color: #111827;
-}
-
-.feature-item p {
-  margin: 0;
-  color: #4b5563;
-}
-
-.form-panel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 50px;
-}
-
-.form-content {
-  width: 100%;
-  max-width: 420px;
-}
-
-.form-heading h2 {
-  margin: 0;
-  font-size: 30px;
-  color: #111827;
-}
-
-.form-heading p {
-  margin: 8px 0 32px;
-  color: #6b7280;
-}
-
-.login-form {
-  display: grid;
-  gap: 18px;
-}
-
-.login-form label {
-  font-weight: 700;
-  color: #111827;
-}
-
-.login-form input {
-  height: 55px;
-  padding: 0 16px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  font: inherit;
-}
-
-.login-form input:focus {
-  outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
-}
-
-.login-btn {
-  height: 55px;
-  border: 0;
-  border-radius: 8px;
-  background: #6366f1;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 160ms ease;
-}
-
-.login-btn:hover {
-  background: #4f46e5;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
-  transform: translateY(-1px);
-}
-.register-link {
-  margin: 4px 0 0;
-  text-align: center;
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.register-link button {
-  border: 0;
-  background: transparent;
-  color: #6366f1;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0;
-}
-
-.register-link button:hover {
-  color: #4f46e5;
-  text-decoration: underline;
+    background: linear-gradient(180deg, #eef2ff, #c7d2fe);
 }
 </style>

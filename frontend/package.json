@@ -11,13 +11,14 @@
     "start": "npm run serve"
   },
   "dependencies": {
+    "@mdi/font": "^7.4.47",
     "@vue/cli-service": "^5.0.9",
     "axios": "^1.16.1",
     "leaflet": "^1.9.4",
     "leaflet-control-geocoder": "^3.3.1",
     "vue": "^3.5.34",
     "vue-router": "^4.6.4",
-    "vue-template-compiler": "^2.7.16"
+    "vuetify": "^4.1.2"
   },
   "author": "",
   "license": "ISC"

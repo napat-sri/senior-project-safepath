@@ -1,192 +1,133 @@
 <template>
-    <div class="page-shell">
-        <aside :class="['sidebar', { collapsed: sidebarCollapsed }]">
-            <div class="brand-section">
-                <img class="brand-logo" :src="safePathLogo" alt="SafePath Berlin logo" />
+    <v-layout class="app-shell">
+        <SafePathNavDrawer />
 
-                <div class="brand-copy">
-                    <h2>SafePath</h2>
-                    <span>Berlin</span>
-                </div>
-
-                <button class="sidebar-toggle" type="button" @click="toggleSidebar" aria-label="Toggle sidebar">
-                    ☰
-                </button>
-            </div>
-
-            <nav class="nav-menu" aria-label="Primary navigation">
-                <button type="button" class="nav-item active" aria-label="Dashboard" @click="$router.push('/')">
-                    <span>🗺️</span>
-                    Dashboard
-                </button>
-
-                <button type="button" class="nav-item" aria-label="Profile" @click="$router.push('/profile')">
-                    <span>👤</span>
-                    Profile
-                </button>
-
-                <button type="button" class="nav-item" aria-label="Report Incident" @click="$router.push('/incident')">
-                    <span>⚠️</span>
-                    Report Incident
-                </button>
-
-                <button type="button" class="nav-item" aria-label="Overview Dashboard"
-                    @click="$router.push('/overview')">
-                    <span>📊</span>
-                    Overview Dashboard
-                </button>
-
-                <button type="button" class="nav-item">
-                    <span>📋</span>
-                    Community Reports
-                </button>
-
-
-            </nav>
-
-            <!-- <div class="premium-card card">
-                <p class="premium-label">Premium Safety+</p>
-                <h3>Unlock predictive safety alerts</h3>
-                <p>
-                    Get proactive warnings, route intelligence, and personalized safe route analysis.
-                </p>
-
-                <button type="button" class="premium-btn btn btn-ghost">Upgrade</button>
-            </div> -->
-        </aside>
-
-        <main class="main-content">
-            <header class="topbar card">
-                <div>
-                    <h2>Find your safest Berlin route</h2>
-                    <p class="muted">Compare route options, validate Berlin-only locations, and inspect detailed route
-                        safety before you go.</p>
-                </div>
-            </header>
-
-            <section class="content-grid">
-                <section class="search-panel card">
-                    <div class="panel-header">
-                        <h3>Route Search</h3>
-                        <span>Search safer paths using live route intelligence.</span>
-                    </div>
-
-                    <form class="search-form" @submit.prevent="searchRoute" novalidate>
-                        <label for="start-location">Start Location *</label>
-
-                        <div class="input-wrap" :class="{ invalid: startError }">
-                            <span>📍</span>
-                            <input id="start-location" v-model="startLocation" class="search-input" type="text"
-                                placeholder="e.g., Alexanderplatz" autocomplete="off" @focus="startFocused = true"
-                                @blur="handleFieldBlur('start')" />
-                        </div>
-
-                        <ul v-if="startSuggestions.length && startFocused" class="suggestion-list card">
-                            <li v-for="suggestion in startSuggestions" :key="`start-${suggestion.name}`">
-                                <button type="button" @mousedown.prevent="selectSuggestion('start', suggestion)">
-                                    {{ suggestion.name }}
-                                </button>
-                            </li>
-                        </ul>
-
-                        <p v-if="startError" class="field-error">{{ startError }}</p>
-
-                        <label for="destination-location">Destination *</label>
-
-                        <div class="input-wrap" :class="{ invalid: destinationError }">
-                            <span>🚩</span>
-                            <input id="destination-location" v-model="destination" class="search-input" type="text"
-                                placeholder="e.g., Brandenburg Gate" autocomplete="off"
-                                @focus="destinationFocused = true" @blur="handleFieldBlur('destination')" />
-                        </div>
-
-                        <ul v-if="destinationSuggestions.length && destinationFocused" class="suggestion-list card">
-                            <li v-for="suggestion in destinationSuggestions" :key="`destination-${suggestion.name}`">
-                                <button type="button" @mousedown.prevent="selectSuggestion('destination', suggestion)">
-                                    {{ suggestion.name }}
-                                </button>
-                            </li>
-                        </ul>
-
-                        <p v-if="destinationError" class="field-error">{{ destinationError }}</p>
-
-                        <p class="helper-copy">
-                            Type a Berlin district, station, or landmark to see geocoding suggestions.
+        <v-main>
+            <v-container fluid class="pa-4 pa-md-6">
+                <v-card class="mb-4" rounded="lg" elevation="2">
+                    <v-card-text>
+                        <h2 class="text-h5 text-md-h4">Find your safest Berlin route</h2>
+                        <p class="text-medium-emphasis mt-2">
+                            Compare route options, validate Berlin-only locations, and inspect detailed route safety
+                            before you
+                            go.
                         </p>
+                    </v-card-text>
+                </v-card>
 
-                        <p v-if="searchError" class="global-error">{{ searchError }}</p>
+                <v-row>
+                    <v-col cols="12" lg="5">
+                        <v-card rounded="lg" elevation="2" class="mb-4">
+                            <v-card-title>Route Search</v-card-title>
+                            <v-card-subtitle>Search safer paths using live route intelligence.</v-card-subtitle>
+                            <v-card-text>
+                                <v-form @submit.prevent="searchRoute">
+                                    <v-text-field v-model="startLocation" label="Start Location"
+                                        placeholder="e.g., Alexanderplatz" variant="outlined" density="comfortable"
+                                        :error-messages="startError ? [startError] : []" @focus="startFocused = true"
+                                        @blur="handleFieldBlur('start')" />
 
-                        <button type="submit" class="search-btn btn btn-primary" :disabled="searchLoading">
-                            <span v-if="searchLoading" class="spinner"></span>
-                            {{ searchLoading ? 'Analyzing...' : 'Search Safe Route' }}
-                        </button>
-                        <button type="button" @click="searchClear()" class="search-btn btn">
-                            Clear
-                        </button>
-                    </form>
+                                    <v-list v-if="startSuggestions.length && startFocused" density="compact"
+                                        class="mb-3 suggestion-list">
+                                        <v-list-item v-for="suggestion in startSuggestions"
+                                            :key="`start-${suggestion.name}`" :title="suggestion.name"
+                                            @mousedown.prevent="selectSuggestion('start', suggestion)" />
+                                    </v-list>
 
-                    <section class="results-block">
-                        <div v-if="showResults" class="route-card-list">
-                            <div class="results-header">
-                                <div>
-                                    <h3>Suggested Routes</h3>
-                                    <p class="muted">Route options appear below your search and can be opened in detail.
+                                    <v-text-field v-model="destination" label="Destination"
+                                        placeholder="e.g., Brandenburg Gate" variant="outlined" density="comfortable"
+                                        :error-messages="destinationError ? [destinationError] : []"
+                                        @focus="destinationFocused = true" @blur="handleFieldBlur('destination')" />
+
+                                    <v-list v-if="destinationSuggestions.length && destinationFocused" density="compact"
+                                        class="mb-3 suggestion-list">
+                                        <v-list-item v-for="suggestion in destinationSuggestions"
+                                            :key="`destination-${suggestion.name}`" :title="suggestion.name"
+                                            @mousedown.prevent="selectSuggestion('destination', suggestion)" />
+                                    </v-list>
+
+                                    <p class="text-caption text-medium-emphasis mb-3">
+                                        Type a Berlin district, station, or landmark to see geocoding suggestions.
                                     </p>
-                                </div>
-                                <span v-if="showResults" class="results-count">{{ routes.length }} routes</span>
-                            </div>
 
-                            <article v-for="route in routes" :key="route.id" class="route-card card">
-                                <div class="route-card-top">
-                                    <div>
-                                        <p class="route-type">{{ route.routeType }}</p>
-                                        <h4>{{ route.name }}</h4>
+                                    <v-alert v-if="searchError" type="error" variant="tonal" density="compact"
+                                        class="mb-3">
+                                        {{ searchError }}
+                                    </v-alert>
+
+                                    <div class="d-flex ga-2">
+                                        <v-btn color="primary" type="submit" :loading="searchLoading">Search Safe
+                                            Route</v-btn>
+                                        <v-btn variant="outlined" @click="searchClear">Clear</v-btn>
                                     </div>
+                                </v-form>
+                            </v-card-text>
+                        </v-card>
 
-                                    <div class="score-pill" :style="scorePillStyle(route.safetyScore)">
-                                        {{ route.safetyScore }}/100
-                                    </div>
+                        <v-card v-if="showResults" rounded="lg" elevation="2">
+                            <v-card-title class="d-flex justify-space-between align-center">
+                                <span>Suggested Routes</span>
+                                <v-chip size="small" color="primary" variant="tonal">{{ routes.length }} routes</v-chip>
+                            </v-card-title>
+                            <v-card-subtitle>Route options appear below your search and can be opened in
+                                detail.</v-card-subtitle>
+                            <v-card-text>
+                                <v-alert v-if="routes.length === 0" type="info" variant="tonal">No routes
+                                    found.</v-alert>
+
+                                <v-card v-for="route in routes" :key="route.id" variant="outlined" class="mb-3"
+                                    rounded="lg">
+                                    <v-card-text>
+                                        <div class="d-flex justify-space-between align-start mb-2">
+                                            <div>
+                                                <p class="text-overline text-medium-emphasis">{{ route.routeType }}</p>
+                                                <h4 class="text-h6">{{ route.name }}</h4>
+                                            </div>
+                                            <v-chip :style="scorePillStyle(route.safetyScore)">{{ route.safetyScore
+                                                }}/100</v-chip>
+                                        </div>
+
+                                        <div
+                                            class="d-flex justify-space-between text-caption text-medium-emphasis mb-2">
+                                            <span>Distance {{ route.distance }}</span>
+                                            <span>Time {{ route.duration }}</span>
+                                        </div>
+
+                                        <v-progress-linear :model-value="route.safetyScore" height="9" rounded
+                                            :color="route.accentColor || getSafetyTone(route.safetyScore).color"
+                                            class="mb-3" />
+
+                                        <p class="text-body-2 mb-3">{{ route.summary }}</p>
+
+                                        <div class="d-flex justify-space-between align-center">
+                                            <span class="text-caption text-medium-emphasis">{{ route.origin }} to {{
+                                                route.destination }}</span>
+                                            <v-btn size="small" variant="tonal" color="primary"
+                                                @click="openRouteDetails(route.id)">
+                                                View Details
+                                            </v-btn>
+                                        </div>
+                                    </v-card-text>
+                                </v-card>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
+
+                    <v-col cols="12" lg="7">
+                        <v-card rounded="lg" elevation="2">
+                            <v-card-title>Berlin Safety Map</v-card-title>
+                            <v-card-text>
+                                <div id="map-container">
+                                    <div id="home-map"></div>
                                 </div>
-
-                                <div class="route-meta">
-                                    <span>Distance {{ route.distance }}</span>
-                                    <span>Time {{ route.duration }}</span>
-                                </div>
-
-                                <div class="score-track" :aria-label="`Safety score ${route.safetyScore} out of 100`">
-                                    <span :style="scoreTrackStyle(route.safetyScore, route.accentColor)"></span>
-                                </div>
-
-                                <p class="route-summary">{{ route.summary }}</p>
-
-                                <div class="route-footer">
-                                    <span class="route-pair">{{ route.origin }} to {{ route.destination }}</span>
-                                    <button type="button" class="view-details-btn btn btn-ghost"
-                                        @click="openRouteDetails(route.id)">
-                                        View Details
-                                    </button>
-                                </div>
-                            </article>
-                        </div>
-                        <div v-if="showResults && routes.length === 0" class="empty-results">
-                            No routes found.
-                        </div>
-                    </section>
-                </section>
-
-                <section class="map-panel card">
-                    <div class="panel-header map-header">
-                        <h3>Berlin Safety Map</h3>
-                    </div>
-
-                    <div id="map-container">
-                        <div id="home-map"></div>
-                    </div>
-                </section>
-            </section>
-        </main>
-        <div id="chat-container"></div>
-    </div>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
+                </v-row>
+            </v-container>
+            <div id="chat-container"></div>
+        </v-main>
+    </v-layout>
 </template>
 
 <script setup>
@@ -198,7 +139,7 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet/dist/leaflet.css';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import safePathLogo from '../assets/Berlin.png';
+import SafePathNavDrawer from '../components/SafePathNavDrawer.vue';
 
 import {
     getSafetyTone,
@@ -208,7 +149,6 @@ import {
 import { mountLangflowChat } from '../utils/langflowChat';
 
 import { placeService, routeService } from '../services/api';
-
 
 const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png';
 
@@ -224,7 +164,6 @@ L.Marker.prototype.options.icon = DefaultIcon;
 const router = useRouter();
 const map = ref(null);
 const routeOverlay = ref(null);
-const sidebarCollapsed = ref(true);
 const startLocation = ref('');
 const destination = ref('');
 const startTouched = ref(false);
@@ -235,11 +174,8 @@ const showResults = ref(false);
 const searchError = ref('');
 
 const searchLoading = ref(false);
-
-const routes = ref([]); // Replace the computed with a ref
+const routes = ref([]);
 const selectedRoute = computed(() => (routes.value && routes.value.length > 0 ? routes.value[0] : null));
-// console.log('Selected route:', selectedRoute.value, routes.value);
-
 const hasSearched = ref(false);
 
 const startError = computed(() => {
@@ -252,9 +188,6 @@ const destinationError = computed(() => {
     return validateBerlinLocation(destination.value);
 });
 
-// Fetch geocoding suggestions from API
-
-// Add a simple cache object outside the function
 const suggestionCache = {};
 
 async function fetchSuggestions(query) {
@@ -262,34 +195,24 @@ async function fetchSuggestions(query) {
 
     const normalizedQuery = query.trim().toLowerCase();
 
-    // 1. Check if we already fetched this exact query
     if (suggestionCache[normalizedQuery]) {
         return suggestionCache[normalizedQuery];
     }
 
     try {
-        // 2. If not in cache, fetch from API
         const { data } = await placeService.search(query);
-        // console.log("query: ", query)
-        // console.log("data: ", data)
         const results = data.places || [];
-
-        // 3. Save to cache for future use
         suggestionCache[normalizedQuery] = results;
         return results;
     } catch (error) {
-        // console.error("Error fetching places:", error);
         return [];
     }
-    // const { data } = await placeService.search(query);
-    // return data.places || [];
 }
 
-// Start Location
 const startSuggestions = ref([]);
 const selectedStartPlace = ref(null);
 const skipStartWatch = ref(false);
-let startDebounceTimer = null; // Add timer variable
+let startDebounceTimer = null;
 
 watch(startLocation, async (value) => {
     if (skipStartWatch.value) {
@@ -297,27 +220,20 @@ watch(startLocation, async (value) => {
         return;
     }
 
-    // Clear the existing timer on every keystroke
     clearTimeout(startDebounceTimer);
 
-    // Set a new timer
     startDebounceTimer = setTimeout(async () => {
         const results = await fetchSuggestions(value);
         startSuggestions.value = results.filter(
             (item) => item.name !== destination.value
         );
     }, 500);
-
-    // startSuggestions.value = (await fetchSuggestions(value)).filter(
-    //     (item) => item.name !== destination.value
-    // );
 });
 
-// Destination
 const destinationSuggestions = ref([]);
 const selectedDestinationPlace = ref(null);
 const skipDestinationWatch = ref(false);
-let destinationDebounceTimer = null; // Add timer variable
+let destinationDebounceTimer = null;
 
 watch(destination, async (value) => {
     if (skipDestinationWatch.value) {
@@ -325,10 +241,8 @@ watch(destination, async (value) => {
         return;
     }
 
-    // Clear the existing timer on every keystroke
     clearTimeout(destinationDebounceTimer);
 
-    // Set a new timer
     destinationDebounceTimer = setTimeout(async () => {
         destinationSuggestions.value = (await fetchSuggestions(value)).filter(
             (item) => item.name !== startLocation.value
@@ -348,7 +262,6 @@ function selectSuggestion(type, suggestion) {
         skipDestinationWatch.value = true;
         destination.value = suggestion.name;
         selectedDestinationPlace.value = suggestion;
-        // console.log('Selected destination:', suggestion);
         destinationSuggestions.value = [];
         destinationFocused.value = false;
     }
@@ -361,17 +274,6 @@ function scorePillStyle(score) {
         color: tone.color,
         backgroundColor: tone.soft
     };
-}
-
-function scoreTrackStyle(score, accentColor) {
-    return {
-        width: `${score}%`,
-        backgroundColor: accentColor
-    };
-}
-
-function toggleSidebar() {
-    sidebarCollapsed.value = !sidebarCollapsed.value;
 }
 
 function handleFieldBlur(field) {
@@ -387,15 +289,13 @@ function handleFieldBlur(field) {
         }
     }, 120);
 }
-//----- Get Safe Route Logic -----
-async function fetchSafeRoute() {
 
+async function fetchSafeRoute() {
     searchLoading.value = true;
 
     try {
-        // --- Call backend with hardcoded coordinates ---
-        const startCoords = selectedStartPlace.value
-        const destCoords = selectedDestinationPlace.value
+        const startCoords = selectedStartPlace.value;
+        const destCoords = selectedDestinationPlace.value;
 
         const payload = {
             start: { lat: startCoords.lat, lng: startCoords.lng },
@@ -403,34 +303,27 @@ async function fetchSafeRoute() {
             startName: startLocation.value,
             destinationName: destination.value
         };
-        // console.log("Requesting safe routes with payload:", payload);
-        const res = await routeService.safe(payload);
-        // console.log("API response for safe route:", res);
 
-        if (res.status !== 200) throw new Error("API error: " + res.status);
+        const res = await routeService.safe(payload);
+
+        if (res.status !== 200) throw new Error('API error: ' + res.status);
 
         const data = await res.data;
         routes.value = data.route_suggestions || [];
         searchResult.value = data;
         showResults.value = routes.value.length > 0;
-        setRouteSuggestions(routes.value); // Update the route suggestions in the data module
-        // console.log("/api/routes/safe search result:", data);
-        // console.log("Extracted saferoutes:", routes.value);
+        setRouteSuggestions(routes.value);
         renderRoutePreview();
     } catch (err) {
         searchResult.value = { error: err.message };
-        // console.error("/api/routes/safe search error:", err);
     } finally {
         searchLoading.value = false;
     }
-
 }
-
 
 function renderRoutePreview() {
     if (!map.value || !routes.value.length) return;
 
-    // Clear previous overlays
     if (routeOverlay.value) {
         routeOverlay.value.clearLayers();
     }
@@ -439,15 +332,13 @@ function renderRoutePreview() {
         const tone = getSafetyTone(route.safetyScore);
         const color = route.accentColor || tone.color;
 
-        // Draw route polyline
         const path = L.polyline(route.coordinates, {
             color: color,
             weight: 6,
-            opacity: 0.7 + (idx === 0 ? 0.2 : 0), // Highlight first route a bit more
+            opacity: 0.7 + (idx === 0 ? 0.2 : 0)
         });
         routeOverlay.value.addLayer(path);
 
-        // Start marker
         const startMarker = L.circleMarker(route.coordinates[0], {
             radius: 9,
             color: '#FFFFFF',
@@ -457,7 +348,6 @@ function renderRoutePreview() {
         });
         routeOverlay.value.addLayer(startMarker);
 
-        // End marker
         const endMarker = L.circleMarker(route.coordinates[route.coordinates.length - 1], {
             radius: 9,
             color: '#FFFFFF',
@@ -468,7 +358,6 @@ function renderRoutePreview() {
         routeOverlay.value.addLayer(endMarker);
     });
 
-    // Fit map to all routes
     const allCoords = routes.value.flatMap(r => r.coordinates);
     if (allCoords.length) {
         map.value.fitBounds(allCoords, { padding: [40, 40] });
@@ -505,7 +394,6 @@ function initChat() {
 }
 
 function openRouteDetails(routeId) {
-    // Save search state to sessionStorage before navigating
     sessionStorage.setItem('searchState', JSON.stringify({
         startLocation: startLocation.value,
         destination: destination.value,
@@ -543,11 +431,9 @@ function searchClear() {
     showResults.value = false;
 }
 
-// --- Safe Route Search Result State ---
 const searchResult = ref(null);
 
 onMounted(() => {
-    // Restore search data from sessionStorage if available
     const saved = sessionStorage.getItem('searchState');
     if (saved) {
         const searchData = JSON.parse(saved);
@@ -557,7 +443,6 @@ onMounted(() => {
         selectedStartPlace.value = searchData.selectedStartPlace;
         selectedDestinationPlace.value = searchData.selectedDestinationPlace;
         showResults.value = searchData.showResults;
-
 
         sessionStorage.removeItem('searchState');
     }
@@ -575,586 +460,24 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* =========================
-   Global Page Setup
-========================= */
-
-:global(body) {
-    margin: 0;
-    background: var(--color-bg);
-}
-
-.page-shell {
+.app-shell {
     min-height: 100vh;
-    display: flex;
-    color: var(--color-text);
 }
-
-
-/* =========================
-   Sidebar Container
-========================= */
-
-.sidebar {
-    width: 248px;
-    flex-shrink: 0;
-    padding: 24px 18px;
-    border-right: 1px solid var(--color-border);
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(14px);
-    transition: width 200ms ease, padding 200ms ease;
-}
-
-.sidebar.collapsed {
-    width: auto;
-    padding: 16px;
-}
-
-
-/* =========================
-   Sidebar Brand / Logo Area
-========================= */
-
-.brand-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-}
-
-.brand-logo {
-    width: 48px;
-    height: 48px;
-    flex-shrink: 0;
-    border-radius: 14px;
-    object-fit: cover;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-}
-
-.brand-copy {
-    flex: 1;
-    min-width: 0;
-}
-
-.brand-copy span {
-    display: block;
-    margin-top: 2px;
-    color: var(--color-primary);
-    font-weight: 700;
-}
-
-.brand-copy p,
-.panel-header p,
-.topbar p,
-.route-summary,
-.route-pair,
-.muted,
-.helper-copy
-
-
-/* =========================
-   Sidebar Collapsed State
-========================= */
-
-.sidebar.collapsed .brand-logo,
-.sidebar.collapsed .brand-copy {
-    display: block;
-}
-.sidebar.collapsed .nav-menu {
-    display: grid;
-}
-
-
-/* =========================
-   Sidebar Toggle Button
-========================= */
-
-.sidebar-toggle {
-    margin-left: auto;
-    border: 0;
-    background: transparent;
-    color: var(--color-text-secondary);
-    font-size: 20px;
-    cursor: pointer;
-}
-
-
-/* =========================
-   Sidebar Navigation Menu
-========================= */
-
-
-.nav-menu {
-    display: grid;
-    gap: 10px;
-    margin-top: 32px;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    border-radius: var(--radius-md);
-    border: 1px solid transparent;
-    background: #f8fafc;
-    color: var(--color-text);
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.nav-item.active {
-    border-color: rgba(99, 102, 241, 0.22);
-    background: rgba(99, 102, 241, 0.08);
-    color: var(--color-primary);
-}
-.side-note {
-    margin-top: 28px;
-    padding: 18px;
-}
-
-.side-note h3 {
-    margin: 0 0 8px;
-}
-
-.side-note p,
-.brand-copy p,
-.panel-header p,
-.topbar p,
-.muted {
-    color: var(--color-text-secondary);
-}
-
-.side-label,
-.eyebrow {
-    margin: 0 0 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 11px;
-    color: var(--color-neutral);
-}
-
-
-/* =========================
-   Sidebar Premium Card
-========================= */
-.eyebrow {
-    margin: 0 0 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 11px;
-    color: var(--color-neutral);
-}
-
-.route-type {
-    margin: 0 0 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 11px;
-    color: var(--color-neutral);
-}
-
-
-/* =========================
-   Old Logo Box - Currently Disabled
-========================= */
-
-/* .logo-box {
-    width: 48px;
-    height: 56px;
-    display: grid;
-    place-items: center;
-    border: 2px solid var(--color-success);
-    border-radius: 16px;
-    color: var(--color-success);
-    font-weight: 700;
-    background: rgba(16, 185, 129, 0.08);
-} */
-
-
-/* =========================
-   Main Content Layout
-========================= */
-
-.main-content {
-    flex: 1;
-    padding: 28px;
-}
-
-.topbar {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 12px;
-    margin-bottom: 12px;
-}
-
-.content-grid {
-    display: grid;
-    grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
-    gap: 24px;
-    align-items: start;
-}
-
-
-/* =========================
-   Shared Badges / Tags
-========================= */
-
-.status-badge,
-.results-count,
-.map-route-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--color-border);
-    background: rgba(255, 255, 255, 0.9);
-    color: var(--color-text-secondary);
-    white-space: nowrap;
-}
-
-
-/* =========================
-   Panels / Cards
-========================= */
-
-.search-panel,
-.map-panel,
-.premium-card,
-.empty-results,
-.route-card,
-.suggestion-list {
-    background: var(--color-surface);
-}
-
-.search-panel,
-.map-panel {
-    padding: 12px;
-}
-
-.panel-header {
-    margin-bottom: 18px;
-}
-
-
-/* =========================
-   Search Form
-========================= */
-
-.search-form {
-    display: grid;
-    gap: 10px;
-}
-
-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--color-text);
-}
-
-.input-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 14px;
-    min-height: 56px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: #fff;
-}
-
-.input-wrap.invalid {
-    border-color: rgba(239, 68, 68, 0.6);
-}
-
-.search-input {
-    width: 100%;
-    border: 0;
-    outline: 0;
-    font: inherit;
-    color: var(--color-text);
-    background: transparent;
-}
-
-.search-input::placeholder {
-    color: var(--color-neutral);
-}
-
-.field-error,
-.global-error,
-.helper-copy {
-    margin: 0;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.field-error,
-.global-error {
-    color: var(--color-error);
-}
-
-.search-btn {
-    margin-top: 6px;
-}
-
-
-/* =========================
-   Suggestions Dropdown
-========================= */
 
 .suggestion-list {
-    list-style: none;
-    margin: -4px 0 4px;
-    padding: 6px;
-    border-radius: 10px;
-    border: 1px solid var(--color-border);
-}
-
-.suggestion-list li+li {
-    margin-top: 4px;
-}
-
-.suggestion-list button {
-    width: 100%;
-    border: 0;
-    background: transparent;
-    padding: 10px 12px;
-    text-align: left;
-    border-radius: 8px;
-    cursor: pointer;
-    color: var(--color-text);
-}
-
-.suggestion-list button:hover {
-    background: rgba(99, 102, 241, 0.08);
-    color: var(--color-primary);
-}
-
-
-/* =========================
-   Search Results
-========================= */
-
-.results-block {
-    margin-top: 7px;
-}
-
-.results-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 14px;
-}
-
-.route-card-list {
-    display: grid;
-    gap: 14px;
-}
-
-.route-card {
-    padding: 18px;
-    transition: transform 180ms ease, box-shadow 180ms ease;
-}
-
-.route-card:hover {
-    box-shadow: var(--shadow-hover-card);
-    transform: translateY(-2px);
-}
-
-.route-card-top,
-.route-meta,
-.route-footer {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.route-card h4,
-.map-header h3 {
-    margin: 0;
-}
-
-.route-meta {
-    margin: 14px 0 10px;
-    color: var(--color-text-secondary);
-    font-size: 13px;
-}
-
-.route-summary {
-    margin: 12px 0 16px;
-}
-
-.route-footer {
-    align-items: center;
-}
-
-.view-details-btn {
-    padding-left: 0;
-    padding-right: 0;
-}
-
-.empty-results {
-    padding: 18px;
-    border: 1px dashed var(--color-border);
-}
-
-
-/* =========================
-   Safety Score UI
-========================= */
-
-.score-pill {
-    min-width: 76px;
-    padding: 8px 10px;
-    border-radius: var(--radius-pill);
-    text-align: center;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.score-track {
-    height: 8px;
-    border-radius: var(--radius-pill);
-    background: #eef2f7;
-    overflow: hidden;
-}
-
-.score-track span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-}
-
-
-/* =========================
-   Map Section
-========================= */
-
-.map-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 12px;
 }
 
 #map-container {
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid var(--color-border);
-    height: 400px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
 #home-map {
     width: 100%;
-    height: 100%;
-}
-
-
-/* =========================
-    Loading Spinner
-========================= */
-
-.spinner {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    border: 3px solid #fff;
-    border-radius: 50%;
-    border-top-color: #6366f1;
-    animation: spin 0.7s linear infinite;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-
-/* =========================
-    Responsive - Large Screens
-========================= */
-
-@media (min-width: 1440px) {
-    .content-grid {
-        grid-template-columns: 1fr 3fr;
-    }
-
-    #home-map,
-    #map-container {
-        height: 850px;
-    }
-}
-
-
-/* =========================
-    Responsive - Medium Screens
-========================= */
-
-@media (max-width: 1200px) {
-    /* .page-shell {
-        flex-direction: column;
-    } */
-
-    .content-grid {
-        grid-template-columns: 2fr;
-    }
-
-    #home-map,
-    #map-container {
-        height: 400px;
-    }
-
-    .brand-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    }
-
-    .sidebar-toggle {
-        margin-left: auto;
-        border: 0;
-        background: transparent;
-        color: var(--color-text-secondary);
-        font-size: 20px;
-        cursor: pointer;
-    }
-
-    .main-content {
-        padding: 18px;
-        padding-bottom: 110px;
-    }
-
-    .topbar,
-    .results-header,
-    .route-card-top,
-    .route-footer,
-    .map-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-
-/* =========================
-    Responsive - Below 1440px
-========================= */
-
-@media (max-width: 1440px) {
-
-    #home-map,
-    #map-container {
-        height: 450px;
-    }
+    height: 70vh;
+    min-height: 420px;
 }
 </style>
