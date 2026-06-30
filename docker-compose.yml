@@ -102,7 +102,8 @@ services:
       - net.ipv4.conf.all.src_valid_mark=1
     restart: unless-stopped
     networks:
-      - vpn
+        vpn:
+         ipv4_address: 172.28.0.3
 
   # ----------------------------------------------------------------------------
   # OpenStreetMap tile server (run-only)
@@ -164,7 +165,7 @@ networks:
   # Private network for VPN-only services. wg-easy bridges connected
   # clients into this subnet so they can reach the backend (172.28.0.10).
   vpn:
-    driver: bridge
+    driver: bridge  
     ipam:
       config:
         - subnet: 172.28.0.0/24
