@@ -45,7 +45,7 @@ services:
       # Put the backend on the private VPN network with a fixed IP so it is
       # reachable ONLY by clients connected through WireGuard (see wg-easy).
       vpn:
-        ipv4_address: 172.28.0.10
+        ipv4_address: 172.28.0.90
     environment:
       - ENV=production
     # depends_on:
