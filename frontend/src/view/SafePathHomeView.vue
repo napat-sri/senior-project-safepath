@@ -3,8 +3,8 @@
         <SafePathNavDrawer />
 
         <v-main>
-            <v-container fluid class="pa-4 pa-md-6">
-                <v-card class="mb-4" rounded="lg" elevation="2">
+            <v-container fluid>
+                <v-card class="mb-4" rounded="lg">
                     <v-card-text>
                         <v-card-title>Find your safest Berlin route</v-card-title>
                         <v-card-subtitle>
@@ -16,10 +16,11 @@
                 </v-card>
 
                 <v-row>
-                    <v-col cols="12" lg="5">
+                    <v-col cols="12" lg="4">
                         <v-card rounded="lg" elevation="2" class="mb-4">
                             <v-card-title>Route Search</v-card-title>
-                            <v-card-subtitle>Search safer paths using live route intelligence. Type a Berlin district, station, or landmark to see suggestions.</v-card-subtitle>
+                            <v-card-subtitle>Search safer paths using live route intelligence.</v-card-subtitle>
+                            <v-card-subtitle>Type a district, station, or landmark to see suggestions.</v-card-subtitle>
                             <v-card-text>
                                 <v-form @submit.prevent="searchRoute">
                                     <v-text-field v-model="startLocation" label="📍 Start Location"
@@ -80,7 +81,7 @@
                                                 <h4 class="text-h6">{{ route.name }}</h4>
                                             </div>
                                             <v-chip :style="scorePillStyle(route.safetyScore)">{{ route.safetyScore
-                                            }}/100</v-chip>
+                                                }}/100</v-chip>
                                         </div>
 
                                         <div
@@ -107,7 +108,7 @@
                         </v-card>
                     </v-col>
 
-                    <v-col cols="12" lg="7">
+                    <v-col cols="12" lg="8">
                         <v-card rounded="lg" elevation="2">
                             <v-card-title>Berlin Safety Map</v-card-title>
                             <v-card-text>
@@ -473,8 +474,7 @@ onBeforeUnmount(() => {
 
 #home-map {
     width: 100%;
-    height: 70vh;
-    min-height: 420px;
+    min-height: 380px;
 }
 
 /*

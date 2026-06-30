@@ -8,6 +8,10 @@
 
     <v-toolbar-title>SafePath Berlin</v-toolbar-title>
 
+    <template v-if="$vuetify.display.mdAndUp">
+      <v-switch inset="material" true-icon="mdi-white-balance-sunny" false-icon="mdi-weather-night"></v-switch>
+    </template>
+
     <!-- <template v-if="$vuetify.display.mdAndUp">
           <v-btn icon="mdi-magnify" variant="text"></v-btn>
 
@@ -18,14 +22,14 @@
   </v-app-bar>
 
   <!-- <v-navigation-drawer v-model="drawer" :rail="rail" permanent class="pt-4" :width="width" rail-width="88"> -->
-  <v-navigation-drawer expand-on-hover rail permanent class="pt-4">
+  <v-navigation-drawer v-model="drawer" temporary class="pt-4">
     <v-list>
       <v-list-item prepend-avatar="https://randomuser.me/api/portraits/men/85.jpg" title="John Leider">
       </v-list-item>
     </v-list>
 
     <v-divider></v-divider>
-    <v-list nav density="comfortable">
+    <v-list density="comfortable">
       <v-list-item v-for="item in items" :key="item.title" :title="item.title" :prepend-icon="item.icon"
         :to="item.to" />
       <slot />
