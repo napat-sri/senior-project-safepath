@@ -1,26 +1,33 @@
 <template>
-  <v-navigation-drawer :rail="rail" permanent class="pt-4" :width="width" rail-width="88">
-    <v-list-item class="mb-2">
-      <template #prepend>
-        <v-avatar rounded="lg" size="44">
-          <v-img :src="safePathLogo" alt="SafePath Berlin logo" cover />
-        </v-avatar>
-      </template>
-      <v-list-item-title class="font-weight-bold">SafePath</v-list-item-title>
-      <v-list-item-subtitle>{{ subtitle }}</v-list-item-subtitle>
-      <template #append>
-        <v-btn icon="mdi-menu" variant="text" @click="toggleRail" />
-      </template>
-    </v-list-item>
+  <v-app-bar color="primary">
+    <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
 
+    <v-avatar rounded="lg" size="44">
+      <v-img :src="safePathLogo" alt="SafePath Berlin logo" cover />
+    </v-avatar>
+
+    <v-toolbar-title>SafePath Berlin</v-toolbar-title>
+
+    <!-- <template v-if="$vuetify.display.mdAndUp">
+          <v-btn icon="mdi-magnify" variant="text"></v-btn>
+
+          <v-btn icon="mdi-filter" variant="text"></v-btn>
+        </template>
+
+<v-btn icon="mdi-dots-vertical" variant="text"></v-btn> -->
+  </v-app-bar>
+
+  <!-- <v-navigation-drawer v-model="drawer" :rail="rail" permanent class="pt-4" :width="width" rail-width="88"> -->
+  <v-navigation-drawer expand-on-hover rail permanent class="pt-4">
+    <v-list>
+      <v-list-item prepend-avatar="https://randomuser.me/api/portraits/men/85.jpg" title="John Leider">
+      </v-list-item>
+    </v-list>
+
+    <v-divider></v-divider>
     <v-list nav density="comfortable">
-      <v-list-item
-        v-for="item in items"
-        :key="item.title"
-        :title="item.title"
-        :prepend-icon="item.icon"
-        :to="item.to"
-      />
+      <v-list-item v-for="item in items" :key="item.title" :title="item.title" :prepend-icon="item.icon"
+        :to="item.to" />
       <slot />
     </v-list>
   </v-navigation-drawer>
@@ -35,17 +42,13 @@ import safePathLogo from '../assets/Berlin.png';
 // default menu updates. Pass a custom `items` array (e.g. the admin
 // view) to override it.
 defineProps({
-  subtitle: {
-    type: String,
-    default: 'Berlin'
-  },
   items: {
     type: Array,
     default: () => [
-      { title: 'Dashboard', icon: 'mdi-map', to: '/home' },
+      { title: 'Home', icon: 'mdi-home', to: '/home' },
       { title: 'Profile', icon: 'mdi-account', to: '/profile' },
       { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' },
-      { title: 'Overview Dashboard', icon: 'mdi-chart-box', to: '/overview' }
+      { title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' }
     ]
   },
   width: {
@@ -54,6 +57,7 @@ defineProps({
   }
 });
 
+const drawer = ref(false)
 const rail = ref(false);
 
 const toggleRail = () => {
