@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import SafePathAdminDashboardOverview from '../view/SafePathAdminDashboardOverview.vue';
+import SafePathAdminDashboard from '../view/admin/SafePathAdminDashboard.vue';
 import SafePathHomeView from '../view/SafePathHomeView.vue';
 import SafePathIncidentView from '../view/SafePathIncidentView.vue';
 import SafePathLoginView from '../view/SafePathLoginView.vue';
@@ -45,7 +45,7 @@ const routes = [
   {
     path: '/overview',
     name: 'overview',
-    component: SafePathAdminDashboardOverview,
+    component: SafePathAdminDashboard,
   }
 ];
 
