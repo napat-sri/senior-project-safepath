@@ -5,12 +5,12 @@
         <v-main>
             <v-container fluid class="pa-4 pa-md-6">
                 <v-card class="mb-4" rounded="lg" elevation="2">
-                    <v-card-text>
-                        <h2 class="text-h5 text-md-h4">Report an Incident</h2>
-                        <p class="text-medium-emphasis mt-2">
-                            Share safety incidents in Berlin. Evidence is optional and helps moderation.
-                        </p>
-                    </v-card-text>
+                    <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+                        Report an Incident
+                    </v-card-title>
+                    <v-card-subtitle class="text-medium-emphasis mb-2">
+                        Share safety incidents in Berlin. Evidence is optional and helps moderation.
+                    </v-card-subtitle>
                 </v-card>
 
                 <v-row>
@@ -38,12 +38,19 @@
 
                                     <v-row>
                                         <v-col cols="12" md="6">
-                                            <v-text-field v-model="form.date" label="Date" type="date"
+                                            <v-date-input prepend-icon="" prepend-inner-icon="$calendar"
+                                                v-model="form.date" label="Date" input-format="mm-dd-yyyy"
                                                 variant="outlined" required />
                                         </v-col>
                                         <v-col cols="12" md="6">
-                                            <v-text-field v-model="form.time" label="Time" type="time"
-                                                variant="outlined" required />
+                                            <v-text-field :model-value="form.time" label="Time" variant="outlined"
+                                                prepend-inner-icon="mdi-clock-time-four-outline" required>
+                                                <v-menu v-model="showMenu" :close-on-content-click="false"
+                                                    activator="parent" min-width="0">
+                                                    <v-time-picker format="24hr" color="primary"
+                                                        v-model="form.time"></v-time-picker>
+                                                </v-menu>
+                                            </v-text-field>
                                         </v-col>
                                     </v-row>
 
@@ -53,19 +60,19 @@
                                         required />
 
                                     <v-file-input id="incident-evidence" label="Evidence Upload" variant="outlined"
-                                        multiple accept="image/*,.pdf" prepend-icon="mdi-paperclip"
-                                        @change="handleEvidenceUpload" />
+                                        multiple accept="image/*,.pdf" prepend-inner-icon="mdi-paperclip"
+                                        prepend-icon="" @change="handleEvidenceUpload" />
 
-                                    <p class="text-caption text-medium-emphasis mb-3">Optional: images or PDF files.</p>
 
                                     <v-alert v-if="submitMessage" type="success" variant="tonal" class="mb-4">
                                         {{ submitMessage }}
                                     </v-alert>
 
                                     <div class="d-flex justify-space-between align-center flex-wrap ga-3">
-                                        <p class="text-caption text-medium-emphasis mb-0">
+                                    <span class="text-caption text-medium-emphasis mb-3">Optional: images or PDF files.</span>
+                                        <!-- <p class="text-caption text-medium-emphasis mb-0">
                                             Reports below are shown as frontend preview.
-                                        </p>
+                                        </p> -->
                                         <v-btn type="submit" color="primary">Submit Report</v-btn>
                                     </div>
                                 </v-form>
@@ -90,11 +97,10 @@
                                     <v-card-text>
                                         <div class="d-flex justify-space-between align-start mb-2">
                                             <div>
-                                                <p class="text-overline text-medium-emphasis">{{ report.incidentType }}
-                                                </p>
+                                                <v-chip size="small" variant="tonal">{{ report.incidentType }}</v-chip>
                                                 <h4 class="text-h6">{{ report.location }}</h4>
                                             </div>
-                                            <v-chip size="small" color="warning" variant="tonal">Pending Review</v-chip>
+                                            <!-- <v-chip size="small" color="warning" variant="tonal">Pending Review</v-chip> -->
                                         </div>
 
                                         <div
@@ -131,6 +137,7 @@ const validationErrors = reactive({
     location: '',
     details: ''
 });
+const showMenu = ref(false)
 
 const form = reactive({
     reporterName: '',
