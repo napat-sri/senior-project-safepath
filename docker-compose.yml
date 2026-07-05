@@ -120,8 +120,13 @@ services:
       - SSL_POLICY=none
     networks:
       - caddy
-    # Private: no public Caddy labels. Tiles are reached only through the
-    # frontend gateway at safepath.duckdns.org/tile/* (and via VPN for admin).
+    # Tiles reach the public app via the frontend gateway /tile/*. Additionally
+    # expose a VPN-only name for direct/admin access to the tile server.
+    labels:
+      caddy: osm.safepath.duckdns.org
+      caddy.@vpn.remote_ip: "172.28.0.3"
+      caddy.route.0_reverse_proxy: "@vpn {{upstreams 80}}"
+      caddy.route.1_respond: '"VPN access required. your ip is {http.request.remote.host}" 403'
   # ----------------------------------------------------------------------------
   # OpenStreetMap tile server (one-shot import)
   #

@@ -36,9 +36,12 @@ services:
       caddy:          # reachable by the frontend gateway as langflow:7860
       vpn:            # admin reaches the builder UI over the VPN at .30
         ipv4_address: 172.28.0.30
-    # labels:
-    #   caddy: langflow.safepath.duckdns.org
-    #   caddy.reverse_proxy: "{{upstreams 7860}}"
+    labels:
+      # VPN-only builder UI by name (full UI at a domain root, not a subpath).
+      caddy: langflow.safepath.duckdns.org
+      caddy.@vpn.remote_ip: "172.28.0.3"
+      caddy.route.0_reverse_proxy: "@vpn {{upstreams 7860}}"
+      caddy.route.1_respond: '"VPN access required. your ip is {http.request.remote.host}" 403'
 
   postgres:
     # Pinned to a specific Debian base (trixie) so the postgres:16 tag does not
