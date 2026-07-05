@@ -50,21 +50,15 @@ services:
       - ENV=production
     # depends_on:
     #   - langflow
-    # --- VPN-ONLY ---------------------------------------------------------
-    # Public exposure removed: the labels below told Caddy to publish the
-    # backend at https://api.safepath.duckdns.org. With them commented out,
-    # Caddy no longer serves it publicly, so the API is reachable only over
-    # the VPN at http://172.28.0.10:9000.
-    #
-    # NOTE: the browser frontend calls https://api.safepath.duckdns.org/api
-    # (frontend/src/services/api.js). While the backend is VPN-only, the
-    # public site's API calls will fail unless the visitor is on the VPN.
-    # To make this permanent, point the frontend at the VPN address or have
-    # the frontend proxy the API server-side.
-    # labels:
-    #   caddy: api.safepath.duckdns.org
-    #   caddy.reverse_proxy: "{{upstreams 9000}}"
-    # ----------------------------------------------------------------------
+    # Direct access by name, VPN-only: https://backend.safepath.duckdns.org
+    # Public visitors get 403; only WireGuard traffic (source = wg-easy at
+    # 172.28.0.3) is proxied through. The public app still reaches the API
+    # via the frontend gateway's /api/* route (backend:9000), unaffected.
+    labels:
+      caddy: backend.safepath.duckdns.org
+      caddy.@vpn.remote_ip: "172.28.0.3"
+      caddy.route.0_reverse_proxy: "@vpn {{upstreams 9000}}"
+      caddy.route.1_respond: '"VPN access required. your ip is {http.request.remote.host}" 403'
 
   # ----------------------------------------------------------------------------
   # WireGuard VPN gateway (wg-easy)
