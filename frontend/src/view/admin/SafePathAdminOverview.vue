@@ -1,12 +1,12 @@
 <template>
-    <v-layout class="app-shell">
+    <v-layout>
         <v-main>
             <v-container fluid class="pa-4 pa-md-6">
-                <v-row class="mb-3">
+                <v-row class="mb-5">
                     <v-col cols="12" sm="6" lg="3" v-for="item in overviewStats" :key="item.label">
                         <v-card rounded="xl" elevation="0" max-height="100%">
                             <v-card-text class="overview-stat-card__content">
-                                <v-avatar size="52" color="primary" variant="tonal">
+                                <v-avatar size="52" color="primary" variant="outlined">
                                     <v-icon :icon="item.icon" size="24" />
                                 </v-avatar>
                                 <div>
@@ -24,10 +24,12 @@
                 </v-row>
 
                 <v-card id="locations" rounded="lg" elevation="2" class="mb-4">
-                    <v-card-title>
-                        <h2 class="text-h6">Location Insights</h2>
+                    <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+                        Location Insights
                     </v-card-title>
-                    <v-card-subtitle>Most searched and most reported places across Berlin.</v-card-subtitle>
+                    <v-card-subtitle class="text-medium-emphasis mb-2">
+                        Most searched and most reported places across Berlin.
+                    </v-card-subtitle>
                     <v-card-text>
                         <v-row>
                             <v-col cols="12" md="6">
@@ -72,25 +74,6 @@
             </v-container>
         </v-main>
     </v-layout>
-
-    <v-dialog v-model="showUserModal" max-width="560">
-        <v-card rounded="lg">
-            <v-card-title>{{ selectedUser ? 'Update user access' : 'Add new user' }}</v-card-title>
-            <v-card-text>
-                <v-text-field v-model="userForm.name" label="Name" variant="outlined" class="mb-3" />
-                <v-text-field v-model="userForm.email" label="Email" variant="outlined" class="mb-3" />
-                <v-select v-model="userForm.role" :items="['Admin', 'Moderator', 'User']" label="Role"
-                    variant="outlined" class="mb-3" />
-                <v-select v-model="userForm.status" :items="['Active', 'Suspended', 'Pending']" label="Status"
-                    variant="outlined" />
-            </v-card-text>
-            <v-card-actions>
-                <v-spacer />
-                <v-btn variant="text" @click="closeUserModal">Cancel</v-btn>
-                <v-btn color="primary" @click="saveUser">Save User</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
 </template>
 
 <script setup>
@@ -98,17 +81,6 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-
-const adminMenu = [
-    { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/overview' },
-    { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-    { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
-];
-
-const searchLogFilter = ref('');
-const incidentStatusFilter = ref('All');
-const showUserModal = ref(false);
-const selectedUser = ref(null);
 
 const tab = ref('Overview')
 
@@ -226,7 +198,7 @@ const exportReport = () => {
 .overview-stat-card__content {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
     padding: 22px;
 }
 
@@ -250,7 +222,7 @@ const exportReport = () => {
 }
 
 .overview-stat-card__value {
-    font-size: large;
+    font-size: x-large;
     line-height: 1.05;
     font-weight: 800;
     word-break: break-word;
