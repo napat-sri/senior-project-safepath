@@ -9,7 +9,16 @@
     <v-toolbar-title>SafePath Berlin</v-toolbar-title>
 
     <template v-if="$vuetify.display.mdAndUp">
-      <v-switch inset="material" true-icon="mdi-white-balance-sunny" false-icon="mdi-weather-night"></v-switch>
+      <v-switch
+        v-model="isLight"
+        inset
+        hide-details
+        density="compact"
+        color="black"
+        class="me-2"
+        true-icon="mdi-white-balance-sunny"
+        false-icon="mdi-weather-night"
+      ></v-switch>
     </template>
 
     <!-- <template v-if="$vuetify.display.mdAndUp">
@@ -38,7 +47,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useTheme } from 'vuetify';
 import safePathLogo from '../assets/Berlin.png';
 
 // The single source of truth for the main app navigation.
@@ -67,4 +77,16 @@ const rail = ref(false);
 const toggleRail = () => {
   rail.value = !rail.value;
 };
+
+// Light/dark toggle. The switch is "on" for light mode (sun icon); the choice
+// is applied globally via Vuetify and remembered across reloads.
+const theme = useTheme();
+const isLight = computed({
+  get: () => theme.name.value === 'safepathLight',
+  set: (value) => {
+    const next = value ? 'safepathLight' : 'safepathDark';
+    theme.change(next);
+    localStorage.setItem('safepath-theme', next);
+  }
+});
 </script>

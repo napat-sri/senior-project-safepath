@@ -7,7 +7,7 @@
                 <v-card class="mb-3" rounded="lg" elevation="2">
                     <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
                         Profile Settings
-                        <v-btn variant="outlined" color="error" @click="logout">Logout</v-btn>
+                        <v-btn variant="tonal" color="error" @click="logout">Logout</v-btn>
                     </v-card-title>
                     <v-card-subtitle class="text-medium-emphasis mb-2">Manage account details, image, and
                         privacy-sensitive actions.
@@ -25,7 +25,7 @@
                             <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
                                 Account Overview
                                 <div></div>
-                                <v-btn variant="outlined" color="primary" @click="openEditModal()">Edit Profile</v-btn>
+                                <v-btn variant="tonal" color="primary" @click="openEditModal()">Edit Profile</v-btn>
                             </v-card-title>
 
                             <v-card-text class="d-flex align-center flex-wrap ga-4">
@@ -138,7 +138,7 @@
                 <span class="font-weight-black">Delete account?</span>
             </template>
             <v-card-text class="bg-surface-light pt-4">
-                <p class="text-emphasis mb-3">Permanently delete your SafePath account.
+                <p class="text-emphasis mb-3">Permanently delete your SafePath account.<br>
                     Your saved profile data may be removed,
                     while incident reports may be anonymized for community safety.</p>
                 <p class="text-medium-emphasis mb-3">This action cannot be undone. Type DELETE to confirm.</p>

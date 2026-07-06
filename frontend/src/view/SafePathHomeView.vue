@@ -458,18 +458,17 @@ onBeforeUnmount(() => {
 <style scoped>
 .app-shell {
     min-height: 100vh;
-    background-color: white;
 }
 
 .suggestion-list {
-    border: 1px solid rgba(148, 163, 184, 0.35);
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
     border-radius: 12px;
 }
 
 #map-container {
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid rgba(148, 163, 184, 0.35);
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 #home-map {

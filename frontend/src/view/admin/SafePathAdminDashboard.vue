@@ -25,10 +25,10 @@
                             </v-card-subtitle>
                         </div>
                         <div class="d-flex ga-2">
-                            <v-btn variant="outlined" @click="refreshDashboard" prepend-icon="mdi-refresh">
+                            <v-btn variant="tonal" @click="refreshDashboard" prepend-icon="mdi-refresh">
                                 Refresh
                             </v-btn>
-                            <v-btn variant="outlined" color="primary" @click="exportReport" prepend-icon="mdi-download">
+                            <v-btn variant="tonal" color="primary" @click="exportReport" prepend-icon="mdi-download">
                                 Export Report
                             </v-btn>
                         </div>

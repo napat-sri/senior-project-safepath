@@ -6,7 +6,7 @@
                     <v-col cols="12" sm="6" lg="3" v-for="item in overviewStats" :key="item.label">
                         <v-card rounded="xl" elevation="0" max-height="100%">
                             <v-card-text class="overview-stat-card__content">
-                                <v-avatar size="52" color="primary" variant="outlined">
+                                <v-avatar size="52" color="primary" variant="tonal">
                                     <v-icon :icon="item.icon" size="24" />
                                 </v-avatar>
                                 <div>
@@ -14,7 +14,7 @@
                                     <div class="overview-stat-card__value">{{ item.value }}</div>
                                     <v-chip class="overview-stat-card__chip" size="small"
                                         :color="item.trendType === 'positive' ? 'success' : item.trendType === 'warning' ? 'warning' : 'primary'"
-                                        variant="outlined">
+                                        variant="tonal">
                                         {{ item.trend }}
                                     </v-chip>
                                 </div>

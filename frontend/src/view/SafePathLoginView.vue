@@ -87,10 +87,22 @@ const goToRegister = () => {
 <style scoped>
 .auth-page {
     min-height: 100vh;
+}
+
+/* Auth backdrops follow the active theme. */
+.v-theme--safepathLight .auth-page {
     background: linear-gradient(135deg, #eef2ff, #eff6ff);
 }
 
-.brand-panel {
+.v-theme--safepathDark .auth-page {
+    background: linear-gradient(135deg, #121212, #1a1a1a);
+}
+
+.v-theme--safepathLight .brand-panel {
     background: linear-gradient(180deg, #eef2ff, #c7d2fe);
+}
+
+.v-theme--safepathDark .brand-panel {
+    background: linear-gradient(160deg, #16252b, #0c1a1f);
 }
 </style>
