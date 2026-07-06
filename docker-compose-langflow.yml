@@ -7,7 +7,11 @@ services:
   # the UI. Export updated flows from the Langflow UI and commit the JSON.
   # ----------------------------------------------------------------------------
   langflow:
-    image: langflowai/langflow:latest
+    #image: langflowai/langflow:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.langflow
+    image: langflow-langfuse:pinned
     container_name: langflow
     environment:
       # - LANGFLOW_LOAD_FLOWS_PATH=/app/flows
