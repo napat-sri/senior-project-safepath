@@ -17,6 +17,8 @@ import time
 import os
 from dotenv import load_dotenv
 
+import langfuse_monitor
+
 load_dotenv()
 
 app = FastAPI(title="SafePath API")
@@ -79,6 +81,63 @@ def langflow_health():
         "langflow_target": LANGFLOW_URL,
         "auth_configured": LANGFLOW_API_KEY
     }
+
+
+# ---------------------------------------------------------------------------
+# Langfuse monitoring (read-only) — pulls traces/observations via the SDK.
+# ---------------------------------------------------------------------------
+@app.get("/api/monitor/health")
+def monitor_health():
+    """Check the backend can reach Langfuse with valid credentials."""
+    try:
+        return langfuse_monitor.ping()
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse unreachable: {exc}")
+
+
+@app.get("/api/monitor/traces")
+def monitor_traces(minutes: int = 60, limit: int = 50):
+    """Recent traces (summarised), newest first."""
+    try:
+        return {"traces": langfuse_monitor.fetch_recent_traces(minutes=minutes, limit=limit)}
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+
+@app.get("/api/monitor/alerts")
+def monitor_alerts(
+    minutes: int = 60,
+    latency_threshold: float = langfuse_monitor.DEFAULT_LATENCY_THRESHOLD_S,
+    limit: int = 100,
+    check_errors: bool = True,
+):
+    """High-latency and error/warning alerts from recent traces."""
+    try:
+        return langfuse_monitor.build_alerts(
+            minutes=minutes,
+            latency_threshold_s=latency_threshold,
+            limit=limit,
+            check_errors=check_errors,
+        )
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+
+@app.get("/api/monitor/stats")
+def monitor_stats(minutes: int = 1440, limit: int = 500):
+    """Aggregate volume / latency / cost / per-user stats (default last 24h)."""
+    try:
+        return langfuse_monitor.build_stats(minutes=minutes, limit=limit)
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
 @app.get("/api/places")
 def search_places(query: str):
