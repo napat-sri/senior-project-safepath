@@ -19,6 +19,7 @@ Nothing here writes to Langfuse; it is read-only.
 
 from __future__ import annotations
 
+import json
 import os
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
@@ -63,6 +64,26 @@ def _iso(value: Any) -> str | None:
     return str(value)
 
 
+def _stringify(value: Any) -> str | None:
+    """Turn any input/output payload into a string."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    try:
+        return json.dumps(value, default=str, ensure_ascii=False)
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _truncate(value: Any, max_len: int = 500) -> str | None:
+    """String preview of a payload, cut to `max_len` chars."""
+    s = _stringify(value)
+    if s is None:
+        return None
+    return s if len(s) <= max_len else s[:max_len] + "…"
+
+
 def _trace_url(trace: Any) -> str | None:
     """Build a clickable Langfuse URL for a trace when possible."""
     host = os.getenv("LANGFUSE_HOST", "").rstrip("/")
@@ -72,9 +93,13 @@ def _trace_url(trace: Any) -> str | None:
     return None
 
 
-def _summarise_trace(trace: Any) -> dict[str, Any]:
-    """Convert an SDK trace object into a small JSON-friendly dict."""
-    return {
+def _summarise_trace(trace: Any, include_io: bool = False) -> dict[str, Any]:
+    """Convert an SDK trace object into a small JSON-friendly dict.
+
+    Set `include_io=True` to attach a truncated preview of the trace's
+    input/output (the user question and the AI answer).
+    """
+    summary = {
         "id": getattr(trace, "id", None),
         "name": getattr(trace, "name", None),
         "timestamp": _iso(getattr(trace, "timestamp", None)),
@@ -84,6 +109,26 @@ def _summarise_trace(trace: Any) -> dict[str, Any]:
         "total_cost": getattr(trace, "total_cost", None),
         "tags": getattr(trace, "tags", None) or [],
         "url": _trace_url(trace),
+    }
+    if include_io:
+        summary["input_preview"] = _truncate(getattr(trace, "input", None))
+        summary["output_preview"] = _truncate(getattr(trace, "output", None))
+    return summary
+
+
+def _summarise_observation(obs: Any) -> dict[str, Any]:
+    """Summarise one observation (a step inside a trace), with its input/output."""
+    return {
+        "id": getattr(obs, "id", None),
+        "name": getattr(obs, "name", None),
+        "type": getattr(obs, "type", None),
+        "level": getattr(obs, "level", None),
+        "model": getattr(obs, "model", None),
+        "latency_s": getattr(obs, "latency", None),
+        "status_message": getattr(obs, "status_message", None),
+        "input": getattr(obs, "input", None),
+        "output": getattr(obs, "output", None),
+        "usage": getattr(obs, "usage", None),
     }
 
 
@@ -102,8 +147,14 @@ def ping() -> dict[str, Any]:
     return {"status": "ok", "host": os.getenv("LANGFUSE_HOST")}
 
 
-def fetch_recent_traces(minutes: int = 60, limit: int = 50) -> list[dict[str, Any]]:
-    """Return summarised traces from the last `minutes`, newest first."""
+def fetch_recent_traces(
+    minutes: int = 60, limit: int = 50, include_io: bool = False
+) -> list[dict[str, Any]]:
+    """Return summarised traces from the last `minutes`, newest first.
+
+    With `include_io=True`, each item also carries a truncated
+    `input_preview` / `output_preview`.
+    """
     client = get_client()
     result = client.api.trace.list(
         from_timestamp=_window_start(minutes),
@@ -111,7 +162,22 @@ def fetch_recent_traces(minutes: int = 60, limit: int = 50) -> list[dict[str, An
         order_by="timestamp.desc",
     )
     data = getattr(result, "data", []) or []
-    return [_summarise_trace(t) for t in data]
+    return [_summarise_trace(t, include_io=include_io) for t in data]
+
+
+def fetch_trace_detail(trace_id: str) -> dict[str, Any]:
+    """Return one trace with FULL input/output and all its observations."""
+    client = get_client()
+    trace = client.api.trace.get(trace_id)
+
+    detail = _summarise_trace(trace)
+    detail["input"] = getattr(trace, "input", None)
+    detail["output"] = getattr(trace, "output", None)
+    detail["metadata"] = getattr(trace, "metadata", None)
+
+    observations = getattr(trace, "observations", []) or []
+    detail["observations"] = [_summarise_observation(o) for o in observations]
+    return detail
 
 
 def _trace_error_events(trace_id: str, max_events: int = 50) -> list[dict[str, Any]]:

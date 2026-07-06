@@ -98,10 +98,28 @@ def monitor_health():
 
 
 @app.get("/api/monitor/traces")
-def monitor_traces(minutes: int = 60, limit: int = 50):
-    """Recent traces (summarised), newest first."""
+def monitor_traces(minutes: int = 60, limit: int = 50, include_io: bool = False):
+    """Recent traces (summarised), newest first.
+
+    Pass include_io=true to add truncated input/output previews.
+    """
     try:
-        return {"traces": langfuse_monitor.fetch_recent_traces(minutes=minutes, limit=limit)}
+        return {
+            "traces": langfuse_monitor.fetch_recent_traces(
+                minutes=minutes, limit=limit, include_io=include_io
+            )
+        }
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+
+@app.get("/api/monitor/traces/{trace_id}")
+def monitor_trace_detail(trace_id: str):
+    """Full detail for one trace: complete input/output + all observations."""
+    try:
+        return langfuse_monitor.fetch_trace_detail(trace_id)
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
     except Exception as exc:
