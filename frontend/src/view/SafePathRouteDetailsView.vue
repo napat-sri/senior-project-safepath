@@ -4,60 +4,102 @@
 
         <v-main>
             <v-container fluid class="pa-4 pa-md-6">
-                <v-card class="mb-4" rounded="lg" elevation="2">
+                <v-card class="mb-5" rounded="lg" elevation="2">
                     <v-card-text class="d-flex flex-wrap ga-4 justify-space-between align-center">
                         <div>
-                            <h2 class="text-h5 text-md-h4">Route Detailed Analysis</h2>
-                            <p class="text-medium-emphasis mt-2">Inspect overall score, safety breakdown, and selected
-                                route
-                                map.</p>
+                            <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+                                Route Detailed Analysis
+                            </v-card-title>
+                            <v-card-subtitle class="text-medium-emphasis">
+                                Inspect overall score, safety breakdown, and selected route map.
+                            </v-card-subtitle>
                         </div>
                         <v-btn variant="tonal" color="primary" @click="goHome">Back to Search</v-btn>
                     </v-card-text>
                 </v-card>
 
                 <v-row>
-                    <v-col cols="12">
-                        <v-card rounded="lg" elevation="2">
+                    <v-col cols="12" md="8">
+                        <v-card rounded="lg" elevation="2" height="100%">
                             <v-card-text>
-                                <div class="d-flex justify-space-between align-center flex-wrap ga-3 mb-2">
-                                    <div>
-                                        <p class="text-overline text-medium-emphasis">Overall Safety</p>
-                                        <h3 class="text-h5">{{ selectedRoute.name }}</h3>
-                                    </div>
-                                    <v-chip :style="scoreBadgeStyle(selectedRoute.safetyScore)" size="large">
-                                        {{ selectedRoute.safetyScore }}/100
+                                <div class="d-flex justify-space-between align-center flex-wrap ga-3 mb-1">
+                                    <v-chip size="x-large" label class="text-medium-emphasis">
+                                        {{ selectedRoute.name }}
                                     </v-chip>
                                 </div>
 
-                                <p class="text-body-1 text-medium-emphasis mb-3">{{ selectedRoute.summary }}</p>
-
-                                <v-progress-linear :model-value="selectedRoute.safetyScore"
-                                    :color="selectedRoute.accentColor || getSafetyTone(selectedRoute.safetyScore).color"
-                                    height="10" rounded />
+                                <v-card-text class="text-body-1 text-medium-emphasis mb-2">{{ selectedRoute.summary
+                                    }}</v-card-text>
                             </v-card-text>
                         </v-card>
                     </v-col>
 
-                    <v-col cols="12" md="6">
+                    <v-col cols="12" md="4">
+                        <v-card rounded="lg" elevation="2">
+                            <v-card-text>
+                                <div class="d-flex justify-space-between align-center flex-wrap ga-3 mb-2">
+                                    <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+                                        Overall Safety
+                                    </v-card-title>
+                                    <v-progress-circular :key="`${updateTrigger}_${i}`"
+                                        :model-value="selectedRoute.safetyScore" :size="175" :width="20"
+                                        bg-color="surface-light" :style="scoreBadgeStyle(selectedRoute.safetyScore)"
+                                        reveal rounded>
+                                        <v-avatar color="surface-light" size="115"><span class="text-headline-small">{{
+                                            selectedRoute.safetyScore }}/100</span></v-avatar></v-progress-circular>
+                                </div>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
+
+                    <v-col cols="12" md="7">
                         <v-card rounded="lg" elevation="2" height="100%">
                             <v-card-title>Route Information</v-card-title>
                             <v-card-text>
                                 <v-list lines="two">
-                                    <v-list-item title="Distance covered" :subtitle="selectedRoute.distance" />
-                                    <v-list-item title="Estimated duration" :subtitle="selectedRoute.duration" />
-                                    <v-list-item title="Route type" :subtitle="selectedRoute.routeType" />
-                                    <v-list-item title="Journey" :subtitle="displayJourney" />
+                                    <div class="d-flex justify-space-between align-center mb-2">
+                                        <v-list-item title="Distance covered" :subtitle="selectedRoute.distance">
+                                            <template v-slot:prepend>
+                                                <v-avatar color="grey-lighten-1">
+                                                    <v-icon color="white">mdi-road-variant</v-icon>
+                                                </v-avatar>
+                                            </template>
+                                        </v-list-item>
+                                        <v-list-item title="Estimated duration" :subtitle="selectedRoute.duration">
+                                            <template v-slot:prepend>
+                                                <v-avatar color="grey-lighten-1">
+                                                    <v-icon color="white">mdi-clock-outline</v-icon>
+                                                </v-avatar>
+                                            </template>
+                                        </v-list-item>
+                                        <v-list-item title="Route type" :subtitle="selectedRoute.routeType">
+                                            <template v-slot:prepend>
+                                                <v-avatar color="grey-lighten-1">
+                                                    <v-icon color="white">mdi-train-car</v-icon>
+                                                </v-avatar>
+                                            </template>
+                                        </v-list-item>
+                                    </div>
+
+                                    <div class="d-flex justify-space-between align-center">
+                                        <v-list-item title="Journey" :subtitle="displayJourney">
+                                            <template v-slot:prepend>
+                                                <v-avatar color="grey-lighten-1">
+                                                    <v-icon color="white">mdi-map-marker-distance</v-icon>
+                                                </v-avatar>
+                                            </template>
+                                        </v-list-item>
+                                    </div>
                                 </v-list>
                             </v-card-text>
                         </v-card>
                     </v-col>
 
-                    <v-col cols="12" md="6">
+                    <v-col cols="12" md="5">
                         <v-card rounded="lg" elevation="2" height="100%">
                             <v-card-title>Safety Score Breakdown</v-card-title>
                             <v-card-text>
-                                <div v-for="item in selectedRoute.breakdown" :key="item.label" class="mb-4">
+                                <div v-for="item in selectedRoute.breakdown" :key="item.label" class="mb-3">
                                     <div class="d-flex justify-space-between mb-2">
                                         <span class="font-weight-medium">{{ item.label }}</span>
                                         <span>{{ item.score }}/100</span>
@@ -74,10 +116,12 @@
                         <v-card rounded="lg" elevation="2">
                             <v-card-title class="d-flex justify-space-between align-center">
                                 <div>
-                                    <h3 class="text-h6">Navigation Map</h3>
-                                    <p class="text-body-2 text-medium-emphasis">The selected route is highlighted with
-                                        the
-                                        analysis safety color.</p>
+                                    <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+                                        Navigation Map
+                                    </v-card-title>
+                                    <v-card-subtitle class="text-medium-emphasis mb-2">
+                                        The selected route is highlighted with the analysis safety color.
+                                    </v-card-subtitle>
                                 </div>
                                 <v-chip variant="tonal" color="primary">{{ selectedRoute.routeType }}</v-chip>
                             </v-card-title>
@@ -136,7 +180,7 @@ function scoreBadgeStyle(score) {
 
     return {
         color: tone.color,
-        backgroundColor: tone.soft
+        // backgroundColor: tone.soft
     };
 }
 
@@ -245,5 +289,16 @@ onBeforeUnmount(() => {
     width: 100%;
     height: 68vh;
     min-height: 420px;
+}
+
+#chat-container {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: -webkit-fit-content;
+    width: fit-content;
+    height: -webkit-fit-content;
+    height: fit-content;
+    z-index: 2000;
 }
 </style>
