@@ -26,25 +26,25 @@
                                                 placeholder="Anonymous or your name" variant="outlined" />
                                         </v-col>
                                         <v-col cols="12" md="6">
-                                            <v-select v-model="form.incidentType" label="Incident Type"
-                                                :items="incidentTypes" variant="outlined" required />
+                                            <v-select v-model="form.incidentType" label="Incident Type *"
+                                                :items="incidentTypes" variant="outlined" required :rules="[rules.type]" />
                                         </v-col>
                                     </v-row>
 
-                                    <v-text-field v-model="form.location" label="Location"
+                                    <v-text-field v-model="form.location" label="Location *"
                                         placeholder="e.g., Alexanderplatz, Berlin" variant="outlined"
                                         :error-messages="validationErrors.location ? [validationErrors.location] : []"
-                                        required />
+                                        required :rules="[rules.location]" />
 
                                     <v-row>
                                         <v-col cols="12" md="6">
                                             <v-date-input prepend-icon="" prepend-inner-icon="$calendar"
-                                                v-model="form.date" label="Date" input-format="mm-dd-yyyy"
-                                                variant="outlined" required />
+                                                v-model="form.date" label="Date *" input-format="mm-dd-yyyy"
+                                                variant="outlined" required :rules="[rules.date]" />
                                         </v-col>
                                         <v-col cols="12" md="6">
-                                            <v-text-field :model-value="form.time" label="Time" variant="outlined"
-                                                prepend-inner-icon="mdi-clock-time-four-outline" required>
+                                            <v-text-field :model-value="form.time" label="Time *" variant="outlined"
+                                                prepend-inner-icon="mdi-clock-time-four-outline" required :rules="[rules.time]">
                                                 <v-menu v-model="showMenu" :close-on-content-click="false"
                                                     activator="parent" min-width="0">
                                                     <v-time-picker format="24hr" color="primary"
@@ -54,7 +54,7 @@
                                         </v-col>
                                     </v-row>
 
-                                    <v-textarea v-model="form.details" label="Incident Details"
+                                    <v-textarea v-model="form.details" label="Incident Details *"
                                         placeholder="Briefly describe what happened." variant="outlined" rows="4"
                                         :error-messages="validationErrors.details ? [validationErrors.details] : []"
                                         required />
@@ -137,6 +137,12 @@ const validationErrors = reactive({
     location: '',
     details: ''
 });
+const rules = {
+    type: value => !!value || 'Incident Type is required',
+    // location: value => !!value || 'Location is required',
+    date: value => !!value || 'Date is required',
+    time: value => !!value || 'Time is required',
+  }
 const showMenu = ref(false)
 
 const form = reactive({
