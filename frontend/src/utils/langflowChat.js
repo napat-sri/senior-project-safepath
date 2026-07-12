@@ -8,8 +8,8 @@ const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY;
 // Langflow is private. The chat widget reaches it through the public frontend
 // gateway, which proxies /langflow/* to langflow:7860 (prefix stripped). This
 // keeps the call same-origin (no mixed-content / CORS issues).
-const LANGFLOW_HOST_URL = process.env.VUE_APP_LANGFLOW_HOST || 'https://safepath.duckdns.org/langflow';
-// const LANGFLOW_HOST_URL = 'http://localhost:7860'; // for development
+//const LANGFLOW_HOST_URL = process.env.VUE_APP_LANGFLOW_HOST || 'https://safepath.duckdns.org/langflow';
+const LANGFLOW_HOST_URL = process.env.VUE_APP_LANGFLOW_HOST
 
 function mountChatWidget(containerId) {
   const chatContainer = document.getElementById(containerId);

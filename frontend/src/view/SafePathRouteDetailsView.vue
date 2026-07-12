@@ -154,7 +154,8 @@ import { mountLangflowChat } from '../utils/langflowChat';
 
 
 //const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png'; //dev
-const TILE_URL = process.env.VUE_APP_TILE_URL || 'https://osm.safepath.duckdns.org/tile/{z}/{x}/{y}.png'; //prod
+//const TILE_URL = process.env.VUE_APP_TILE_URL || 'https://osm.safepath.duckdns.org/tile/{z}/{x}/{y}.png'; //prod
+const TILE_URL = process.env.VUE_APP_TILE_URL
 
 const DefaultIcon = L.icon({
     iconUrl: icon,
