@@ -10,8 +10,7 @@
                                     <v-img :src="safepathLogo" alt="SafePath Berlin logo" cover />
                                 </v-avatar>
                                 <div>
-                                    <h1 class="text-h4 text-high-emphasis">SafePath</h1>
-                                    <p class="text-primary text-subtitle-1 font-weight-bold">Berlin</p>
+                                    <h1 class="text-h4 text-high-emphasis">SafePath Berlin</h1>
                                 </div>
                             </v-sheet>
 
@@ -20,14 +19,18 @@
                             <v-list bg-color="transparent" density="comfortable" class="pa-0">
                                 <v-list-item>
                                     <template #prepend>
-                                        <v-avatar color="primary" variant="tonal" size="36">S</v-avatar>
+                                        <v-avatar color="primary" variant="tonal">
+                                            <v-icon icon="mdi-magnify"></v-icon>
+                                        </v-avatar>
                                     </template>
                                     <v-list-item-title class="font-weight-bold">Safe Routes</v-list-item-title>
                                     <v-list-item-subtitle>Find the safest routes in real-time</v-list-item-subtitle>
                                 </v-list-item>
                                 <v-list-item>
                                     <template #prepend>
-                                        <v-avatar color="warning" variant="tonal" size="36">A</v-avatar>
+                                        <v-avatar color="warning" variant="tonal">
+                                            <v-icon icon="mdi-bell-outline"></v-icon>
+                                        </v-avatar>
                                     </template>
                                     <v-list-item-title class="font-weight-bold">Smart Alerts</v-list-item-title>
                                     <v-list-item-subtitle>Get notified about risks and incidents</v-list-item-subtitle>
@@ -35,23 +38,33 @@
                             </v-list>
                         </v-col>
 
-                        <v-col cols="12" md="6" class="pa-8 pa-md-12 d-flex align-center">
-                            <v-sheet width="100%" max-width="460" class="mx-auto" color="transparent">
-                                <h2 class="text-h4 mb-2">Welcome Back</h2>
-                                <p class="text-medium-emphasis mb-8">Login to continue to your account</p>
+                        <v-col cols="12" md="6" class="pa-8 pa-md-10 d-flex align-center">
+                            <v-sheet width="100%" max-width="375" class="mx-auto" color="transparent">
+                                <v-card-title class="text-headline-medium font-weight-black">Welcome Back</v-card-title>
+                                <v-card-subtitle class="text-body-large font-weight-medium">Login to continue to your account</v-card-subtitle>
 
                                 <v-form @submit.prevent="handleLogin">
                                     <v-text-field v-model="email" type="email" label="Email"
                                         placeholder="Enter your email" variant="outlined" density="comfortable"
-                                        class="mb-3" required />
+                                         class="mt-5 my-0" required />
 
                                     <v-text-field v-model="password" type="password" label="Password"
                                         placeholder="Enter your password" variant="outlined" density="comfortable"
-                                        class="mb-6" required />
+                                        class="my-0" required />
 
-                                    <v-btn color="primary" block size="large" type="submit" class="mb-4">LOGIN</v-btn>
+                                    <v-btn color="primary" block type="submit" class="mt-1 mb-4">LOGIN</v-btn>
 
-                                    <p class="text-center text-medium-emphasis">
+                                    <v-divider>or</v-divider>
+
+                                <div class="d-grid mt-4">
+                                    <v-btn v-for="provider in primaryProviders" :key="provider.key" block
+                                        variant="outlined" @click="registerWithProvider(provider.key)">
+                                        <v-icon class="mr-2">{{ provider.icon }}</v-icon>
+                                        {{ provider.label }}
+                                    </v-btn>
+                                </div>
+
+                                <p class="text-center text-medium-emphasis">
                                         Don't have an account?
                                         <v-btn variant="text" color="primary" @click="goToRegister">Click to
                                             register</v-btn>
@@ -74,6 +87,14 @@ import safepathLogo from '../assets/Berlin.png';
 const email = ref('');
 const password = ref('');
 const router = useRouter();
+
+const primaryProviders = [
+    {
+        key: 'google',
+        label: 'Continue with Google',
+        icon: 'mdi-google'
+    }
+];
 
 const handleLogin = () => {
     console.log(email.value, password.value);

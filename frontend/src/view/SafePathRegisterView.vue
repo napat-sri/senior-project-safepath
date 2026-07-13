@@ -10,8 +10,7 @@
                                     <v-img :src="safePathLogo" alt="SafePath Berlin logo" cover />
                                 </v-avatar>
                                 <div>
-                                    <h1 class="text-h4 text-high-emphasis">SafePath</h1>
-                                    <p class="text-primary text-subtitle-1 font-weight-bold">Berlin</p>
+                                    <h1 class="text-h4 text-high-emphasis">SafePath Berlin</h1>
                                 </div>
                             </v-sheet>
 
@@ -20,7 +19,9 @@
                             <v-list bg-color="transparent" density="comfortable" class="pa-0">
                                 <v-list-item>
                                     <template #prepend>
-                                        <v-avatar color="primary" variant="tonal" size="36">L</v-avatar>
+                                        <v-avatar color="primary" variant="tonal">
+                                            <v-icon icon="mdi-lock"></v-icon>
+                                        </v-avatar>
                                     </template>
                                     <v-list-item-title class="font-weight-bold">Secure Sign Up</v-list-item-title>
                                     <v-list-item-subtitle>Register with your preferred trusted account
@@ -28,7 +29,9 @@
                                 </v-list-item>
                                 <v-list-item>
                                     <template #prepend>
-                                        <v-avatar color="success" variant="tonal" size="36">P</v-avatar>
+                                        <v-avatar color="success" variant="tonal">
+                                            <v-icon icon="mdi-security"></v-icon>
+                                        </v-avatar>
                                     </template>
                                     <v-list-item-title class="font-weight-bold">Protected Account</v-list-item-title>
                                     <v-list-item-subtitle>Your account helps protect your route and safety
@@ -36,7 +39,9 @@
                                 </v-list-item>
                                 <v-list-item>
                                     <template #prepend>
-                                        <v-avatar color="info" variant="tonal" size="36">R</v-avatar>
+                                        <v-avatar color="info" variant="tonal">
+                                            <v-icon icon="mdi-account"></v-icon>
+                                        </v-avatar>
                                     </template>
                                     <v-list-item-title class="font-weight-bold">Personalized Safety</v-list-item-title>
                                     <v-list-item-subtitle>Access safer routes, reports, and community safety
@@ -45,38 +50,40 @@
                             </v-list>
                         </v-col>
 
-                        <v-col cols="12" md="6" class="pa-8 pa-md-12 d-flex align-center">
-                            <v-sheet width="100%" max-width="460" class="mx-auto" color="transparent">
-                                <h2 class="text-h4 mb-2">Create Account</h2>
-                                <p class="text-medium-emphasis mb-8">Choose how you would like to register with SafePath
-                                    Berlin.</p>
+                        <v-col cols="12" md="6" class="pa-6 pa-md-6 d-flex align-center">
+                            <v-sheet width="100%" max-width="375" class="mx-auto" color="transparent">
+                                <v-card-title class="text-headline-medium font-weight-black">Create Your
+                                    Account</v-card-title>
+                                <v-card-subtitle class="text-body-large font-weight-medium">Join SafePath
+                                    Berlin</v-card-subtitle>
 
-                                <div class="d-grid ga-3">
-                                    <v-btn v-for="provider in primaryProviders" :key="provider.key" block size="large"
+                                <v-form ref="form">
+                                    <v-text-field v-model="name" label="Name" placeholder="Enter your name"
+                                        variant="outlined" density="compact" class="mt-3 my-0" required />
+
+                                    <v-text-field v-model="email" type="email" label="Email"
+                                        placeholder="Enter your email" variant="outlined" density="compact" class="my-0"
+                                        required />
+
+                                    <v-text-field v-model="password" type="password" label="Password"
+                                        placeholder="Enter your password" variant="outlined" density="compact"
+                                        class="my-0" required />
+
+                                    <v-btn color="info" block type="submit" class="mt-1 mb-3">Create
+                                        account</v-btn>
+                                </v-form>
+
+                                <v-divider>or</v-divider>
+
+                                <div class="d-grid mt-3">
+                                    <v-btn v-for="provider in primaryProviders" :key="provider.key" block
                                         variant="outlined" @click="registerWithProvider(provider.key)">
-                                        <span class="mr-2">{{ provider.icon }}</span>
+                                        <v-icon class="mr-2">{{ provider.icon }}</v-icon>
                                         {{ provider.label }}
                                     </v-btn>
                                 </div>
 
-                                <v-btn class="mt-4" block variant="text" color="primary"
-                                    @click="showMoreOptions = !showMoreOptions">
-                                    {{ showMoreOptions ? 'Hide more options' : 'Show more options' }}
-                                </v-btn>
-
-                                <v-expand-transition>
-                                    <div v-show="showMoreOptions" class="mt-3 d-grid ga-3">
-                                        <v-btn v-for="provider in secondaryProviders" :key="provider.key" block
-                                            size="large" :variant="provider.key === 'email' ? 'flat' : 'outlined'"
-                                            :color="provider.key === 'email' ? 'primary' : undefined"
-                                            @click="registerWithProvider(provider.key)">
-                                            <span class="mr-2">{{ provider.icon || 'A' }}</span>
-                                            {{ provider.label }}
-                                        </v-btn>
-                                    </div>
-                                </v-expand-transition>
-
-                                <p class="text-center mt-6 text-medium-emphasis">
+                                <p class="text-center mt-4 text-medium-emphasis">
                                     Already have an account?
                                     <v-btn variant="text" color="primary" @click="goToLogin">Login here</v-btn>
                                 </p>
@@ -104,22 +111,17 @@ const showMoreOptions = ref(false);
 const primaryProviders = [
     {
         key: 'google',
-        label: 'Continue with Google',
-        icon: 'G'
-    },
+        label: 'Sign in with Google',
+        icon: 'mdi-google'
+    }
+];
+
+const secondaryProviders = [
     {
         key: 'facebook',
         label: 'Continue with Facebook',
         icon: 'F'
     },
-    {
-        key: 'microsoft',
-        label: 'Continue with Microsoft',
-        icon: 'M'
-    }
-];
-
-const secondaryProviders = [
     {
         key: 'github',
         label: 'Continue with GitHub',
@@ -134,6 +136,11 @@ const secondaryProviders = [
         key: 'email',
         label: 'Continue with Email',
         icon: 'E'
+    },
+    {
+        key: 'microsoft',
+        label: 'Continue with Microsoft',
+        icon: 'mdi-email'
     }
 ];
 
