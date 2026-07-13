@@ -18,6 +18,7 @@ import os
 from dotenv import load_dotenv
 
 import langfuse_monitor
+import langfuse_prompts
 
 load_dotenv()
 
@@ -46,6 +47,53 @@ LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}"
 #LANGFLOW_URL = f"https://langflow.safepath.duckdns.org/api/v1/run/{FLOW_ID}"  # public subdomain removed; langflow is private now 
 # Authentication Key for Langflow (Required if login is enabled in the Langflow UI)
 LANGFLOW_API_KEY = os.getenv("VUE_APP_LANGFLOW_API_KEY")
+
+
+# ---------------------------------------------------------------------------
+# Route-safety prompt fallback.
+#
+# The live prompt is managed in Langfuse under the name
+# `safepath-route-safety` and fetched at request time (see langfuse_prompts).
+# This string is the exact same text and is used only if Langfuse is
+# unreachable, so routing keeps working. Keep the two copies in sync
+# (Docs/langfuse-prompts.md has the canonical version to paste into the UI).
+#
+# Variables use Langfuse mustache syntax: {{from_lat}}, {{from_lng}},
+# {{to_lat}}, {{to_lng}}, {{routes_json}}. Single braces are literal JSON.
+# ---------------------------------------------------------------------------
+FALLBACK_ROUTE_PROMPT = """You are SafePath Berlin, a safety-first navigation assistant for students, tourists, and commuters in Berlin.
+FROM:
+{{from_lat}}, {{from_lng}}
+TO:
+{{to_lat}}, {{to_lng}}
+
+ROUTES:
+{{routes_json}}
+Rules:
+- accident risk 35%
+- crime level 35%
+- street lighting 30%
+
+Color:
+85+ = #10B981
+70-84 = #F59E0B
+<70 = #EF4444
+Return ONLY valid JSON array.
+[
+  {
+    "id": "route-1",
+    "name": "Route 1",
+    "safetyScore": 85,
+    "summary": "2 sentences: why this rank and one trade-off vs the other routes.",
+    "accentColor": "<hex per rules above>",
+    "breakdown": [
+      { "label": "Accident Risk", "score": 80 },
+      { "label": "Crime Level", "score": 90 },
+      { "label": "Street Lighting", "score": 85 }
+    ]
+  }
+]
+"""
 
 
 
@@ -331,48 +379,20 @@ async def get_safe_routes(req: RouteRequest):
     # STEP 2: AI SAFETY ANALYSIS
     # ---------------------------------------------------
 
-    prompt = f""" You are SafePath Berlin, a safety-first navigation assistant for students, tourists, and commuters in Berlin.
-    FROM:
-    {s.lat}, {s.lng}
-    TO:
-    {d.lat}, {d.lng}
-
-    ROUTES:
-    {json.dumps(llm_summaries, indent=2)}
-    Rules:
-    - accident risk 35%
-    - crime level 35%
-    - street lighting 30%
-
-    Color:
-    85+ = #10B981
-    70-84 = #F59E0B
-    <70 = #EF4444    
-    Return ONLY valid JSON array.
-    [
-    {{
-        "id": "route-1",
-        "name": "Route 1",
-        "safetyScore": 85,
-        "summary": "2 sentences: why this rank and one trade-off vs the other routes.",
-        "accentColor": "<hex per rules above>",
-        "breakdown": [
-        {{
-            "label": "Accident Risk",
-            "score": 80
-        }},
-        {{
-            "label": "Crime Level",
-            "score": 90
-        }},
-        {{
-            "label": "Street Lighting",
-            "score": 85
-        }}
-        ]
-    }}
-    ]
-    """
+    # Prompt is managed in Langfuse ("safepath-route-safety"). Fetched and
+    # compiled at request time; falls back to FALLBACK_ROUTE_PROMPT if
+    # Langfuse is unreachable so routing never breaks.
+    prompt = langfuse_prompts.get_compiled_prompt(
+        langfuse_prompts.ROUTE_SAFETY_PROMPT,
+        {
+            "from_lat": s.lat,
+            "from_lng": s.lng,
+            "to_lat": d.lat,
+            "to_lng": d.lng,
+            "routes_json": json.dumps(llm_summaries, indent=2),
+        },
+        fallback=FALLBACK_ROUTE_PROMPT,
+    )
 
     langflow_payload = {
         "input_value": prompt,
