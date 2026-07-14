@@ -165,6 +165,18 @@ def fetch_recent_traces(
     return [_summarise_trace(t, include_io=include_io) for t in data]
 
 
+def fetch_traces_by_session(session_id: str, limit: int = 50) -> list[dict[str, Any]]:
+    """Return traces tagged with a given session_id (the request's unique id)."""
+    client = get_client()
+    result = client.api.trace.list(
+        session_id=session_id,
+        limit=limit,
+        order_by="timestamp.desc",
+    )
+    data = getattr(result, "data", []) or []
+    return [_summarise_trace(t, include_io=True) for t in data]
+
+
 def fetch_trace_detail(trace_id: str) -> dict[str, Any]:
     """Return one trace with FULL input/output and all its observations."""
     client = get_client()

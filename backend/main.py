@@ -6,13 +6,18 @@ Endpoints:
   POST /api/routes   - candidate routes between two points (via OSRM)
 """
 
+import asyncio
 import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from pydantic import BaseModel
+import csv
+import io
 import json
 import re
 import time
+from datetime import datetime, timezone
 
 import os
 from dotenv import load_dotenv
@@ -204,6 +209,69 @@ def monitor_stats(minutes: int = 1440, limit: int = 500):
         raise HTTPException(status_code=500, detail=str(exc))
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+@app.get("/api/monitor/export")
+def monitor_export(
+    minutes: int = 1440,
+    limit: int = 1000,
+    format: str = "csv",
+    include_io: bool = True,
+):
+    """Download recent traces as a downloadable CSV or JSON file.
+
+    Query params:
+      minutes     time window to pull (default 1440 = last 24h)
+      limit       max traces (default 1000)
+      format      "csv" (default) or "json"
+      include_io  attach truncated input/output previews (default true)
+
+    Example:
+      /api/monitor/export?minutes=10080&format=csv   # last 7 days as CSV
+    """
+    try:
+        traces = langfuse_monitor.fetch_recent_traces(
+            minutes=minutes, limit=limit, include_io=include_io
+        )
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+
+    if format.lower() == "json":
+        payload = json.dumps({"traces": traces}, ensure_ascii=False, indent=2)
+        return Response(
+            content=payload,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": f'attachment; filename="langfuse-traces-{stamp}.json"'
+            },
+        )
+
+    # Default: CSV. csv.DictWriter handles quoting of commas/newlines safely.
+    fieldnames = [
+        "id", "name", "timestamp", "user_id", "session_id",
+        "latency_s", "total_cost", "tags", "url",
+        "input_preview", "output_preview",
+    ]
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=fieldnames, extrasaction="ignore")
+    writer.writeheader()
+    for t in traces:
+        row = dict(t)
+        if isinstance(row.get("tags"), list):
+            row["tags"] = ", ".join(map(str, row["tags"]))
+        writer.writerow(row)
+
+    return Response(
+        content=buf.getvalue(),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f'attachment; filename="langfuse-traces-{stamp}.csv"'
+        },
+    )
+
 
 @app.get("/api/places")
 def search_places(query: str):
