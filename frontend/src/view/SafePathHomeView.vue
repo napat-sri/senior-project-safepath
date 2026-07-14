@@ -198,6 +198,7 @@ import {
 import { mountLangflowChat } from '../utils/langflowChat';
 
 import { placeService, routeService } from '../services/api';
+import { getIdentity } from '../utils/identity';
 
 
 //const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png'; //dev
@@ -393,7 +394,9 @@ async function fetchSafeRoute() {
             start: { lat: startCoords.lat, lng: startCoords.lng },
             destination: { lat: destCoords.lat, lng: destCoords.lng },
             startName: startLocation.value,
-            destinationName: destination.value
+            destinationName: destination.value,
+            // Anonymous guest tracking for Langfuse (until real auth exists).
+            ...getIdentity(),
         };
         // console.log("Requesting safe routes with payload:", payload);
         const res = await routeService.safe(payload);

@@ -17,6 +17,7 @@ import io
 import json
 import re
 import time
+import uuid
 from datetime import datetime, timezone
 
 import os
@@ -110,6 +111,11 @@ class Point(BaseModel):
 class RouteRequest(BaseModel):
     start: Point
     destination: Point
+    # Anonymous identity for Langfuse tracking (no auth yet). The frontend
+    # sends a stable guest id as user_id and a per-visit id as session_id.
+    # Optional so older/other clients keep working.
+    user_id: str | None = None
+    session_id: str | None = None
     startName: str | None = None
     destinationName: str | None = None
 
@@ -467,6 +473,19 @@ async def get_safe_routes(req: RouteRequest):
         "output_type": "chat",
         "input_type": "chat",
     }
+    # Identify the caller in Langfuse. NOTE: Langflow 1.9.2's run endpoint
+    # (SimplifiedAPIRequest) only forwards `session_id` to the tracer — it has
+    # no `user_id` field — so we carry the STABLE GUEST ID in session_id. That
+    # makes every trace from the same guest group under one Langfuse session
+    # (visible in the Sessions view). `user_id` is sent too so it "just works"
+    # if you later add a flow component that sets it, or upgrade Langflow.
+    if req.user_id:
+        langflow_payload["user_id"] = req.user_id
+    langflow_payload["session_id"] = (
+        req.user_id or req.session_id or f"guest_{uuid.uuid4()}"
+    )
+    print("UserId:",req.user_id)
+    
     # Setup headers, injecting API keys securely if available
     headers = {
         "Content-Type": "application/json"
