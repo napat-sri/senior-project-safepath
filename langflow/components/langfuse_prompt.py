@@ -44,7 +44,7 @@ class LangfusePromptComponent(Component):
         StrInput(
             name="prompt_name",
             display_name="Prompt Name",
-            value="safepath-navigator-system",
+            value="safepath-chat ",
             info="Exact prompt name as created in the Langfuse UI.",
         ),
         StrInput(

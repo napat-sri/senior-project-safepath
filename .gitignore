@@ -27,7 +27,8 @@ Thumbs.db
 docker-compose.override.yml
 
 # Keep the env template committed so teammates know what to fill in
-!.env.example
+!.env.development.example
+!.env.production.example
 
 # Python
 __pycache__/

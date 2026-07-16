@@ -28,6 +28,10 @@ pip install -r requirements.txt
 
 ## Run the project locally
 
+The frontend falls back to localhost defaults in development, so you can start
+it without creating an env file. If you want to override any values, copy
+`frontend/.env.development.example` to `frontend/.env.development`.
+
 Start the backend API on port 9000:
 
 ```bash
@@ -42,7 +46,19 @@ cd frontend
 npm run dev
 ```
 
+For a production-style frontend build, copy
+`frontend/.env.production.example` to `frontend/.env.production` before
+running `npm run build`.
+
 ## Run with Docker
+
+For local development with Docker, use the separate dev compose file:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+That stack publishes the frontend on 8080, the backend on 9000, and Langflow on 7860, without the Caddy/VPN/tile-server wiring from the production compose files.
 
 ### First-time map import (tile server)
 
