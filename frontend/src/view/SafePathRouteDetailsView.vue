@@ -2,14 +2,21 @@
     <div class="page-shell">
         <aside :class="['sidebar', { collapsed: sidebarCollapsed }]">
             <div class="brand-section">
+                <img class="brand-logo" :src="safePathLogo" alt="SafePath Berlin logo" />
 
                 <div class="brand-copy">
                     <h2>SafePath</h2>
                     <span>Berlin</span>
                 </div>
 
-                <button class="sidebar-toggle" type="button" @click="toggleSidebar"
-                    aria-label="Toggle sidebar">☰</button>
+                <button 
+                    class="sidebar-toggle" 
+                    type="button" 
+                    @click="toggleSidebar"
+                    aria-label="Toggle sidebar"
+                >
+                    ☰
+                </button>
             </div>
 
             <nav class="nav-menu" aria-label="Primary navigation">
@@ -18,14 +25,19 @@
                     Dashboard
                 </button>
 
-                <button type="button" class="nav-item">
+                <button type="button" class="nav-item" aria-label="Profile" @click="$router.push('/profile')">
                     <span>👤</span>
                     Profile
                 </button>
 
-                <button type="button" class="nav-item">
+                <button type="button" class="nav-item" aria-label="Report an incident" @click="goToIncidentReport">
                     <span>⚠️</span>
                     Report Incident
+                </button>
+
+                <button type="button" class="nav-item" aria-label="Overview Dashboard" @click="$router.push('/overview')">
+                    <span>📊</span>
+                    Overview Dashboard
                 </button>
 
                 <button type="button" class="nav-item">
@@ -142,14 +154,14 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import 'leaflet/dist/leaflet.css';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-import { getRouteById, getSafetyTone, getRouteSuggestions } from '../data/routeAnalysis';
+import { getRouteById, getRouteSuggestions, getSafetyTone } from '../data/routeAnalysis';
 import { mountLangflowChat } from '../utils/langflowChat';
 
 
