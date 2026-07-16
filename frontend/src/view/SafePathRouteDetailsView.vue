@@ -165,7 +165,9 @@ import { getRouteById, getRouteSuggestions, getSafetyTone } from '../data/routeA
 import { mountLangflowChat } from '../utils/langflowChat';
 
 
-const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png';
+//const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png'; //dev
+//const TILE_URL = process.env.VUE_APP_TILE_URL || 'https://osm.safepath.duckdns.org/tile/{z}/{x}/{y}.png'; //prod
+const TILE_URL = process.env.VUE_APP_TILE_URL
 
 const DefaultIcon = L.icon({
     iconUrl: icon,
@@ -183,14 +185,13 @@ const routeOverlay = ref(null);
 const sidebarCollapsed = ref(true);
 
 const selectedRoute = computed(() => getRouteById(route.params.routeId));
-// const selectedRoute = route.params.routeId;
-console.log(route.value);
+// console.log(route.value);
 
 const displayJourney = computed(() => {
-    console.log(getRouteSuggestions());
+    // console.log(getRouteSuggestions());
     const start = String(route.query.start || selectedRoute.value.origin).trim();
     const destination = String(route.query.destination || selectedRoute.value.destination).trim();
-    console.log(selectedRoute.value, route.query);
+    // console.log(selectedRoute.value, route.query);
     return `${start} to ${destination}`;
 });
 
@@ -215,7 +216,7 @@ function toggleSidebar() {
 }
 
 function goHome() {
-    router.push({ name: 'home' });
+    router.back(); // Browser history will restore the page naturally
 }
 
 function renderRoute(routeData = selectedRoute.value) {
@@ -292,7 +293,6 @@ watch(
 );
 
 onMounted(() => {
-    console.log(route.value);
     initMap();
     initChat();
 });
