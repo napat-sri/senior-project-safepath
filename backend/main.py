@@ -473,19 +473,22 @@ async def get_safe_routes(req: RouteRequest):
         "output_type": "chat",
         "input_type": "chat",
     }
-    # Identify the caller in Langfuse. NOTE: Langflow 1.9.2's run endpoint
-    # (SimplifiedAPIRequest) only forwards `session_id` to the tracer — it has
-    # no `user_id` field — so we carry the STABLE GUEST ID in session_id. That
-    # makes every trace from the same guest group under one Langfuse session
-    # (visible in the Sessions view). `user_id` is sent too so it "just works"
-    # if you later add a flow component that sets it, or upgrade Langflow.
+    # Langflow 1.9.2's run endpoint only forwards `session_id` to Langfuse (it
+    # ignores `user_id`), and Langflow stamps its own account id as the trace
+    # user_id. So we track the visitor via the SESSION ID instead: we embed the
+    # guest id inside a per-flow-namespaced session id (below). `user_id` is sent
+    # too, harmlessly, in case a future Langflow/flow component starts using it.
     if req.user_id:
         langflow_payload["user_id"] = req.user_id
-    langflow_payload["session_id"] = (
-        req.user_id or req.session_id or f"guest_{uuid.uuid4()}"
-    )
-    print("UserId:",req.user_id)
-    
+    # Route session_id = "route_<guest id>_<per-request id>". The guest id keeps
+    # the request tied to the visitor (filter Session ID in TEXT mode by it); the
+    # "route_" prefix + per-request suffix make every route call its own isolated
+    # session, so it never shares an Agent-memory bucket with the chat flow
+    # ("chat_...") or with the user's other route requests — which is what
+    # prevents the cross-flow / cross-request hallucination bleed.
+    guest_id = req.user_id or req.session_id or f"guest_{uuid.uuid4()}"
+    langflow_payload["session_id"] = f"route_{guest_id}_{uuid.uuid4()}"
+    print("UserId:",guest_id)    
     # Setup headers, injecting API keys securely if available
     headers = {
         "Content-Type": "application/json"

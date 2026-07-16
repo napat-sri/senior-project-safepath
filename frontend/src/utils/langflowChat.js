@@ -17,12 +17,13 @@ function mountChatWidget(containerId) {
   const chatContainer = document.getElementById(containerId);
 
   if (chatContainer) {
-    // Carry the current identity as the chat session_id so all of a visitor's
-    // chatbot messages group under one Langfuse session. getUserId() returns
-    // the guest id today; once auth lands it returns the member id — no change
-    // needed here. (The widget has no user_id prop, so session_id is the only
-    // identity field it can forward to Langfuse.)
-    const sessionId = getUserId();
+    // Chat session_id = "chat_" + guest id. The guest id identifies the visitor
+    // (filter Session ID in TEXT mode by it to see all their activity), while the
+    // "chat_" prefix namespaces this flow so it never shares an Agent-memory
+    // bucket with the route flow ("route_...") — that shared-session bleed is
+    // what makes the chatbot hallucinate route JSON. getUserId() returns the
+    // guest id today; once auth lands it returns the member id — no change here.
+    const sessionId = `chat_${getUserId()}`;
     chatContainer.innerHTML = `
       <langflow-chat
         window_title="${LANGFLOW_WINDOW_TITLE}"
