@@ -1,443 +1,180 @@
 <template>
-  <main class="register-page">
-    <section class="register-card">
-      <aside class="brand-panel">
-        <div class="brand-header">
-          <img class="brand-logo" :src="safePathLogo" alt="SafePath Berlin logo" />
+    <v-container fluid class="auth-page pa-4 pa-md-8">
+        <v-row class="fill-height" align="center" justify="center">
+            <v-col cols="12" lg="10" xl="9">
+                <v-card elevation="10" rounded="xl" class="overflow-hidden">
+                    <v-row no-gutters>
+                        <v-col cols="12" md="6" class="brand-panel pa-8 pa-md-12">
+                            <v-sheet color="transparent" class="d-flex align-center ga-4 mb-8">
+                                <v-avatar size="80" rounded="lg">
+                                    <v-img :src="safePathLogo" alt="SafePath Berlin logo" cover />
+                                </v-avatar>
+                                <div>
+                                    <h1 class="text-h4 text-high-emphasis">SafePath Berlin</h1>
+                                </div>
+                            </v-sheet>
 
-          <div>
-            <h1>SafePath</h1>
-            <p>Berlin</p>
-          </div>
-        </div>
+                            <h2 class="text-h4 text-md-h3 mb-8">Create your safer journey with trusted access</h2>
 
-        <h2>Create your safer journey<br />with trusted access</h2>
+                            <v-list bg-color="transparent" density="comfortable" class="pa-0">
+                                <v-list-item>
+                                    <template #prepend>
+                                        <v-avatar color="primary" variant="tonal">
+                                            <v-icon icon="mdi-lock"></v-icon>
+                                        </v-avatar>
+                                    </template>
+                                    <v-list-item-title class="font-weight-bold">Secure Sign Up</v-list-item-title>
+                                    <v-list-item-subtitle>Register with your preferred trusted account
+                                        provider.</v-list-item-subtitle>
+                                </v-list-item>
+                                <v-list-item>
+                                    <template #prepend>
+                                        <v-avatar color="success" variant="tonal">
+                                            <v-icon icon="mdi-security"></v-icon>
+                                        </v-avatar>
+                                    </template>
+                                    <v-list-item-title class="font-weight-bold">Protected Account</v-list-item-title>
+                                    <v-list-item-subtitle>Your account helps protect your route and safety
+                                        preferences.</v-list-item-subtitle>
+                                </v-list-item>
+                                <v-list-item>
+                                    <template #prepend>
+                                        <v-avatar color="info" variant="tonal">
+                                            <v-icon icon="mdi-account"></v-icon>
+                                        </v-avatar>
+                                    </template>
+                                    <v-list-item-title class="font-weight-bold">Personalized Safety</v-list-item-title>
+                                    <v-list-item-subtitle>Access safer routes, reports, and community safety
+                                        features.</v-list-item-subtitle>
+                                </v-list-item>
+                            </v-list>
+                        </v-col>
 
-        <div class="feature-list">
-          <div class="feature-item">
-            <span class="feature-icon">🔐</span>
-            <div>
-              <h3>Secure Sign Up</h3>
-              <p>Register with your preferred trusted account provider.</p>
-            </div>
-          </div>
+                        <v-col cols="12" md="6" class="pa-6 pa-md-6 d-flex align-center">
+                            <v-sheet width="100%" max-width="375" class="mx-auto" color="transparent">
+                                <v-card-title class="text-headline-medium font-weight-black">Create Your
+                                    Account</v-card-title>
+                                <v-card-subtitle class="text-body-large font-weight-medium">Join SafePath
+                                    Berlin</v-card-subtitle>
 
-          <div class="feature-item">
-            <span class="feature-icon">🛡️</span>
-            <div>
-              <h3>Protected Account</h3>
-              <p>Your SafePath profile helps protect your route and safety preferences.</p>
-            </div>
-          </div>
+                                <v-form ref="form">
+                                    <v-text-field v-model="name" label="Name" placeholder="Enter your name"
+                                        variant="outlined" density="compact" class="mt-3 my-0" required />
 
-          <div class="feature-item">
-            <span class="feature-icon">📍</span>
-            <div>
-              <h3>Personalized Safety</h3>
-              <p>Access safer routes, incident reports, and community safety features.</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+                                    <v-text-field v-model="email" type="email" label="Email"
+                                        placeholder="Enter your email" variant="outlined" density="compact" class="my-0"
+                                        required />
 
-      <section class="form-panel">
-        <div class="register-content">
-          <div class="form-heading">
-            <h2>Create Account</h2>
-            <p>Choose how you would like to register with SafePath Berlin.</p>
-          </div>
+                                    <v-text-field v-model="password" type="password" label="Password"
+                                        placeholder="Enter your password" variant="outlined" density="compact"
+                                        class="my-0" required />
 
-          <div class="provider-list">
-            <button
-              v-for="provider in primaryProviders"
-              :key="provider.key"
-              type="button"
-              class="provider-btn"
-              @click="registerWithProvider(provider.key)"
-            >
-              <span class="provider-icon">{{ provider.icon }}</span>
-              {{ provider.label }}
-            </button>
-          </div>
+                                    <v-btn color="info" block type="submit" class="mt-1 mb-3">Create
+                                        account</v-btn>
+                                </v-form>
 
-          <button
-            type="button"
-            class="more-options-btn"
-            @click="showMoreOptions = !showMoreOptions"
-          >
-            {{ showMoreOptions ? 'Hide more options' : 'Show more options' }}
-          </button>
+                                <v-divider>or</v-divider>
 
-          <div v-if="showMoreOptions" class="provider-list secondary-provider-list">
-            <button
-              v-for="provider in secondaryProviders"
-              :key="provider.key"
-              type="button"
-              class="provider-btn"
-              :class="{ 'primary-provider': provider.key === 'email' }"
-              @click="registerWithProvider(provider.key)"
-            >
-              <span class="provider-icon">{{ provider.icon }}</span>
-              {{ provider.label }}
-            </button>
-          </div>
+                                <div class="d-grid mt-3">
+                                    <v-btn v-for="provider in primaryProviders" :key="provider.key" block
+                                        variant="outlined" @click="registerWithProvider(provider.key)">
+                                        <v-icon class="mr-2">{{ provider.icon }}</v-icon>
+                                        {{ provider.label }}
+                                    </v-btn>
+                                </div>
 
-          <p class="login-link">
-            Already have an account?
-            <button type="button" @click="goToLogin">Login here</button>
-          </p>
+                                <p class="text-center mt-4 text-medium-emphasis">
+                                    Already have an account?
+                                    <v-btn variant="text" color="primary" @click="goToLogin">Login here</v-btn>
+                                </p>
 
-          <p class="security-note">
-            Your account is protected with secure sign-in and identity verification.
-          </p>
-        </div>
-      </section>
-    </section>
-  </main>
+                                <v-alert class="mt-4" type="info" variant="tonal" density="comfortable">
+                                    Your account is protected with secure sign-in and identity verification.
+                                </v-alert>
+                            </v-sheet>
+                        </v-col>
+                    </v-row>
+                </v-card>
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import safePathLogo from '../assets/Berlin.png'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import safePathLogo from '../assets/Berlin.png';
+import keycloak from '../services/keycloak';
 
-const router = useRouter()
-const showMoreOptions = ref(false)
+const router = useRouter();
+const showMoreOptions = ref(false);
 
 const primaryProviders = [
-  {
-    key: 'google',
-    label: 'Continue with Google',
-    icon: 'G'
-  },
-  {
-    key: 'facebook',
-    label: 'Continue with Facebook',
-    icon: 'f'
-  },
-  {
-    key: 'microsoft',
-    label: 'Continue with Microsoft',
-    icon: 'M'
-  }
-]
+    {
+        key: 'google',
+        label: 'Sign in with Google',
+        icon: 'mdi-google'
+    }
+];
 
 const secondaryProviders = [
+    {
+        key: 'facebook',
+        label: 'Continue with Facebook',
+        icon: 'F'
+    },
+    {
+        key: 'github',
+        label: 'Continue with GitHub',
+        icon: 'GH'
+    },
+    {
+        key: 'apple',
+        label: 'Continue with Apple',
+        icon: 'A'
+    },
+    {
+        key: 'email',
+        label: 'Continue with Email',
+        icon: 'E'
+    },
+    {
+        key: 'microsoft',
+        label: 'Continue with Microsoft',
+        icon: 'mdi-email'
+    }
+];
 
-  {
-    key: 'github',
-    label: 'Continue with GitHub',
-    icon: 'GH'
-  },
-  {
-    key: 'apple',
-    label: 'Continue with Apple',
-    icon: ''
-  },
-  {
-    key: 'email',
-    label: 'Continue with Email',
-    icon: '✉️'
+const registerWithProvider = (providerKey) => {
+  if (providerKey === 'email') {
+    keycloak.register({ redirectUri: window.location.origin + '/home' });   // hosted sign-up form
+  } else {
+    keycloak.login({ idpHint: providerKey, redirectUri: window.location.origin + '/home' });
   }
-]
+};
 
-const providerUrls = {
-  google:
-    process.env.VUE_APP_REGISTER_GOOGLE_URL ||
-    'http://localhost:8080/realms/safepath/broker/google/login?client_id=safepath-frontend&redirect_uri=http://localhost:5173/home',
-
-  facebook:
-    process.env.VUE_APP_REGISTER_FACEBOOK_URL ||
-    'http://localhost:8080/realms/safepath/broker/facebook/login?client_id=safepath-frontend&redirect_uri=http://localhost:5173/home',
-
-  apple:
-    process.env.VUE_APP_REGISTER_APPLE_URL ||
-    'http://localhost:8080/realms/safepath/broker/apple/login?client_id=safepath-frontend&redirect_uri=http://localhost:5173/home',
-
-  microsoft:
-    process.env.VUE_APP_REGISTER_MICROSOFT_URL ||
-    'http://localhost:8080/realms/safepath/broker/microsoft/login?client_id=safepath-frontend&redirect_uri=http://localhost:5173/home',
-
-  github:
-    process.env.VUE_APP_REGISTER_GITHUB_URL ||
-    'http://localhost:8080/realms/safepath/broker/github/login?client_id=safepath-frontend&redirect_uri=http://localhost:5173/home',
-
-  email:
-    process.env.VUE_APP_REGISTER_EMAIL_URL ||
-    'http://localhost:8080/realms/safepath/protocol/openid-connect/registrations?client_id=safepath-frontend&response_type=code&scope=openid&redirect_uri=http://localhost:5173/home'
-}
-
-const registerWithProvider = (provider) => {
-  window.location.href = providerUrls[provider]
-}
-
-const goToLogin = () => {
-  router.push('/login')
-}
+const goToLogin = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
 </script>
 
 <style scoped>
-.register-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px;
-  background: linear-gradient(135deg, #eef2ff, #eff6ff);
-  font-family: 'DM Sans', Inter, sans-serif;
+.auth-page {
+    min-height: 100vh;
 }
 
-.register-card {
-  width: 1100px;
-  min-height: 680px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: #ffffff;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+/* Auth backdrops follow the active theme. */
+.v-theme--safepathLight .auth-page {
+    background: linear-gradient(135deg, #eef2ff, #eff6ff);
 }
 
-.brand-panel {
-  padding: 50px;
-  background: linear-gradient(180deg, #eef2ff, #c7d2fe);
+.v-theme--safepathDark .auth-page {
+    background: linear-gradient(135deg, #121212, #1a1a1a);
 }
 
-.brand-header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+.v-theme--safepathLight .brand-panel {
+    background: linear-gradient(180deg, #eef2ff, #c7d2fe);
 }
 
-.brand-logo {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 20px;
-  border: 1px solid #e8e8ec;
-  background: #ffffff;
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.18);
-}
-
-.brand-header h1 {
-  margin: 0;
-  color: #0a0a0a;
-  font-size: 32px;
-  letter-spacing: -0.03em;
-}
-
-.brand-header p {
-  margin: 4px 0 0;
-  color: #6366f1;
-  font-weight: 700;
-}
-
-.brand-panel h2 {
-  margin-top: 70px;
-  font-size: 34px;
-  line-height: 1.2;
-  color: #111827;
-  letter-spacing: -0.03em;
-}
-
-.feature-list {
-  margin-top: 42px;
-  display: grid;
-  gap: 22px;
-}
-
-.feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.feature-icon {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  border-radius: 14px;
-  background: rgba(99, 102, 241, 0.12);
-}
-
-.feature-item h3 {
-  margin: 0 0 4px;
-  color: #111827;
-  font-size: 17px;
-}
-
-.feature-item p {
-  margin: 0;
-  color: #4b5563;
-  line-height: 1.45;
-}
-
-.form-panel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 50px;
-}
-
-.register-content {
-  width: 100%;
-  max-width: 420px;
-}
-
-.form-heading h2 {
-  margin: 0;
-  font-size: 32px;
-  color: #111827;
-  letter-spacing: -0.03em;
-}
-
-.form-heading p {
-  margin: 10px 0 32px;
-  color: #6b7280;
-  line-height: 1.5;
-}
-
-.provider-list {
-  display: grid;
-  gap: 14px;
-}
-
-.secondary-provider-list {
-  margin-top: 14px;
-}
-
-.provider-btn {
-  width: 100%;
-  min-height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  border: 1px solid #e8e8ec;
-  border-radius: 10px;
-  background: #ffffff;
-  color: #111827;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 160ms ease;
-}
-
-.provider-btn:hover {
-  border-color: #6366f1;
-  background: #f8faff;
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.12);
-  transform: translateY(-1px);
-}
-
-.provider-icon {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  border-radius: 999px;
-  background: #eef2ff;
-  color: #6366f1;
-  font-weight: 800;
-  font-size: 14px;
-}
-
-.primary-provider {
-  background: #6366f1;
-  color: #ffffff;
-  border-color: #6366f1;
-}
-
-.primary-provider .provider-icon {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-}
-
-.primary-provider:hover {
-  background: #4f46e5;
-  border-color: #4f46e5;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
-}
-
-.more-options-btn {
-  width: 100%;
-  margin-top: 14px;
-  border: 0;
-  background: transparent;
-  color: #6366f1;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 10px;
-}
-
-.more-options-btn:hover {
-  color: #4f46e5;
-  text-decoration: underline;
-}
-
-.login-link {
-  margin: 22px 0 0;
-  text-align: center;
-  color: #6b7280;
-}
-
-.login-link button {
-  border: 0;
-  background: transparent;
-  color: #6366f1;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.login-link button:hover {
-  color: #4f46e5;
-  text-decoration: underline;
-}
-
-.security-note {
-  margin-top: 28px;
-  padding: 14px;
-  border-radius: 10px;
-  background: #eef2ff;
-  color: #4b5563;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-@media (max-width: 900px) {
-  .register-card {
-    grid-template-columns: 1fr;
-  }
-
-  .brand-panel {
-    padding: 36px;
-  }
-
-  .brand-panel h2 {
-    margin-top: 42px;
-    font-size: 28px;
-  }
-
-  .form-panel {
-    padding: 36px;
-  }
-}
-
-@media (max-width: 520px) {
-  .register-page {
-    padding: 18px;
-  }
-
-  .brand-header {
-    align-items: flex-start;
-  }
-
-  .brand-logo {
-    width: 120px;
-    height: 120px;
-  }
+.v-theme--safepathDark .brand-panel {
+    background: linear-gradient(160deg, #16252b, #0c1a1f);
 }
 </style>

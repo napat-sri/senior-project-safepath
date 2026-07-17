@@ -112,3 +112,30 @@
 - We've recapped the full production deployment workflow — from choosing the VPS provider to deploying the script.
 - We did a revision quiz to check our understanding. The quiz had 22 questions and took only 15 minutes.
 - We've continued the langflow configuration; we encountered some conflicts and worked on solutions that fit our program.
+
+## ✅ 15 Jun 2026
+### Deploying to Production (Cont.)
+- We've created a new docker compose file only for langflow, to separate with other services. This config will help us bring our own workflows into our production. And also provide an authentication to connect with own workflow list.
+- We also updated commands inside the deploy script that include with docker compose configurations.
+- We can bring our project's workflow into production completely.
+- Previously, we used Portainer with internal authentication which can be concerned in security issue if there is any unpredicted case happen. To prevent this issue, we've learned about [Keycloak](https://www.keycloak.org/) which is an open source for authentication to applications and secure services using Single-Sign On (SSO) and OAuth protocol.
+
+## ✅ 16 Jun 2026
+### Preparing before Midterm
+- Yesterday, we used Keycloak for authentication service, however, an issue was when we connected, a dashboard was empty because the user role wasn't correct. Today, we set the role of our user to be an "administrator", so right now we can access to the Portainer dashboard successfully.
+- Our main event is to finalize services on our project which we will present on Midterm next week. Make sure our docker compose files: one for Langflow and one for other services combined together and all of them should be connected.
+- Before the presentation day, we will prepare all relevant items: Slide, Demo application, and Features to be done and get ready for Q&A session which includes what we've learned from day one.
+
+## 🎯 22 Jun 2026
+### Midterm Presentation
+- We presented the progress of our project from kick-off until Midterm here.
+- The presentation took 15 minutes including these topics: Problem statement, Target users, Project timeline, Architecture diagram, Live demo, Sprint 1 progress & backlog, and The next steps.
+- After the presentation, it was a Q&A part which other groups asked us to clarify, and also our professor asked and gave us a comment.
+
+## ✅ 23 Jun 2026
+### End-user Feedbacks
+- Our class tried to use applications to give feedbacks each other. This action would understand the experiences from the real end-user and took their comments to plan our next sprint again.
+
+### Virtual Private Network (VPN)
+- I've learned about VPN that we use to separate the main domain that should be public for everyone with the subdomains which must be in VPN to prevent the cyber attack from anonymous users.
+- We researched VPN service providers to find which one is fit for our project (WireGuard, OpenVPN, or Headscale). Then, tried to understand our system architecture before install VPN into the project.
