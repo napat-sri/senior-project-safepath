@@ -38,9 +38,7 @@
 
                                     <v-row>
                                         <v-col cols="12" md="6">
-                                            <v-date-input prepend-icon="" prepend-inner-icon="$calendar"
-                                                v-model="form.date" label="Date *" input-format="mm-dd-yyyy"
-                                                variant="outlined" required :rules="[rules.date]" />
+                                            <v-text-field v-model="form.date" label="Date *" type="date" variant="outlined" required :rules="[rules.date]" />
                                         </v-col>
                                         <v-col cols="12" md="6">
                                             <v-text-field :model-value="form.time" label="Time *" variant="outlined"
