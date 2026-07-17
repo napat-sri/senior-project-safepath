@@ -104,7 +104,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import safePathLogo from '../assets/Berlin.png';
-import keycloak from '../services/keycloak';
+// import keycloak from '../services/keycloak';
 
 const router = useRouter();
 const showMoreOptions = ref(false);
@@ -145,15 +145,15 @@ const secondaryProviders = [
     }
 ];
 
-const registerWithProvider = (providerKey) => {
-  if (providerKey === 'email') {
-    keycloak.register({ redirectUri: window.location.origin + '/home' });   // hosted sign-up form
-  } else {
-    keycloak.login({ idpHint: providerKey, redirectUri: window.location.origin + '/home' });
-  }
-};
+// const registerWithProvider = (providerKey) => {
+//   if (providerKey === 'email') {
+//     keycloak.register({ redirectUri: window.location.origin + '/home' });   // hosted sign-up form
+//   } else {
+//     keycloak.login({ idpHint: providerKey, redirectUri: window.location.origin + '/home' });
+//   }
+// };
 
-const goToLogin = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
+// const goToLogin = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
 </script>
 
 <style scoped>
