@@ -13,7 +13,9 @@ function makeId(prefix) {
   const rand =
     (typeof crypto !== 'undefined' && crypto.randomUUID)
       ? crypto.randomUUID()
-      : Date.now().toString(36) + Math.random().toString(36).slice(2);
+      : (typeof crypto !== 'undefined' && crypto.getRandomValues)
+        ? Array.from(crypto.getRandomValues(new Uint32Array(4)), (part) => part.toString(36)).join('')
+        : `${Date.now().toString(36)}_${(typeof performance !== 'undefined' ? performance.now().toString(36).replace('.', '') : '0')}`;
   return `${prefix}_${rand}`;
 }
 
