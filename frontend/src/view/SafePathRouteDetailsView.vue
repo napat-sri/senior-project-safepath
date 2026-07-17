@@ -41,7 +41,7 @@
                                     <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
                                         Overall Safety
                                     </v-card-title>
-                                    <v-progress-circular :key="`${updateTrigger}_${i}`"
+                                    <v-progress-circular
                                         :model-value="selectedRoute.safetyScore" :size="175" :width="20"
                                         bg-color="surface-light" :style="scoreBadgeStyle(selectedRoute.safetyScore)"
                                         reveal rounded>
