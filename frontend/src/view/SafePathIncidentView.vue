@@ -138,11 +138,11 @@ const validationErrors = reactive({
     details: ''
 });
 const rules = {
-    type: value => !!value || 'Incident Type is required',
-    // location: value => !!value || 'Location is required',
-    date: value => !!value || 'Date is required',
-    time: value => !!value || 'Time is required',
-  }
+    type: (value) => !!value || 'Incident Type is required',
+    location: (value) => !!String(value ?? '').trim() || 'Location is required',
+    date: (value) => !!value || 'Date is required',
+    time: (value) => !!value || 'Time is required',
+};
 const showMenu = ref(false)
 
 const form = reactive({
