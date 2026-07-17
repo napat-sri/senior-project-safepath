@@ -423,7 +423,7 @@ function searchClear() {
     routes.value = [];
     selectedStartPlace.value = null;
     selectedDestinationPlace.value = null;
-    routeOverlay.value.clearLayers();
+    routeOverlay.value?.clearLayers();
     showResults.value = false;
 }
 
