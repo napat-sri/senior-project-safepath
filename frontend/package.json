@@ -14,6 +14,7 @@
     "@mdi/font": "^7.4.47",
     "@vue/cli-service": "^5.0.9",
     "axios": "^1.16.1",
+    "keycloak-js": "^26.2.4",
     "leaflet": "^1.9.4",
     "leaflet-control-geocoder": "^3.3.1",
     "vue": "^3.5.34",

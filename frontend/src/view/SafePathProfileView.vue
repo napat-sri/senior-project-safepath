@@ -160,6 +160,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import SafePathNavDrawer from '../components/SafePathNavDrawer.vue';
+import keycloak from '../services/keycloak';
 
 const router = useRouter();
 
@@ -169,12 +170,14 @@ const profilePreview = ref('');
 const showEditModal = ref(false);
 
 const user = ref({
-    name: 'SafePath User',
-    email: 'user@example.com',
-    provider: 'Google',
-    memberSince: 'June 2026',
-    accountType: 'Standard'
+  name: keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'SafePath User',
+  email: keycloak.tokenParsed?.email || '',
+  provider: keycloak.tokenParsed?.identity_provider || 'email',
+  memberSince: '',
+  accountType: 'Standard',
 });
+
+const logout = () => keycloak.logout({ redirectUri: window.location.origin + '/login' });
 
 const editableProfile = ref({
     name: user.value.name,
@@ -221,12 +224,6 @@ const openEditModal = () => {
 
 const closeEditModal = () => {
     showEditModal.value = false;
-};
-
-
-const logout = () => {
-    console.log('Logout user');
-    router.push('/login');
 };
 
 const openDeleteModal = () => {

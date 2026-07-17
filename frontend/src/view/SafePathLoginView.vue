@@ -44,19 +44,11 @@
                                 <v-card-subtitle class="text-body-large font-weight-medium">Login to continue to your account</v-card-subtitle>
 
                                 <v-form @submit.prevent="handleLogin">
-                                    <v-text-field v-model="email" type="email" label="Email"
-                                        placeholder="Enter your email" variant="outlined" density="comfortable"
-                                         class="mt-5 my-0" required />
-
-                                    <v-text-field v-model="password" type="password" label="Password"
-                                        placeholder="Enter your password" variant="outlined" density="comfortable"
-                                        class="my-0" required />
-
-                                    <v-btn color="primary" block type="submit" class="mt-1 mb-4">LOGIN</v-btn>
+                                    <v-btn color="primary" block @click="Login" class="mt-10 mb-4">Login with Email</v-btn>
 
                                     <v-divider>or</v-divider>
 
-                                <div class="d-grid mt-4">
+                                <div class="d-grid mt-4 mb-4">
                                     <v-btn v-for="provider in primaryProviders" :key="provider.key" block
                                         variant="outlined" @click="registerWithProvider(provider.key)">
                                         <v-icon class="mr-2">{{ provider.icon }}</v-icon>
@@ -83,6 +75,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import safepathLogo from '../assets/Berlin.png';
+import keycloak from '../services/keycloak';
 
 const email = ref('');
 const password = ref('');
@@ -96,14 +89,16 @@ const primaryProviders = [
     }
 ];
 
-const handleLogin = () => {
-    console.log(email.value, password.value);
-};
+// Redirect to Keycloak's hosted login; returns to /home once authenticated.
+const Login = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
+const handleLogin = Login;                       // Enter-to-submit also works
 
-const goToRegister = () => {
-    router.push('/register');
-};
-</script>
+// Social provider (Google) → jump straight to that IdP.
+const registerWithProvider = (providerKey) =>
+  keycloak.login({ idpHint: providerKey, redirectUri: window.location.origin + '/home' });
+
+// "Register" → Keycloak's hosted registration page.
+const goToRegister = () => keycloak.register({ redirectUri: window.location.origin + '/home' });</script>
 
 <style scoped>
 .auth-page {

@@ -104,6 +104,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import safePathLogo from '../assets/Berlin.png';
+import keycloak from '../services/keycloak';
 
 const router = useRouter();
 const showMoreOptions = ref(false);
@@ -144,39 +145,15 @@ const secondaryProviders = [
     }
 ];
 
-const providerUrls = {
-    google:
-        process.env.VUE_APP_REGISTER_GOOGLE_URL ||
-        'http://localhost:8080/realms/safepath/broker/google/login?client_id=safepath-frontend&redirect_uri=http://localhost:5173/home',
-
-    facebook:
-        process.env.VUE_APP_REGISTER_FACEBOOK_URL ||
-        'http://localhost:8080/realms/safepath/broker/facebook/login?client_id=safepath-frontend&redirect_uri=http://localhost:5173/home',
-
-    apple:
-        process.env.VUE_APP_REGISTER_APPLE_URL ||
-        'http://localhost:8080/realms/safepath/broker/apple/login?client_id=safepath-frontend&redirect_uri=http://localhost:5173/home',
-
-    microsoft:
-        process.env.VUE_APP_REGISTER_MICROSOFT_URL ||
-        'http://localhost:8080/realms/safepath/broker/microsoft/login?client_id=safepath-frontend&redirect_uri=http://localhost:5173/home',
-
-    github:
-        process.env.VUE_APP_REGISTER_GITHUB_URL ||
-        'http://localhost:8080/realms/safepath/broker/github/login?client_id=safepath-frontend&redirect_uri=http://localhost:5173/home',
-
-    email:
-        process.env.VUE_APP_REGISTER_EMAIL_URL ||
-        'http://localhost:8080/realms/safepath/protocol/openid-connect/registrations?client_id=safepath-frontend&response_type=code&scope=openid&redirect_uri=http://localhost:5173/home'
+const registerWithProvider = (providerKey) => {
+  if (providerKey === 'email') {
+    keycloak.register({ redirectUri: window.location.origin + '/home' });   // hosted sign-up form
+  } else {
+    keycloak.login({ idpHint: providerKey, redirectUri: window.location.origin + '/home' });
+  }
 };
 
-const registerWithProvider = (provider) => {
-    window.location.href = providerUrls[provider];
-};
-
-const goToLogin = () => {
-    router.push('/login');
-};
+const goToLogin = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
 </script>
 
 <style scoped>
