@@ -6,20 +6,38 @@ Endpoints:
   POST /api/routes   - candidate routes between two points (via OSRM)
 """
 
+import asyncio
 import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from pydantic import BaseModel
+import csv
+import io
 import json
 import re
 import time
+import uuid
+from datetime import datetime, timezone
+
+import os
+from dotenv import load_dotenv
+
+import langfuse_monitor
+import langfuse_prompts
+
+load_dotenv()
 
 app = FastAPI(title="SafePath API")
 
 # Allow the Vue dev server to call this API from the browser.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "http://127.0.0.1:8080"],
+    allow_origins=[
+        "https://safepath.duckdns.org",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,8 +48,60 @@ app.add_middleware(
 # later switch to a walking profile (self-hosted OSRM-foot or OpenRouteService).
 OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
 OSRM_FOOT_URL = "https://router.project-osrm.org/route/v1/foot"
-FLOW_ID = "63a16f8d-0f9e-4930-91c0-e41ec7e842fd" 
+FLOW_ID = os.getenv("VUE_APP_LANGFLOW_ROUTE_AGENT_FLOW_ID")
 LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}" 
+#LANGFLOW_URL = f"https://langflow.safepath.duckdns.org/api/v1/run/{FLOW_ID}"  # public subdomain removed; langflow is private now 
+# Authentication Key for Langflow (Required if login is enabled in the Langflow UI)
+LANGFLOW_API_KEY = os.getenv("VUE_APP_LANGFLOW_API_KEY")
+
+
+# ---------------------------------------------------------------------------
+# Route-safety prompt fallback.
+#
+# The live prompt is managed in Langfuse under the name
+# `safepath-route-safety` and fetched at request time (see langfuse_prompts).
+# This string is the exact same text and is used only if Langfuse is
+# unreachable, so routing keeps working. Keep the two copies in sync
+# (Docs/langfuse-prompts.md has the canonical version to paste into the UI).
+#
+# Variables use Langfuse mustache syntax: {{from_lat}}, {{from_lng}},
+# {{to_lat}}, {{to_lng}}, {{routes_json}}. Single braces are literal JSON.
+# ---------------------------------------------------------------------------
+FALLBACK_ROUTE_PROMPT = """You are SafePath Berlin, a safety-first navigation assistant for students, tourists, and commuters in Berlin.
+FROM:
+{{from_lat}}, {{from_lng}}
+TO:
+{{to_lat}}, {{to_lng}}
+
+ROUTES:
+{{routes_json}}
+Rules:
+- accident risk 35%
+- crime level 35%
+- street lighting 30%
+
+Color:
+85+ = #10B981
+70-84 = #F59E0B
+<70 = #EF4444
+Return ONLY valid JSON array.
+[
+  {
+    "id": "route-1",
+    "name": "Route 1",
+    "safetyScore": 85,
+    "summary": "2 sentences: why this rank and one trade-off vs the other routes.",
+    "accentColor": "<hex per rules above>",
+    "breakdown": [
+      { "label": "Accident Risk", "score": 80 },
+      { "label": "Crime Level", "score": 90 },
+      { "label": "Street Lighting", "score": 85 }
+    ]
+  }
+]
+"""
+
+
 
 
 class Point(BaseModel):
@@ -41,6 +111,11 @@ class Point(BaseModel):
 class RouteRequest(BaseModel):
     start: Point
     destination: Point
+    # Anonymous identity for Langfuse tracking (no auth yet). The frontend
+    # sends a stable guest id as user_id and a per-visit id as session_id.
+    # Optional so older/other clients keep working.
+    user_id: str | None = None
+    session_id: str | None = None
     startName: str | None = None
     destinationName: str | None = None
 
@@ -58,6 +133,152 @@ def health():
 def test():
     return {"data": [{"id": 1,"name": "Route 1"}, {"id": 2,"name": "Route 2"}, {"id": 3,"name": "Route 3"   }]}
 
+@app.get("/api/langflow/health")
+def langflow_health():
+    return {
+        "status": "ok",
+        "langflow_target": LANGFLOW_URL,
+        "auth_configured": LANGFLOW_API_KEY
+    }
+
+
+# ---------------------------------------------------------------------------
+# Langfuse monitoring (read-only) — pulls traces/observations via the SDK.
+# ---------------------------------------------------------------------------
+@app.get("/api/monitor/health")
+def monitor_health():
+    """Check the backend can reach Langfuse with valid credentials."""
+    try:
+        return langfuse_monitor.ping()
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse unreachable: {exc}")
+
+
+@app.get("/api/monitor/traces")
+def monitor_traces(minutes: int = 60, limit: int = 50, include_io: bool = False):
+    """Recent traces (summarised), newest first.
+
+    Pass include_io=true to add truncated input/output previews.
+    """
+    try:
+        return {
+            "traces": langfuse_monitor.fetch_recent_traces(
+                minutes=minutes, limit=limit, include_io=include_io
+            )
+        }
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+
+@app.get("/api/monitor/traces/{trace_id}")
+def monitor_trace_detail(trace_id: str):
+    """Full detail for one trace: complete input/output + all observations."""
+    try:
+        return langfuse_monitor.fetch_trace_detail(trace_id)
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+
+@app.get("/api/monitor/alerts")
+def monitor_alerts(
+    minutes: int = 60,
+    latency_threshold: float = langfuse_monitor.DEFAULT_LATENCY_THRESHOLD_S,
+    limit: int = 100,
+    check_errors: bool = True,
+):
+    """High-latency and error/warning alerts from recent traces."""
+    try:
+        return langfuse_monitor.build_alerts(
+            minutes=minutes,
+            latency_threshold_s=latency_threshold,
+            limit=limit,
+            check_errors=check_errors,
+        )
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+
+@app.get("/api/monitor/stats")
+def monitor_stats(minutes: int = 1440, limit: int = 500):
+    """Aggregate volume / latency / cost / per-user stats (default last 24h)."""
+    try:
+        return langfuse_monitor.build_stats(minutes=minutes, limit=limit)
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+@app.get("/api/monitor/export")
+def monitor_export(
+    minutes: int = 1440,
+    limit: int = 1000,
+    format: str = "csv",
+    include_io: bool = True,
+):
+    """Download recent traces as a downloadable CSV or JSON file.
+
+    Query params:
+      minutes     time window to pull (default 1440 = last 24h)
+      limit       max traces (default 1000)
+      format      "csv" (default) or "json"
+      include_io  attach truncated input/output previews (default true)
+
+    Example:
+      /api/monitor/export?minutes=10080&format=csv   # last 7 days as CSV
+    """
+    try:
+        traces = langfuse_monitor.fetch_recent_traces(
+            minutes=minutes, limit=limit, include_io=include_io
+        )
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+
+    if format.lower() == "json":
+        payload = json.dumps({"traces": traces}, ensure_ascii=False, indent=2)
+        return Response(
+            content=payload,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": f'attachment; filename="langfuse-traces-{stamp}.json"'
+            },
+        )
+
+    # Default: CSV. csv.DictWriter handles quoting of commas/newlines safely.
+    fieldnames = [
+        "id", "name", "timestamp", "user_id", "session_id",
+        "latency_s", "total_cost", "tags", "url",
+        "input_preview", "output_preview",
+    ]
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=fieldnames, extrasaction="ignore")
+    writer.writeheader()
+    for t in traces:
+        row = dict(t)
+        if isinstance(row.get("tags"), list):
+            row["tags"] = ", ".join(map(str, row["tags"]))
+        writer.writerow(row)
+
+    return Response(
+        content=buf.getvalue(),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f'attachment; filename="langfuse-traces-{stamp}.csv"'
+        },
+    )
+
+
 @app.get("/api/places")
 def search_places(query: str):
     """
@@ -69,10 +290,18 @@ def search_places(query: str):
         return {"places": []}
 
     url = "https://nominatim.openstreetmap.org/search"
+    # params = {
+    #     "q": query,
+    #     "format": "json",
+    #     "limit": 5, 
+    # }
     params = {
         "q": query,
         "format": "json",
         "limit": 5, 
+        "countrycodes": "de",                          # Germany only
+        "viewbox":      "13.0883,52.3383,13.7611,52.6755",  # Berlin bounding box
+        "bounded":      1,          
     }
     
     # IMPORTANT: Nominatim requires a User-Agent header, otherwise they block the request.
@@ -224,54 +453,51 @@ async def get_safe_routes(req: RouteRequest):
     # STEP 2: AI SAFETY ANALYSIS
     # ---------------------------------------------------
 
-    prompt = f""" You are SafePath Berlin, a safety-first navigation assistant for students, tourists, and commuters in Berlin.
-    FROM:
-    {s.lat}, {s.lng}
-    TO:
-    {d.lat}, {d.lng}
-
-    ROUTES:
-    {json.dumps(llm_summaries, indent=2)}
-    Rules:
-    - accident risk 35%
-    - crime level 35%
-    - street lighting 30%
-
-    Color:
-    85+ = #10B981
-    70-84 = #F59E0B
-    <70 = #EF4444    
-    Return ONLY valid JSON array.
-    [
-    {{
-        "id": "route-1",
-        "name": "Route 1",
-        "safetyScore": 85,
-        "summary": "2 sentences: why this rank and one trade-off vs the other routes.",
-        "accentColor": "<hex per rules above>",
-        "breakdown": [
-        {{
-            "label": "Accident Risk",
-            "score": 80
-        }},
-        {{
-            "label": "Crime Level",
-            "score": 90
-        }},
-        {{
-            "label": "Street Lighting",
-            "score": 85
-        }}
-        ]
-    }}
-    ]
-    """
+    # Prompt is managed in Langfuse ("safepath-route-safety"). Fetched and
+    # compiled at request time; falls back to FALLBACK_ROUTE_PROMPT if
+    # Langfuse is unreachable so routing never breaks.
+    prompt = langfuse_prompts.get_compiled_prompt(
+        langfuse_prompts.ROUTE_SAFETY_PROMPT,
+        {
+            "from_lat": s.lat,
+            "from_lng": s.lng,
+            "to_lat": d.lat,
+            "to_lng": d.lng,
+            "routes_json": json.dumps(llm_summaries, indent=2),
+        },
+        fallback=FALLBACK_ROUTE_PROMPT,
+    )
 
     langflow_payload = {
         "input_value": prompt,
         "output_type": "chat",
         "input_type": "chat",
     }
+    # Langflow 1.9.2's run endpoint only forwards `session_id` to Langfuse (it
+    # ignores `user_id`), and Langflow stamps its own account id as the trace
+    # user_id. So we track the visitor via the SESSION ID instead: we embed the
+    # guest id inside a per-flow-namespaced session id (below). `user_id` is sent
+    # too, harmlessly, in case a future Langflow/flow component starts using it.
+    if req.user_id:
+        langflow_payload["user_id"] = req.user_id
+    # Route session_id = "route_<guest id>_<per-request id>". The guest id keeps
+    # the request tied to the visitor (filter Session ID in TEXT mode by it); the
+    # "route_" prefix + per-request suffix make every route call its own isolated
+    # session, so it never shares an Agent-memory bucket with the chat flow
+    # ("chat_...") or with the user's other route requests — which is what
+    # prevents the cross-flow / cross-request hallucination bleed.
+    guest_id = req.user_id or req.session_id or f"guest_{uuid.uuid4()}"
+    langflow_payload["session_id"] = f"route_{guest_id}_{uuid.uuid4()}"
+    print("UserId:",guest_id)    
+    # Setup headers, injecting API keys securely if available
+    headers = {
+        "Content-Type": "application/json"
+    }
+    if LANGFLOW_API_KEY:
+        headers["x-api-key"] = LANGFLOW_API_KEY
+        print("[LANGFLOW] Auth initialized with API Key.")
+    else:
+        print("[LANGFLOW] WARNING: No API Key found in .env. Requests will fail if Langflow has login enabled.")
 
     ai_routes = []
     async with httpx.AsyncClient() as client:
@@ -280,6 +506,7 @@ async def get_safe_routes(req: RouteRequest):
             lf_resp = await client.post(
                 LANGFLOW_URL,
                 json=langflow_payload,
+                headers=headers,
                 timeout=45.0
             )
 
@@ -425,6 +652,3 @@ async def get_safe_routes(req: RouteRequest):
     return {
         "route_suggestions": route_suggestions
     }
-
-
-

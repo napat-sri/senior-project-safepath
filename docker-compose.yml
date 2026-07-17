@@ -2,43 +2,102 @@ services:
   # ----------------------------------------------------------------------------
   # SafePath Vue.js frontend
   # ----------------------------------------------------------------------------
-     
-    
-  frontend:
-      build: ./frontend
-      command: npm run dev
-      ports:
-        - "8080:8080"
-      volumes:
-         - ./frontend:/app
-         - /app/node_modules
-      stdin_open: true
-      tty: true
-      env_file:
-      - .env
-      environment:
-        CHOKIDAR_USEPOLLING: "true" #
-        WATCHPACK_POLLING: "true" #
-        NODE_ENV: development
-      depends_on:
-        - backend
-        - langflow
-    
-  backend:
-      build: ./backend
-      ports:
-        - "9000:9000"
-      networks:
-        default:
-          aliases:
-            - backend.local
-      volumes:
-        - ./backend:/app
-      environment:
-        - ENV=development
-      depends_on:
-        - langflow
 
+
+  frontend:
+    build: ./frontend
+    command: npm run dev
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    #  - langflow
+    networks:
+      - caddy
+    labels:
+      # Public entry point. Caddy serves the UI and reverse-proxies the
+      # browser-facing backends so they can stay private (no public domain):
+      #   /api/*      -> backend:9000      (REST API)
+      #   /tile/*     -> openstreetmap:80  (map tiles)
+      #   /langflow/* -> langflow:7860     (chat API; /langflow prefix stripped)
+      # Everything else falls through to the Vue dev server on 8080.
+      # handle blocks evaluate in numeric order; first match wins.
+      caddy: safepath.duckdns.org
+      caddy.1_handle: /api/*
+      caddy.1_handle.reverse_proxy: backend:9000
+      caddy.2_handle: /tile/*
+      caddy.2_handle.reverse_proxy: openstreetmap:80
+      caddy.3_handle_path: /langflow/*
+      caddy.3_handle_path.reverse_proxy: langflow:7860
+      caddy.4_handle: /*
+      caddy.4_handle.reverse_proxy: "{{upstreams 8080}}"
+
+  backend:
+    build: ./backend
+    env_file:
+      - .env
+    networks:
+      # Keep on the caddy network so other containers (e.g. langflow's
+      # SSRF allow-list "backend.local") can still reach it internally.
+      caddy:
+        aliases:
+          - backend.local
+      # Put the backend on the private VPN network with a fixed IP so it is
+      # reachable ONLY by clients connected through WireGuard (see wg-easy).
+      vpn:
+        ipv4_address: 172.28.0.90
+    environment:
+      - ENV=production
+    # depends_on:
+    #   - langflow
+    # Direct access by name, VPN-only: https://backend.safepath.duckdns.org
+    # Public visitors get 403; only WireGuard traffic (source = wg-easy at
+    # 172.28.0.3) is proxied through. The public app still reaches the API
+    # via the frontend gateway's /api/* route (backend:9000), unaffected.
+    labels:
+      caddy: backend.safepath.duckdns.org
+      caddy.@vpn.remote_ip: "172.28.0.3"
+      caddy.route.0_reverse_proxy: "@vpn {{upstreams 9000}}"
+      caddy.route.1_respond: '"VPN access required. your ip is {http.request.remote.host}" 403'
+
+  # ----------------------------------------------------------------------------
+  # WireGuard VPN gateway (wg-easy)
+  #
+  # This is the only VPN-related service that stays exposed to the internet,
+  # on UDP 51820. Once a teammate connects with their WireGuard client, they
+  # land on the private 10.8.0.0/24 network and can route into the docker
+  # `vpn` network (172.28.0.0/24) to reach VPN-only services like the backend.
+  #
+  # Admin web UI runs on 51821. Generate client configs / QR codes there.
+  # Set WG_HOST to your public host and PASSWORD_HASH to a bcrypt hash
+  # (create one with:  docker run -it ghcr.io/wg-easy/wg-easy wgpw 'yourpass').
+  # ----------------------------------------------------------------------------
+  wg-easy:
+    image: ghcr.io/wg-easy/wg-easy:14
+    container_name: wg-easy
+    environment:
+      - WG_HOST=safepath.duckdns.org              # public address clients dial
+      - PASSWORD_HASH=$$2a$$12$$6g6Eev0O.ABGxZPWw8lI1eBPbC3KNFSZ5YI1Fks.Yd6D.UqYh6jHy # admin UI login
+      - WG_DEFAULT_ADDRESS=10.8.0.x               # VPN client IP range
+      - WG_DEFAULT_DNS=172.28.0.53                        # no pushed DNS
+      # Routes pushed to clients: the VPN subnet + the docker `vpn` subnet.
+      # This is what lets a connected client reach the backend at 172.28.0.10.
+      - WG_ALLOWED_IPS=10.8.0.0/24,172.28.0.0/24
+    volumes:
+      - wg-easy-data:/etc/wireguard
+    ports:
+      - "51820:51820/udp"   # WireGuard tunnel (must be public)
+      - "51821:51821/tcp"   # admin web UI (consider firewalling to admins)
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
+    networks:
+        vpn:
+         ipv4_address: 172.28.0.3
 
   # ----------------------------------------------------------------------------
   # OpenStreetMap tile server (run-only)
@@ -50,13 +109,24 @@ services:
   openstreetmap:
     image: overv/openstreetmap-tile-server
     container_name: openstreetmap
-    ports:
-      - "8081:80"
+    #ports:
+    #  - "8081:80"
     volumes:
       - berlin-data:/data/database/
     command: run
     restart: always
-
+    environment:
+      - ALLOW_CORS=enabled
+      - SSL_POLICY=none
+    networks:
+      - caddy
+    # Tiles reach the public app via the frontend gateway /tile/*. Additionally
+    # expose a VPN-only name for direct/admin access to the tile server.
+    labels:
+      caddy: osm.safepath.duckdns.org
+      caddy.@vpn.remote_ip: "172.28.0.3"
+      caddy.route.0_reverse_proxy: "@vpn {{upstreams 80}}"
+      caddy.route.1_respond: '"VPN access required. your ip is {http.request.remote.host}" 403'
   # ----------------------------------------------------------------------------
   # OpenStreetMap tile server (one-shot import)
   #
@@ -72,38 +142,13 @@ services:
   # ----------------------------------------------------------------------------
   osm-import:
     image: overv/openstreetmap-tile-server
-    profiles: ["setup"]
+    profiles: [ "setup" ]
     volumes:
       - berlin-data:/data/database/
     environment:
       - DOWNLOAD_PBF=https://download.geofabrik.de/europe/germany/berlin-latest.osm.pbf
       - DOWNLOAD_POLY=https://download.geofabrik.de/europe/germany/berlin.poly
-    command: import
-
-  # ----------------------------------------------------------------------------
-  # Langflow (AI agent / chatbot)
-  #
-  # Flows committed under ./langflow/flows are auto-loaded on startup so any
-  # teammate cloning the repo gets the same agent without rebuilding it in
-  # the UI. Export updated flows from the Langflow UI and commit the JSON.
-  # ----------------------------------------------------------------------------
-  langflow:
-    image: langflowai/langflow:latest
-    container_name: langflow
-    ports:
-      - "7860:7860"
-    environment:
-      LANGFLOW_LOAD_FLOWS_PATH: /app/flows
-      LANGFLOW_AUTO_LOGIN: 'true'
-      LANGFLOW_SKIP_AUTH_AUTO_LOGIN: 'true'
-      LANGFLOW_CORS_ORIGINS: 'http://localhost:8080,http://127.0.0.1:8080'
-      LANGFLOW_CORS_ALLOW_METHODS: 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
-      LANGFLOW_CORS_ALLOW_HEADERS: 'Content-Type,Authorization,x-api-key'
-      LANGFLOW_CORS_ALLOW_CREDENTIALS: 'True' 
-      LANGFLOW_SSRF_ALLOWED_HOSTS: 'backend.local,backend,host.docker.internal'     
-    volumes:
-      - ./langflow/flows:/app/flows
-    restart: unless-stopped
+    command: import 
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.1
@@ -117,5 +162,23 @@ services:
       - ./keycloak/import:/opt/keycloak/data/import:ro   # optional auto-import (D4)
 
 volumes:
-  langflow-data:
   berlin-data:
+    external: true
+    name: senior-project-safepath_berlin-data
+  langflow-data:       # Langflow config dir
+  langflow-postgres:   # Langflow Postgres data
+  wg-easy-data:        # persists WireGuard keys & client configs
+
+networks:
+  caddy:
+    external: true
+  # Private network for VPN-only services. wg-easy bridges connected
+  # clients into this subnet so they can reach the backend (172.28.0.10).
+  vpn:
+    driver: bridge  
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+  # Private link between Langflow and its Postgres database.
+  langflow-net:
+    driver: bridge

@@ -1,0 +1,82 @@
+services:
+  # ----------------------------------------------------------------------------
+  # Langflow (AI agent / chatbot)
+  #
+  # Flows committed under ./langflow/flows are auto-loaded on startup so any
+  # teammate cloning the repo gets the same agent without rebuilding it in
+  # the UI. Export updated flows from the Langflow UI and commit the JSON.
+  # ----------------------------------------------------------------------------
+  langflow:
+    #image: langflowai/langflow:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.langflow
+    image: langflow-langfuse:pinned
+    container_name: langflow
+    environment:
+      # - LANGFLOW_LOAD_FLOWS_PATH=/app/flows
+      - LANGFLOW_CONFIG_DIR=/app/langflow
+      - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
+      - DO_NOT_TRACK=True
+      # - LANGFLOW_AUTO_LOGIN=true
+      # - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true
+      - LANGFLOW_SECRET_KEY=${LANGFLOW_SECRET_KEY}
+      - LANGFLOW_CORS_ORIGINS=https://safepath.duckdns.org,https://api.safepath.duckdns.org,http://localhost:8080,http://127.0.0.1:8080
+      - LANGFLOW_CORS_ALLOW_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+      - LANGFLOW_CORS_ALLOW_HEADERS=Content-Type,Authorization,x-api-key
+      - LANGFLOW_CORS_ALLOW_CREDENTIALS=True
+      # - LANGFLOW_SSRF_ALLOWED_HOSTS=backend.local,backend,host.docker.internal
+    volumes:
+      # - /opt/apps/senior-project-safepath/langflow/flows:/app/flows
+      # - langflow-db:/root/.cache/langflow
+      - langflow-data:/app/langflow
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+      langflow-net:   # private link to its Postgres database
+      caddy:          # reachable by the frontend gateway as langflow:7860
+      vpn:            # admin reaches the builder UI over the VPN at .30
+        ipv4_address: 172.28.0.30
+    labels:
+      # VPN-only builder UI by name (full UI at a domain root, not a subpath).
+      caddy: langflow.safepath.duckdns.org
+      caddy.@vpn.remote_ip: "172.28.0.3"
+      caddy.route.0_reverse_proxy: "@vpn {{upstreams 7860}}"
+      caddy.route.1_respond: '"VPN access required. your ip is {http.request.remote.host}" 403'
+
+  postgres:
+    # Pinned to a specific Debian base (trixie) so the postgres:16 tag does not
+    # silently roll its OS underneath us — that roll causes a glibc collation
+    # version mismatch warning on existing volumes. Matches the langflow image
+    # base. See https://github.com/langflow-ai/langflow/issues/9608
+    image: postgres:16-trixie
+    environment:
+      POSTGRES_USER: langflow
+      POSTGRES_PASSWORD: langflow
+      POSTGRES_DB: langflow
+    # ports:
+      # - "5432:5432"
+    networks:
+      - langflow-net
+
+    volumes:
+      - langflow-postgres:/var/lib/postgresql/data
+ 
+volumes:
+  langflow-data:
+  langflow-postgres:
+
+
+networks:
+  langflow-net:
+    driver: bridge
+  caddy:
+    external: true
+  vpn:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
