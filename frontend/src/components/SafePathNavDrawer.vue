@@ -67,7 +67,7 @@
 import { computed, ref } from 'vue';
 import { useTheme } from 'vuetify';
 import safePathLogo from '../assets/Berlin.png';
-import keycloak from '../services/keycloak';
+// import keycloak from '../services/keycloak';
 
 // Optional explicit override; when null, the menu is derived from the user's role.
 const props = defineProps({
@@ -78,30 +78,30 @@ const props = defineProps({
 const drawer = ref(false);
 
 // ---- Identity / roles ----
-const isAuthenticated = computed(() => !!keycloak.authenticated);
-const isAdmin = computed(() => keycloak.authenticated && keycloak.hasRealmRole('Admin'));
-const username = computed(
-  () => keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'Account'
-);
+// const isAuthenticated = computed(() => !!keycloak.authenticated);
+// const isAdmin = computed(() => keycloak.authenticated && keycloak.hasRealmRole('Admin'));
+// const username = computed(
+//   () => keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'Account'
+// );
 
-// Home for everyone; member items when logged in; Dashboard only for admins.
-const navItems = computed(() => {
-  if (props.items) return props.items;                       // explicit override still works
-  const list = [{ title: 'Home', icon: 'mdi-home', to: '/home' }];
-  if (isAuthenticated.value) {
-    list.push(
-      { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-      { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
-    );
-  }
-  if (isAdmin.value) {
-    list.push({ title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' });
-  }
-  return list;
-});
+// // Home for everyone; member items when logged in; Dashboard only for admins.
+// const navItems = computed(() => {
+//   if (props.items) return props.items;                       // explicit override still works
+//   const list = [{ title: 'Home', icon: 'mdi-home', to: '/home' }];
+//   if (isAuthenticated.value) {
+//     list.push(
+//       { title: 'Profile', icon: 'mdi-account', to: '/profile' },
+//       { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
+//     );
+//   }
+//   if (isAdmin.value) {
+//     list.push({ title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' });
+//   }
+//   return list;
+// });
 
-const login = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
-const logout = () => keycloak.logout({ redirectUri: window.location.origin + '/home' });
+// const login = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
+// const logout = () => keycloak.logout({ redirectUri: window.location.origin + '/home' });
 
 // ---- Light/dark toggle (unchanged) ----
 const theme = useTheme();
