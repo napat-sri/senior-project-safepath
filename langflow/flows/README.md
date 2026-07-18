@@ -20,5 +20,3 @@ the Langflow UI by hand.
 2. Re-export it as JSON.
 3. Overwrite the existing file in this folder.
 4. Commit the change so teammates pick it up on their next pull.
-
-

@@ -6,6 +6,34 @@
         "className": "",
         "data": {
           "sourceHandle": {
+            "dataType": "ChatInput",
+            "id": "ChatInput-DMo0A",
+            "name": "message",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "user_input",
+            "id": "Prompt Template-83YDb",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__ChatInput-DMo0A{œdataTypeœ:œChatInputœ,œidœ:œChatInput-DMo0Aœ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}-Prompt Template-83YDb{œfieldNameœ:œuser_inputœ,œidœ:œPrompt Template-83YDbœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "ChatInput-DMo0A",
+        "sourceHandle": "{œdataTypeœ:œChatInputœ,œidœ:œChatInput-DMo0Aœ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "Prompt Template-83YDb",
+        "targetHandle": "{œfieldNameœ:œuser_inputœ,œidœ:œPrompt Template-83YDbœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
             "dataType": "Agent",
             "id": "Agent-89SZI",
             "name": "response",
@@ -26,12 +54,40 @@
             "type": "other"
           }
         },
-        "id": "reactflow__edge-Agent-89SZI{œdataTypeœ:œAgentœ,œidœ:œAgent-89SZIœ,œnameœ:œresponseœ,œoutput_typesœ:[œMessageœ]}-ChatOutput-WHD1C{œfieldNameœ:œinput_valueœ,œidœ:œChatOutput-WHD1Cœ,œinputTypesœ:[œDataœ,œJSONœ,œDataFrameœ,œTableœ,œMessageœ],œtypeœ:œotherœ}",
+        "id": "xy-edge__Agent-89SZI{œdataTypeœ:œAgentœ,œidœ:œAgent-89SZIœ,œnameœ:œresponseœ,œoutput_typesœ:[œMessageœ]}-ChatOutput-WHD1C{œfieldNameœ:œinput_valueœ,œidœ:œChatOutput-WHD1Cœ,œinputTypesœ:[œDataœ,œJSONœ,œDataFrameœ,œTableœ,œMessageœ],œtypeœ:œotherœ}",
         "selected": false,
         "source": "Agent-89SZI",
         "sourceHandle": "{œdataTypeœ:œAgentœ,œidœ:œAgent-89SZIœ,œnameœ:œresponseœ,œoutput_typesœ:[œMessageœ]}",
         "target": "ChatOutput-WHD1C",
         "targetHandle": "{œfieldNameœ:œinput_valueœ,œidœ:œChatOutput-WHD1Cœ,œinputTypesœ:[œDataœ,œJSONœ,œDataFrameœ,œTableœ,œMessageœ],œtypeœ:œotherœ}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "Prompt Template",
+            "id": "Prompt Template-83YDb",
+            "name": "prompt",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "input_value",
+            "id": "Agent-89SZI",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "xy-edge__Prompt Template-83YDb{œdataTypeœ:œPrompt Templateœ,œidœ:œPrompt Template-83YDbœ,œnameœ:œpromptœ,œoutput_typesœ:[œMessageœ]}-Agent-89SZI{œfieldNameœ:œinput_valueœ,œidœ:œAgent-89SZIœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
+        "selected": false,
+        "source": "Prompt Template-83YDb",
+        "sourceHandle": "{œdataTypeœ:œPrompt Templateœ,œidœ:œPrompt Template-83YDbœ,œnameœ:œpromptœ,œoutput_typesœ:[œMessageœ]}",
+        "target": "Agent-89SZI",
+        "targetHandle": "{œfieldNameœ:œinput_valueœ,œidœ:œAgent-89SZIœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
       },
       {
         "animated": false,
@@ -60,62 +116,6 @@
         "sourceHandle": "{œdataTypeœ:œLiteLLMProxyModelœ,œidœ:œLiteLLMProxyModel-V1LhHœ,œnameœ:œmodel_outputœ,œoutput_typesœ:[œLanguageModelœ]}",
         "target": "Agent-89SZI",
         "targetHandle": "{œfieldNameœ:œmodelœ,œidœ:œAgent-89SZIœ,œinputTypesœ:[œLanguageModelœ],œtypeœ:œmodelœ}"
-      },
-      {
-        "animated": false,
-        "className": "",
-        "data": {
-          "sourceHandle": {
-            "dataType": "ChatInput",
-            "id": "ChatInput-DMo0A",
-            "name": "message",
-            "output_types": [
-              "Message"
-            ]
-          },
-          "targetHandle": {
-            "fieldName": "input_value",
-            "id": "Agent-89SZI",
-            "inputTypes": [
-              "Message"
-            ],
-            "type": "str"
-          }
-        },
-        "id": "xy-edge__ChatInput-DMo0A{œdataTypeœ:œChatInputœ,œidœ:œChatInput-DMo0Aœ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}-Agent-89SZI{œfieldNameœ:œinput_valueœ,œidœ:œAgent-89SZIœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}",
-        "selected": false,
-        "source": "ChatInput-DMo0A",
-        "sourceHandle": "{œdataTypeœ:œChatInputœ,œidœ:œChatInput-DMo0Aœ,œnameœ:œmessageœ,œoutput_typesœ:[œMessageœ]}",
-        "target": "Agent-89SZI",
-        "targetHandle": "{œfieldNameœ:œinput_valueœ,œidœ:œAgent-89SZIœ,œinputTypesœ:[œMessageœ],œtypeœ:œstrœ}"
-      },
-      {
-        "animated": false,
-        "className": "",
-        "data": {
-          "sourceHandle": {
-            "dataType": "UnifiedWebSearch",
-            "id": "UnifiedWebSearch-gpIHr",
-            "name": "component_as_tool",
-            "output_types": [
-              "Tool"
-            ]
-          },
-          "targetHandle": {
-            "fieldName": "tools",
-            "id": "Agent-89SZI",
-            "inputTypes": [
-              "Tool"
-            ],
-            "type": "other"
-          }
-        },
-        "id": "xy-edge__UnifiedWebSearch-gpIHr{œdataTypeœ:œUnifiedWebSearchœ,œidœ:œUnifiedWebSearch-gpIHrœ,œnameœ:œcomponent_as_toolœ,œoutput_typesœ:[œToolœ]}-Agent-89SZI{œfieldNameœ:œtoolsœ,œidœ:œAgent-89SZIœ,œinputTypesœ:[œToolœ],œtypeœ:œotherœ}",
-        "selected": false,
-        "source": "UnifiedWebSearch-gpIHr",
-        "sourceHandle": "{œdataTypeœ:œUnifiedWebSearchœ,œidœ:œUnifiedWebSearch-gpIHrœ,œnameœ:œcomponent_as_toolœ,œoutput_typesœ:[œToolœ]}",
-        "target": "Agent-89SZI",
-        "targetHandle": "{œfieldNameœ:œtoolsœ,œidœ:œAgent-89SZIœ,œinputTypesœ:[œToolœ],œtypeœ:œotherœ}"
       }
     ],
     "nodes": [
@@ -173,7 +173,7 @@
             "icon": "MessagesSquare",
             "key": "ChatInput",
             "legacy": false,
-            "lf_version": "1.9.2",
+            "lf_version": "1.9.3",
             "metadata": {
               "code_hash": "7a26c54d89ed",
               "dependencies": {
@@ -414,12 +414,12 @@
         "dragging": false,
         "id": "ChatInput-DMo0A",
         "measured": {
-          "height": 51,
+          "height": 52,
           "width": 192
         },
         "position": {
-          "x": 1466.5923447987186,
-          "y": 845.1173755561481
+          "x": 1637.4701054916036,
+          "y": 1010.1434316793725
         },
         "selected": false,
         "type": "genericNode"
@@ -453,7 +453,7 @@
             "icon": "MessagesSquare",
             "key": "ChatOutput",
             "legacy": false,
-            "lf_version": "1.9.2",
+            "lf_version": "1.9.3",
             "metadata": {
               "code_hash": "84009527d08c",
               "dependencies": {
@@ -699,12 +699,12 @@
         "dragging": false,
         "id": "ChatOutput-WHD1C",
         "measured": {
-          "height": 51,
+          "height": 52,
           "width": 192
         },
         "position": {
-          "x": 2169.9913590047977,
-          "y": 555.0362921798496
+          "x": 3181.9913590047977,
+          "y": 1199.0362921798496
         },
         "selected": false,
         "type": "genericNode"
@@ -744,9 +744,9 @@
             ],
             "frozen": false,
             "icon": "bot",
-            "last_updated": "2026-05-21T15:03:43.281Z",
+            "last_updated": "2026-05-24T23:20:53.577Z",
             "legacy": false,
-            "lf_version": "1.9.2",
+            "lf_version": "1.9.3",
             "metadata": {
               "code_hash": "154c71cf7441",
               "dependencies": {
@@ -776,6 +776,7 @@
                 "cache": true,
                 "display_name": "Response",
                 "group_outputs": false,
+                "hidden": null,
                 "loop_types": null,
                 "method": "message_response",
                 "name": "response",
@@ -792,12 +793,10 @@
             "pinned": false,
             "template": {
               "_frontend_node_flow_id": {
-                "input_types": [],
                 "value": "63a16f8d-0f9e-4930-91c0-e41ec7e842fd"
               },
               "_frontend_node_folder_id": {
-                "input_types": [],
-                "value": "51323d6b-a8c5-466e-a60f-9dc864e3848d"
+                "value": "4f5a5ade-94c8-42a0-88d1-8050d6e48dc6"
               },
               "_type": "Component",
               "add_current_date_tool": {
@@ -856,7 +855,7 @@
                 "dynamic": false,
                 "info": "Falls back to GOOGLE_API_KEY environment variable",
                 "input_types": [],
-                "load_from_db": true,
+                "load_from_db": false,
                 "name": "api_key",
                 "override_skip": false,
                 "password": true,
@@ -867,7 +866,7 @@
                 "title_case": false,
                 "track_in_telemetry": false,
                 "type": "str",
-                "value": "GOOGLE_API_KEY"
+                "value": ""
               },
               "base_url_ibm_watsonx": {
                 "_input_type": "DropdownInput",
@@ -1095,68 +1094,20 @@
                 "name": "model",
                 "options": [
                   {
-                    "category": "Google Generative AI",
                     "icon": "GoogleGenerativeAI",
                     "metadata": {
-                      "api_key_param": "google_api_key",
-                      "context_length": 128000,
-                      "max_tokens_field_name": "max_output_tokens",
-                      "model_class": "ChatGoogleGenerativeAIFixed",
-                      "model_name_param": "model"
+                      "default": true,
+                      "deprecated": false,
+                      "icon": "GoogleGenerativeAI",
+                      "model_type": "llm",
+                      "not_enabled_locally": true,
+                      "not_supported": false,
+                      "preview": false,
+                      "reasoning": false,
+                      "search": false,
+                      "tool_calling": true
                     },
                     "name": "gemini-2.5-flash",
-                    "provider": "Google Generative AI"
-                  },
-                  {
-                    "category": "Google Generative AI",
-                    "icon": "GoogleGenerativeAI",
-                    "metadata": {
-                      "api_key_param": "google_api_key",
-                      "context_length": 128000,
-                      "max_tokens_field_name": "max_output_tokens",
-                      "model_class": "ChatGoogleGenerativeAIFixed",
-                      "model_name_param": "model"
-                    },
-                    "name": "gemini-2.5-pro",
-                    "provider": "Google Generative AI"
-                  },
-                  {
-                    "category": "Google Generative AI",
-                    "icon": "GoogleGenerativeAI",
-                    "metadata": {
-                      "api_key_param": "google_api_key",
-                      "context_length": 128000,
-                      "max_tokens_field_name": "max_output_tokens",
-                      "model_class": "ChatGoogleGenerativeAIFixed",
-                      "model_name_param": "model"
-                    },
-                    "name": "gemini-2.5-flash-lite",
-                    "provider": "Google Generative AI"
-                  },
-                  {
-                    "category": "Google Generative AI",
-                    "icon": "GoogleGenerativeAI",
-                    "metadata": {
-                      "api_key_param": "google_api_key",
-                      "context_length": 128000,
-                      "max_tokens_field_name": "max_output_tokens",
-                      "model_class": "ChatGoogleGenerativeAIFixed",
-                      "model_name_param": "model"
-                    },
-                    "name": "gemini-2.5-flash-preview-09-2025",
-                    "provider": "Google Generative AI"
-                  },
-                  {
-                    "category": "Google Generative AI",
-                    "icon": "GoogleGenerativeAI",
-                    "metadata": {
-                      "api_key_param": "google_api_key",
-                      "context_length": 128000,
-                      "max_tokens_field_name": "max_output_tokens",
-                      "model_class": "ChatGoogleGenerativeAIFixed",
-                      "model_name_param": "model"
-                    },
-                    "name": "gemini-2.5-flash-lite-preview-09-2025",
                     "provider": "Google Generative AI"
                   }
                 ],
@@ -1327,7 +1278,7 @@
                 "trace_as_metadata": true,
                 "track_in_telemetry": false,
                 "type": "str",
-                "value": "You are a helpful assistant that can use tools to answer questions and perform tasks."
+                "value": ""
               },
               "tools": {
                 "_input_type": "HandleInput",
@@ -1382,12 +1333,12 @@
         "dragging": false,
         "id": "Agent-89SZI",
         "measured": {
-          "height": 428,
+          "height": 430,
           "width": 320
         },
         "position": {
-          "x": 1709.1006319496487,
-          "y": 46.1915891666828
+          "x": 2653.1006319496487,
+          "y": 896.6958520908771
         },
         "selected": false,
         "type": "genericNode"
@@ -1422,7 +1373,7 @@
             "frozen": false,
             "icon": "LiteLLM",
             "legacy": false,
-            "lf_version": "1.9.2",
+            "lf_version": "1.9.3",
             "metadata": {
               "code_hash": "386ae52865b5",
               "dependencies": {
@@ -1751,69 +1702,72 @@
         "dragging": false,
         "id": "LiteLLMProxyModel-V1LhH",
         "measured": {
-          "height": 549,
+          "height": 550,
           "width": 320
         },
         "position": {
-          "x": 1152.5677327819071,
-          "y": -82.31949739286611
+          "x": 2022.3468840537898,
+          "y": 606.6468173210463
         },
         "selected": false,
         "type": "genericNode"
       },
       {
         "data": {
-          "id": "UnifiedWebSearch-gpIHr",
+          "id": "APIRequest-r2nL5",
           "node": {
             "base_classes": [
-              "Table"
+              "JSON"
             ],
             "beta": false,
             "conditional_paths": [],
             "custom_fields": {},
-            "description": "Search the web, news, or RSS feeds.",
-            "display_name": "Web Search",
-            "documentation": "https://docs.langflow.org/web-search",
+            "description": "Make HTTP requests using URL or cURL commands.",
+            "display_name": "SafePath Route Tool",
+            "documentation": "https://docs.langflow.org/api-request",
             "edited": false,
             "field_order": [
-              "search_mode",
-              "query",
-              "hl",
-              "gl",
-              "ceid",
-              "topic",
-              "location",
-              "timeout"
+              "url_input",
+              "curl_input",
+              "method",
+              "mode",
+              "query_params",
+              "body",
+              "headers",
+              "timeout",
+              "follow_redirects",
+              "save_to_file",
+              "include_httpx_metadata"
             ],
             "frozen": false,
-            "icon": "search",
-            "last_updated": "2026-05-21T15:03:43.122Z",
+            "icon": "Globe",
+            "last_updated": "2026-05-24T20:36:58.284Z",
             "legacy": false,
-            "lf_version": "1.9.2",
+            "lf_version": "1.9.3",
             "metadata": {
-              "code_hash": "cbeeaef8889a",
+              "code_hash": "4f329dec9a39",
               "dependencies": {
                 "dependencies": [
                   {
-                    "name": "pandas",
-                    "version": "2.2.3"
+                    "name": "aiofiles",
+                    "version": "24.1.0"
                   },
                   {
-                    "name": "requests",
-                    "version": "2.33.1"
+                    "name": "httpx",
+                    "version": "0.28.1"
                   },
                   {
-                    "name": "bs4",
-                    "version": "4.12.3"
+                    "name": "validators",
+                    "version": "0.35.0"
                   },
                   {
                     "name": "lfx",
-                    "version": null
+                    "version": "0.4.3"
                   }
                 ],
                 "total_dependencies": 4
               },
-              "module": "lfx.components.data_source.web_search.WebSearchComponent"
+              "module": "lfx.components.data_source.api_request.APIRequestComponent"
             },
             "minimized": false,
             "output_types": [],
@@ -1821,18 +1775,17 @@
               {
                 "allows_loop": false,
                 "cache": true,
-                "display_name": "Toolset",
+                "display_name": "API Response",
                 "group_outputs": false,
-                "hidden": null,
                 "loop_types": null,
-                "method": "to_toolkit",
-                "name": "component_as_tool",
+                "method": "make_api_request",
+                "name": "data",
                 "options": null,
                 "required_inputs": null,
-                "selected": "Tool",
+                "selected": "JSON",
                 "tool_mode": true,
                 "types": [
-                  "Tool"
+                  "JSON"
                 ],
                 "value": "__UNDEFINED__"
               }
@@ -1843,31 +1796,60 @@
                 "value": "63a16f8d-0f9e-4930-91c0-e41ec7e842fd"
               },
               "_frontend_node_folder_id": {
-                "value": "51323d6b-a8c5-466e-a60f-9dc864e3848d"
+                "value": "4f5a5ade-94c8-42a0-88d1-8050d6e48dc6"
               },
               "_type": "Component",
-              "ceid": {
-                "_input_type": "MessageTextInput",
+              "body": {
+                "_input_type": "TableInput",
                 "advanced": true,
-                "display_name": "Country:Language (ceid)",
+                "display_name": "Body",
                 "dynamic": false,
-                "info": "e.g. US:en, FR:fr. Default: US:en.",
-                "input_types": [],
-                "list": false,
+                "info": "The body to send with the request as a dictionary (for POST, PATCH, PUT).",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
+                "is_list": true,
                 "list_add_label": "Add More",
-                "load_from_db": false,
-                "name": "ceid",
+                "name": "body",
                 "override_skip": false,
                 "placeholder": "",
+                "real_time_refresh": true,
                 "required": false,
                 "show": true,
+                "table_icon": "Table",
+                "table_schema": [
+                  {
+                    "description": "Parameter name",
+                    "display_name": "Key",
+                    "formatter": "text",
+                    "name": "key",
+                    "type": "str"
+                  },
+                  {
+                    "description": "Parameter value",
+                    "display_name": "Value",
+                    "formatter": "text",
+                    "name": "value"
+                  }
+                ],
                 "title_case": false,
                 "tool_mode": false,
-                "trace_as_input": true,
                 "trace_as_metadata": true,
                 "track_in_telemetry": false,
-                "type": "str",
-                "value": "US:en"
+                "trigger_icon": "Table",
+                "trigger_text": "Open table",
+                "type": "table",
+                "value": [
+                  {
+                    "key": "start",
+                    "value": "{\n    \"lat\": {{start_lat}},\n    \"lng\": {{start_lng}}\n  }"
+                  },
+                  {
+                    "key": "destination",
+                    "value": "{\n    \"lat\": {{dest_lat}},\n    \"lng\": {{dest_lng}}\n  }"
+                  }
+                ]
               },
               "code": {
                 "advanced": true,
@@ -1885,95 +1867,30 @@
                 "show": true,
                 "title_case": false,
                 "type": "code",
-                "value": "\"\"\"Unified Web Search Component.\n\nThis component consolidates Web Search, News Search, and RSS Reader into a single\ncomponent with tabs for different search modes.\n\"\"\"\n\nimport re\nfrom typing import Any\nfrom urllib.parse import parse_qs, quote_plus, unquote, urlparse\n\nimport pandas as pd\nimport requests\nfrom bs4 import BeautifulSoup\n\nfrom lfx.custom import Component\nfrom lfx.io import IntInput, MessageTextInput, Output, TabInput\nfrom lfx.schema import DataFrame\nfrom lfx.utils.request_utils import get_user_agent\n\n\nclass WebSearchComponent(Component):\n    display_name = \"Web Search\"\n    description = \"Search the web, news, or RSS feeds.\"\n    documentation: str = \"https://docs.langflow.org/web-search\"\n    icon = \"search\"\n    name = \"UnifiedWebSearch\"\n\n    inputs = [\n        TabInput(\n            name=\"search_mode\",\n            display_name=\"Search Mode\",\n            options=[\"Web\", \"News\", \"RSS\"],\n            info=\"Choose search mode: Web (DuckDuckGo), News (Google News), or RSS (Feed Reader)\",\n            value=\"Web\",\n            real_time_refresh=True,\n            tool_mode=True,\n        ),\n        MessageTextInput(\n            name=\"query\",\n            display_name=\"Search Query\",\n            info=\"Search keywords for news articles.\",\n            tool_mode=True,\n            required=True,\n        ),\n        MessageTextInput(\n            name=\"hl\",\n            display_name=\"Language (hl)\",\n            info=\"Language code, e.g. en-US, fr, de. Default: en-US.\",\n            tool_mode=False,\n            input_types=[],\n            required=False,\n            advanced=True,\n        ),\n        MessageTextInput(\n            name=\"gl\",\n            display_name=\"Country (gl)\",\n            info=\"Country code, e.g. US, FR, DE. Default: US.\",\n            tool_mode=False,\n            input_types=[],\n            required=False,\n            advanced=True,\n        ),\n        MessageTextInput(\n            name=\"ceid\",\n            display_name=\"Country:Language (ceid)\",\n            info=\"e.g. US:en, FR:fr. Default: US:en.\",\n            tool_mode=False,\n            value=\"US:en\",\n            input_types=[],\n            required=False,\n            advanced=True,\n        ),\n        MessageTextInput(\n            name=\"topic\",\n            display_name=\"Topic\",\n            info=\"One of: WORLD, NATION, BUSINESS, TECHNOLOGY, ENTERTAINMENT, SCIENCE, SPORTS, HEALTH.\",\n            tool_mode=False,\n            input_types=[],\n            required=False,\n            advanced=True,\n        ),\n        MessageTextInput(\n            name=\"location\",\n            display_name=\"Location (Geo)\",\n            info=\"City, state, or country for location-based news. Leave blank for keyword search.\",\n            tool_mode=False,\n            input_types=[],\n            required=False,\n            advanced=True,\n        ),\n        IntInput(\n            name=\"timeout\",\n            display_name=\"Timeout\",\n            info=\"Timeout for the request in seconds.\",\n            value=5,\n            required=False,\n            advanced=True,\n        ),\n    ]\n\n    outputs = [Output(name=\"results\", display_name=\"Results\", method=\"perform_search\")]\n\n    def __init__(self, **kwargs):\n        super().__init__(**kwargs)\n\n    def update_build_config(self, build_config: dict, field_value: Any, field_name: str | None = None) -> dict:\n        \"\"\"Update input visibility based on search mode.\"\"\"\n        if field_name == \"search_mode\":\n            # Show/hide inputs based on search mode\n            is_news = field_value == \"News\"\n            is_rss = field_value == \"RSS\"\n\n            # Update query field info based on mode\n            if is_rss:\n                build_config[\"query\"][\"info\"] = \"RSS feed URL to parse\"\n                build_config[\"query\"][\"display_name\"] = \"RSS Feed URL\"\n            elif is_news:\n                build_config[\"query\"][\"info\"] = \"Search keywords for news articles.\"\n                build_config[\"query\"][\"display_name\"] = \"Search Query\"\n            else:  # Web\n                build_config[\"query\"][\"info\"] = \"Keywords to search for\"\n                build_config[\"query\"][\"display_name\"] = \"Search Query\"\n\n            # Keep news-specific fields as advanced (matching original News Search component)\n            # They remain advanced=True in all modes, just like in the original component\n\n        return build_config\n\n    def validate_url(self, string: str) -> bool:\n        \"\"\"Validate URL format.\"\"\"\n        url_regex = re.compile(\n            r\"^(https?:\\/\\/)?\" r\"(www\\.)?\" r\"([a-zA-Z0-9.-]+)\" r\"(\\.[a-zA-Z]{2,})?\" r\"(:\\d+)?\" r\"(\\/[^\\s]*)?$\",\n            re.IGNORECASE,\n        )\n        return bool(url_regex.match(string))\n\n    def ensure_url(self, url: str) -> str:\n        \"\"\"Ensure URL has proper protocol.\"\"\"\n        if not url.startswith((\"http://\", \"https://\")):\n            url = \"https://\" + url\n        if not self.validate_url(url):\n            msg = f\"Invalid URL: {url}\"\n            raise ValueError(msg)\n        return url\n\n    def _sanitize_query(self, query: str) -> str:\n        \"\"\"Sanitize search query.\"\"\"\n        return re.sub(r'[<>\"\\']', \"\", query.strip())\n\n    def clean_html(self, html_string: str) -> str:\n        \"\"\"Remove HTML tags from text.\"\"\"\n        return BeautifulSoup(html_string, \"html.parser\").get_text(separator=\" \", strip=True)\n\n    def perform_web_search(self) -> DataFrame:\n        \"\"\"Perform DuckDuckGo web search.\"\"\"\n        query = self._sanitize_query(self.query)\n        if not query:\n            msg = \"Empty search query\"\n            raise ValueError(msg)\n\n        headers = {\"User-Agent\": get_user_agent()}\n        params = {\"q\": query, \"kl\": \"us-en\"}\n        url = \"https://html.duckduckgo.com/html/\"\n\n        try:\n            response = requests.get(url, params=params, headers=headers, timeout=self.timeout)\n            response.raise_for_status()\n        except requests.RequestException as e:\n            self.status = f\"Failed request: {e!s}\"\n            return DataFrame(pd.DataFrame([{\"title\": \"Error\", \"link\": \"\", \"snippet\": str(e), \"content\": \"\"}]))\n\n        if not response.text or \"text/html\" not in response.headers.get(\"content-type\", \"\").lower():\n            self.status = \"No results found\"\n            return DataFrame(\n                pd.DataFrame([{\"title\": \"Error\", \"link\": \"\", \"snippet\": \"No results found\", \"content\": \"\"}])\n            )\n\n        soup = BeautifulSoup(response.text, \"html.parser\")\n        results = []\n\n        for result in soup.select(\"div.result\"):\n            title_tag = result.select_one(\"a.result__a\")\n            snippet_tag = result.select_one(\"a.result__snippet\")\n            if title_tag:\n                raw_link = title_tag.get(\"href\", \"\")\n                parsed = urlparse(raw_link)\n                uddg = parse_qs(parsed.query).get(\"uddg\", [\"\"])[0]\n                decoded_link = unquote(uddg) if uddg else raw_link\n\n                try:\n                    final_url = self.ensure_url(decoded_link)\n                    page = requests.get(final_url, headers=headers, timeout=self.timeout)\n                    page.raise_for_status()\n                    content = BeautifulSoup(page.text, \"lxml\").get_text(separator=\" \", strip=True)\n                except requests.RequestException as e:\n                    final_url = decoded_link\n                    content = f\"(Failed to fetch: {e!s}\"\n\n                results.append(\n                    {\n                        \"title\": title_tag.get_text(strip=True),\n                        \"link\": final_url,\n                        \"snippet\": snippet_tag.get_text(strip=True) if snippet_tag else \"\",\n                        \"content\": content,\n                    }\n                )\n\n        return DataFrame(pd.DataFrame(results))\n\n    def perform_news_search(self) -> DataFrame:\n        \"\"\"Perform Google News search.\"\"\"\n        query = getattr(self, \"query\", \"\")\n        hl = getattr(self, \"hl\", \"en-US\") or \"en-US\"\n        gl = getattr(self, \"gl\", \"US\") or \"US\"\n        topic = getattr(self, \"topic\", None)\n        location = getattr(self, \"location\", None)\n\n        ceid = f\"{gl}:{hl.split('-')[0]}\"\n\n        # Build RSS URL based on parameters\n        if topic:\n            # Topic-based feed\n            base_url = f\"https://news.google.com/rss/headlines/section/topic/{quote_plus(topic.upper())}\"\n            params = f\"?hl={hl}&gl={gl}&ceid={ceid}\"\n            rss_url = base_url + params\n        elif location:\n            # Location-based feed\n            base_url = f\"https://news.google.com/rss/headlines/section/geo/{quote_plus(location)}\"\n            params = f\"?hl={hl}&gl={gl}&ceid={ceid}\"\n            rss_url = base_url + params\n        elif query:\n            # Keyword search feed\n            base_url = \"https://news.google.com/rss/search?q=\"\n            query_encoded = quote_plus(query)\n            params = f\"&hl={hl}&gl={gl}&ceid={ceid}\"\n            rss_url = f\"{base_url}{query_encoded}{params}\"\n        else:\n            self.status = \"No search query, topic, or location provided.\"\n            return DataFrame(\n                pd.DataFrame(\n                    [{\"title\": \"Error\", \"link\": \"\", \"published\": \"\", \"summary\": \"No search parameters provided\"}]\n                )\n            )\n\n        try:\n            response = requests.get(rss_url, timeout=self.timeout)\n            response.raise_for_status()\n            soup = BeautifulSoup(response.content, \"xml\")\n            items = soup.find_all(\"item\")\n        except requests.RequestException as e:\n            self.status = f\"Failed to fetch news: {e}\"\n            return DataFrame(pd.DataFrame([{\"title\": \"Error\", \"link\": \"\", \"published\": \"\", \"summary\": str(e)}]))\n\n        if not items:\n            self.status = \"No news articles found.\"\n            return DataFrame(pd.DataFrame([{\"title\": \"No articles found\", \"link\": \"\", \"published\": \"\", \"summary\": \"\"}]))\n\n        articles = []\n        for item in items:\n            try:\n                title = self.clean_html(item.title.text if item.title else \"\")\n                link = item.link.text if item.link else \"\"\n                published = item.pubDate.text if item.pubDate else \"\"\n                summary = self.clean_html(item.description.text if item.description else \"\")\n                articles.append({\"title\": title, \"link\": link, \"published\": published, \"summary\": summary})\n            except (AttributeError, ValueError, TypeError) as e:\n                self.log(f\"Error parsing article: {e!s}\")\n                continue\n\n        return DataFrame(pd.DataFrame(articles))\n\n    def perform_rss_read(self) -> DataFrame:\n        \"\"\"Read RSS feed.\"\"\"\n        rss_url = getattr(self, \"query\", \"\")\n        if not rss_url:\n            return DataFrame(\n                pd.DataFrame([{\"title\": \"Error\", \"link\": \"\", \"published\": \"\", \"summary\": \"No RSS URL provided\"}])\n            )\n\n        try:\n            response = requests.get(rss_url, timeout=self.timeout)\n            response.raise_for_status()\n            if not response.content.strip():\n                msg = \"Empty response received\"\n                raise ValueError(msg)\n\n            # Validate XML\n            try:\n                BeautifulSoup(response.content, \"xml\")\n            except Exception as e:\n                msg = f\"Invalid XML response: {e}\"\n                raise ValueError(msg) from e\n\n            soup = BeautifulSoup(response.content, \"xml\")\n            items = soup.find_all(\"item\")\n        except (requests.RequestException, ValueError) as e:\n            self.status = f\"Failed to fetch RSS: {e}\"\n            return DataFrame(pd.DataFrame([{\"title\": \"Error\", \"link\": \"\", \"published\": \"\", \"summary\": str(e)}]))\n\n        articles = [\n            {\n                \"title\": item.title.text if item.title else \"\",\n                \"link\": item.link.text if item.link else \"\",\n                \"published\": item.pubDate.text if item.pubDate else \"\",\n                \"summary\": item.description.text if item.description else \"\",\n            }\n            for item in items\n        ]\n\n        # Ensure DataFrame has correct columns even if empty\n        df_articles = pd.DataFrame(articles, columns=[\"title\", \"link\", \"published\", \"summary\"])\n        self.log(f\"Fetched {len(df_articles)} articles.\")\n        return DataFrame(df_articles)\n\n    def perform_search(self) -> DataFrame:\n        \"\"\"Main search method that routes to appropriate search function based on mode.\"\"\"\n        search_mode = getattr(self, \"search_mode\", \"Web\")\n\n        if search_mode == \"Web\":\n            return self.perform_web_search()\n        if search_mode == \"News\":\n            return self.perform_news_search()\n        if search_mode == \"RSS\":\n            return self.perform_rss_read()\n        # Fallback to web search\n        return self.perform_web_search()\n"
+                "value": "import json\nimport re\nimport tempfile\nfrom datetime import datetime, timezone\nfrom pathlib import Path\nfrom typing import Any\nfrom urllib.parse import parse_qsl, urlencode, urlparse, urlunparse\n\nimport aiofiles\nimport aiofiles.os as aiofiles_os\nimport httpx\nimport validators\n\nfrom lfx.base.curl.parse import parse_context\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.inputs.inputs import TabInput\nfrom lfx.io import (\n    BoolInput,\n    DataInput,\n    DropdownInput,\n    IntInput,\n    MessageTextInput,\n    MultilineInput,\n    Output,\n    TableInput,\n)\nfrom lfx.schema.data import Data\nfrom lfx.schema.dotdict import dotdict\nfrom lfx.utils.component_utils import set_current_fields, set_field_advanced, set_field_display\n\n# SSRF Protection imports - for preventing Server-Side Request Forgery attacks\nfrom lfx.utils.ssrf_protection import SSRFProtectionError, validate_and_resolve_url\nfrom lfx.utils.ssrf_transport import create_ssrf_protected_client\n\n# Define fields for each mode\nMODE_FIELDS = {\n    \"URL\": [\n        \"url_input\",\n        \"method\",\n    ],\n    \"cURL\": [\"curl_input\"],\n}\n\n# Fields that should always be visible\nDEFAULT_FIELDS = [\"mode\"]\n\n\nclass APIRequestComponent(Component):\n    display_name = \"API Request\"\n    description = \"Make HTTP requests using URL or cURL commands.\"\n    documentation: str = \"https://docs.langflow.org/api-request\"\n    icon = \"Globe\"\n    name = \"APIRequest\"\n\n    inputs = [\n        MessageTextInput(\n            name=\"url_input\",\n            display_name=\"URL\",\n            info=\"Enter the URL for the request.\",\n            advanced=False,\n            tool_mode=True,\n        ),\n        MultilineInput(\n            name=\"curl_input\",\n            display_name=\"cURL\",\n            info=(\n                \"Paste a curl command to populate the fields. \"\n                \"This will fill in the dictionary fields for headers and body.\"\n            ),\n            real_time_refresh=True,\n            tool_mode=True,\n            advanced=True,\n            show=False,\n        ),\n        DropdownInput(\n            name=\"method\",\n            display_name=\"Method\",\n            options=[\"GET\", \"POST\", \"PATCH\", \"PUT\", \"DELETE\"],\n            value=\"GET\",\n            info=\"The HTTP method to use.\",\n            real_time_refresh=True,\n        ),\n        TabInput(\n            name=\"mode\",\n            display_name=\"Mode\",\n            options=[\"URL\", \"cURL\"],\n            value=\"URL\",\n            info=\"Enable cURL mode to populate fields from a cURL command.\",\n            real_time_refresh=True,\n        ),\n        DataInput(\n            name=\"query_params\",\n            display_name=\"Query Parameters\",\n            info=\"The query parameters to append to the URL.\",\n            advanced=True,\n        ),\n        TableInput(\n            name=\"body\",\n            display_name=\"Body\",\n            info=\"The body to send with the request as a dictionary (for POST, PATCH, PUT).\",\n            table_schema=[\n                {\n                    \"name\": \"key\",\n                    \"display_name\": \"Key\",\n                    \"type\": \"str\",\n                    \"description\": \"Parameter name\",\n                },\n                {\n                    \"name\": \"value\",\n                    \"display_name\": \"Value\",\n                    \"description\": \"Parameter value\",\n                },\n            ],\n            value=[],\n            input_types=[\"Data\", \"JSON\"],\n            advanced=True,\n            real_time_refresh=True,\n        ),\n        TableInput(\n            name=\"headers\",\n            display_name=\"Headers\",\n            info=\"The headers to send with the request\",\n            table_schema=[\n                {\n                    \"name\": \"key\",\n                    \"display_name\": \"Header\",\n                    \"type\": \"str\",\n                    \"description\": \"Header name\",\n                },\n                {\n                    \"name\": \"value\",\n                    \"display_name\": \"Value\",\n                    \"type\": \"str\",\n                    \"description\": \"Header value\",\n                },\n            ],\n            value=[{\"key\": \"User-Agent\", \"value\": \"Langflow/1.0\"}],\n            advanced=True,\n            input_types=[\"Data\", \"JSON\"],\n            real_time_refresh=True,\n        ),\n        IntInput(\n            name=\"timeout\",\n            display_name=\"Timeout\",\n            value=30,\n            info=\"The timeout to use for the request.\",\n            advanced=True,\n        ),\n        BoolInput(\n            name=\"follow_redirects\",\n            display_name=\"Follow Redirects\",\n            value=False,\n            info=(\n                \"Whether to follow HTTP redirects. \"\n                \"WARNING: Enabling redirects may allow SSRF bypass attacks where a public URL \"\n                \"redirects to internal resources. Only enable if you trust the target server. \"\n                \"See OWASP SSRF Prevention Cheat Sheet for details.\"\n            ),\n            advanced=True,\n        ),\n        BoolInput(\n            name=\"save_to_file\",\n            display_name=\"Save to File\",\n            value=False,\n            info=\"Save the API response to a temporary file\",\n            advanced=True,\n        ),\n        BoolInput(\n            name=\"include_httpx_metadata\",\n            display_name=\"Include HTTPx Metadata\",\n            value=False,\n            info=(\n                \"Include properties such as headers, status_code, response_headers, \"\n                \"and redirection_history in the output.\"\n            ),\n            advanced=True,\n        ),\n    ]\n\n    outputs = [\n        Output(display_name=\"API Response\", name=\"data\", method=\"make_api_request\"),\n    ]\n\n    def _parse_json_value(self, value: Any) -> Any:\n        \"\"\"Parse a value that might be a JSON string.\"\"\"\n        if not isinstance(value, str):\n            return value\n\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError:\n            return value\n        else:\n            return parsed\n\n    def _process_body(self, body: Any) -> dict:\n        \"\"\"Process the body input into a valid dictionary.\"\"\"\n        if body is None:\n            return {}\n        if hasattr(body, \"data\"):\n            body = body.data\n        if isinstance(body, dict):\n            return self._process_dict_body(body)\n        if isinstance(body, str):\n            return self._process_string_body(body)\n        if isinstance(body, list):\n            return self._process_list_body(body)\n        return {}\n\n    def _process_dict_body(self, body: dict) -> dict:\n        \"\"\"Process dictionary body by parsing JSON values.\"\"\"\n        return {k: self._parse_json_value(v) for k, v in body.items()}\n\n    def _process_string_body(self, body: str) -> dict:\n        \"\"\"Process string body by attempting JSON parse.\"\"\"\n        try:\n            return self._process_body(json.loads(body))\n        except json.JSONDecodeError:\n            return {\"data\": body}\n\n    def _process_list_body(self, body: list) -> dict:\n        \"\"\"Process list body by converting to key-value dictionary.\"\"\"\n        processed_dict = {}\n        try:\n            for item in body:\n                # Unwrap Data objects\n                current_item = item\n                if hasattr(item, \"data\"):\n                    unwrapped_data = item.data\n                    # If the unwrapped data is a dict but not key-value format, use it directly\n                    if isinstance(unwrapped_data, dict) and not self._is_valid_key_value_item(unwrapped_data):\n                        return unwrapped_data\n                    current_item = unwrapped_data\n                if not self._is_valid_key_value_item(current_item):\n                    continue\n                key = current_item[\"key\"]\n                value = self._parse_json_value(current_item[\"value\"])\n                processed_dict[key] = value\n        except (KeyError, TypeError, ValueError) as e:\n            self.log(f\"Failed to process body list: {e}\")\n            return {}\n        return processed_dict\n\n    def _is_valid_key_value_item(self, item: Any) -> bool:\n        \"\"\"Check if an item is a valid key-value dictionary.\"\"\"\n        return isinstance(item, dict) and \"key\" in item and \"value\" in item\n\n    def parse_curl(self, curl: str, build_config: dotdict) -> dotdict:\n        \"\"\"Parse a cURL command and update build configuration.\"\"\"\n        try:\n            parsed = parse_context(curl)\n\n            # Update basic configuration\n            url = parsed.url\n            # Normalize URL before setting it\n            url = self._normalize_url(url)\n\n            build_config[\"url_input\"][\"value\"] = url\n            build_config[\"method\"][\"value\"] = parsed.method.upper()\n\n            # Process headers\n            headers_list = [{\"key\": k, \"value\": v} for k, v in parsed.headers.items()]\n            build_config[\"headers\"][\"value\"] = headers_list\n\n            # Process body data\n            if not parsed.data:\n                build_config[\"body\"][\"value\"] = []\n            elif parsed.data:\n                try:\n                    json_data = json.loads(parsed.data)\n                    if isinstance(json_data, dict):\n                        body_list = [\n                            {\"key\": k, \"value\": json.dumps(v) if isinstance(v, dict | list) else str(v)}\n                            for k, v in json_data.items()\n                        ]\n                        build_config[\"body\"][\"value\"] = body_list\n                    else:\n                        build_config[\"body\"][\"value\"] = [{\"key\": \"data\", \"value\": json.dumps(json_data)}]\n                except json.JSONDecodeError:\n                    build_config[\"body\"][\"value\"] = [{\"key\": \"data\", \"value\": parsed.data}]\n\n        except Exception as exc:\n            msg = f\"Error parsing curl: {exc}\"\n            self.log(msg)\n            raise ValueError(msg) from exc\n\n        return build_config\n\n    def _normalize_url(self, url: str) -> str:\n        \"\"\"Normalize URL by adding https:// if no protocol is specified.\"\"\"\n        if not url or not isinstance(url, str):\n            msg = \"URL cannot be empty\"\n            raise ValueError(msg)\n\n        url = url.strip()\n        if url.startswith((\"http://\", \"https://\")):\n            return url\n        return f\"https://{url}\"\n\n    async def make_request(\n        self,\n        client: httpx.AsyncClient,\n        method: str,\n        url: str,\n        headers: dict | None = None,\n        body: Any = None,\n        timeout: int = 5,\n        *,\n        follow_redirects: bool = True,\n        save_to_file: bool = False,\n        include_httpx_metadata: bool = False,\n    ) -> Data:\n        method = method.upper()\n        if method not in {\"GET\", \"POST\", \"PATCH\", \"PUT\", \"DELETE\"}:\n            msg = f\"Unsupported method: {method}\"\n            raise ValueError(msg)\n\n        processed_body = self._process_body(body)\n        redirection_history = []\n\n        try:\n            # Prepare request parameters\n            request_params = {\n                \"method\": method,\n                \"url\": url,\n                \"headers\": headers,\n                \"timeout\": timeout,\n                \"follow_redirects\": follow_redirects,\n            }\n            # Only include body for methods that support it (GET must not have a body per HTTP spec)\n            if method in {\"POST\", \"PATCH\", \"PUT\", \"DELETE\"} and processed_body is not None:\n                request_params[\"json\"] = processed_body\n            response = await client.request(**request_params)\n\n            redirection_history = [\n                {\n                    \"url\": redirect.headers.get(\"Location\", str(redirect.url)),\n                    \"status_code\": redirect.status_code,\n                }\n                for redirect in response.history\n            ]\n\n            is_binary, file_path = await self._response_info(response, with_file_path=save_to_file)\n            response_headers = self._headers_to_dict(response.headers)\n\n            # Base metadata\n            metadata = {\n                \"source\": url,\n                \"status_code\": response.status_code,\n                \"response_headers\": response_headers,\n            }\n\n            if redirection_history:\n                metadata[\"redirection_history\"] = redirection_history\n\n            if save_to_file:\n                mode = \"wb\" if is_binary else \"w\"\n                encoding = response.encoding if mode == \"w\" else None\n                if file_path:\n                    await aiofiles_os.makedirs(file_path.parent, exist_ok=True)\n                    if is_binary:\n                        async with aiofiles.open(file_path, \"wb\") as f:\n                            await f.write(response.content)\n                            await f.flush()\n                    else:\n                        async with aiofiles.open(file_path, \"w\", encoding=encoding) as f:\n                            await f.write(response.text)\n                            await f.flush()\n                    metadata[\"file_path\"] = str(file_path)\n\n                if include_httpx_metadata:\n                    metadata.update({\"headers\": headers})\n                return Data(data=metadata)\n\n            # Handle response content\n            if is_binary:\n                result = response.content\n            else:\n                try:\n                    result = response.json()\n                except json.JSONDecodeError:\n                    self.log(\"Failed to decode JSON response\")\n                    result = response.text.encode(\"utf-8\")\n\n            metadata[\"result\"] = result\n\n            if include_httpx_metadata:\n                metadata.update({\"headers\": headers})\n\n            return Data(data=metadata)\n        except (httpx.HTTPError, httpx.RequestError, httpx.TimeoutException) as exc:\n            self.log(f\"Error making request to {url}\")\n            return Data(\n                data={\n                    \"source\": url,\n                    \"headers\": headers,\n                    \"status_code\": 500,\n                    \"error\": str(exc),\n                    **({\"redirection_history\": redirection_history} if redirection_history else {}),\n                },\n            )\n\n    def add_query_params(self, url: str, params: dict) -> str:\n        \"\"\"Add query parameters to URL efficiently.\"\"\"\n        if not params:\n            return url\n        url_parts = list(urlparse(url))\n        query = dict(parse_qsl(url_parts[4]))\n        query.update(params)\n        url_parts[4] = urlencode(query)\n        return urlunparse(url_parts)\n\n    def _headers_to_dict(self, headers: httpx.Headers) -> dict[str, str]:\n        \"\"\"Convert HTTP headers to a dictionary with lowercased keys.\"\"\"\n        return {k.lower(): v for k, v in headers.items()}\n\n    def _process_headers(self, headers: Any) -> dict:\n        \"\"\"Process the headers input into a valid dictionary.\"\"\"\n        if headers is None:\n            return {}\n        if isinstance(headers, dict):\n            return headers\n        if isinstance(headers, list):\n            return {item[\"key\"]: item[\"value\"] for item in headers if self._is_valid_key_value_item(item)}\n        return {}\n\n    async def make_api_request(self) -> Data:\n        \"\"\"Make HTTP request with SSRF protection and DNS pinning.\n\n        This method implements comprehensive SSRF (Server-Side Request Forgery) protection\n        using DNS pinning to prevent DNS rebinding attacks. The protection works by:\n        1. Validating the URL and resolving DNS during security check\n        2. Pinning the validated IP address\n        3. Forcing the HTTP client to use the pinned IP for the actual request\n        4. Ignoring any subsequent DNS changes (prevents rebinding attacks)\n\n        Returns:\n            Data: Response data from the HTTP request\n\n        Raises:\n            ValueError: If URL is invalid or blocked by SSRF protection\n        \"\"\"\n        # Extract request parameters\n        method = self.method\n        url = self.url_input.strip() if isinstance(self.url_input, str) else \"\"\n        headers = self.headers or {}\n        body = self.body or {}\n        timeout = self.timeout\n        follow_redirects = self.follow_redirects\n        save_to_file = self.save_to_file\n        include_httpx_metadata = self.include_httpx_metadata\n\n        # Security warning: HTTP redirects can bypass SSRF protection\n        # A public URL could redirect to an internal resource\n        if follow_redirects:\n            self.log(\n                \"Security Warning: HTTP redirects are enabled. This may allow SSRF bypass attacks \"\n                \"where a public URL redirects to internal resources (e.g., cloud metadata endpoints). \"\n                \"Only enable this if you trust the target server.\"\n            )\n\n        # Normalize URL (add https:// if no protocol specified)\n        url = self._normalize_url(url)\n\n        # Basic URL format validation\n        if not validators.url(url):\n            msg = f\"Invalid URL provided: {url}\"\n            raise ValueError(msg)\n\n        # ============================================================================\n        # SSRF Protection with DNS Pinning\n        # ============================================================================\n        # This prevents DNS rebinding attacks by:\n        # 1. Resolving DNS and validating IPs during security check\n        # 2. Pinning the validated IP address\n        # 3. Using a custom HTTP transport that forces use of the pinned IP\n        # 4. Ignoring any new DNS resolutions (prevents rebinding)\n        #\n        # Without DNS pinning, an attacker could:\n        # - First DNS lookup: returns public IP (passes validation)\n        # - Second DNS lookup: returns internal IP (bypasses protection)\n        # - Attack succeeds: accesses internal services\n        #\n        # With DNS pinning:\n        # - First DNS lookup: returns public IP (passes validation)\n        # - IP is pinned: \"example.com = 93.184.216.34\"\n        # - HTTP request: uses pinned IP directly (no new DNS lookup)\n        # - Attack fails: even if DNS changes, we use the validated IP\n        # ============================================================================\n\n        try:\n            # Validate URL and get validated IPs for DNS pinning\n            _validated_url, validated_ips = validate_and_resolve_url(url)\n\n            # Log DNS pinning information for security auditing\n            if validated_ips:\n                self.log(f\"SSRF Protection: Using DNS pinning with {len(validated_ips)} validated IP(s)\")\n\n        except SSRFProtectionError as e:\n            # SSRF protection blocked the request (private IP, internal network, etc.)\n            msg = f\"SSRF Protection: {e}\"\n            raise ValueError(msg) from e\n\n        # Process query parameters (from string or Data object)\n        if isinstance(self.query_params, str):\n            query_params = dict(parse_qsl(self.query_params))\n        else:\n            query_params = self.query_params.data if self.query_params else {}\n\n        # Process headers and body into proper format\n        headers = self._process_headers(headers)\n        body = self._process_body(body)\n        url = self.add_query_params(url, query_params)\n\n        # ============================================================================\n        # Create HTTP Client with DNS Pinning (if SSRF protection enabled)\n        # ============================================================================\n        from lfx.utils.ssrf_protection import is_ssrf_protection_enabled\n\n        if is_ssrf_protection_enabled() and validated_ips:\n            # SSRF protection is enabled and DNS pinning is needed\n            # Extract hostname from the final URL (after query params added)\n            hostname = urlparse(url).hostname\n\n            if hostname:\n                # Create client with DNS pinning to prevent rebinding attacks\n                # The custom transport will try validated IPs in order (supports dual-stack/load balancing)\n                # while preserving the Host header for virtual hosting/SNI\n                async with create_ssrf_protected_client(\n                    hostname=hostname,\n                    validated_ips=validated_ips,  # Pass all validated IPs\n                ) as client:\n                    result = await self.make_request(\n                        client,\n                        method,\n                        url,\n                        headers,\n                        body,\n                        timeout,\n                        follow_redirects=follow_redirects,\n                        save_to_file=save_to_file,\n                        include_httpx_metadata=include_httpx_metadata,\n                    )\n            else:\n                # Hostname extraction failed - fallback to normal client\n                # This should rarely happen as URL was already validated\n                async with httpx.AsyncClient() as client:\n                    result = await self.make_request(\n                        client,\n                        method,\n                        url,\n                        headers,\n                        body,\n                        timeout,\n                        follow_redirects=follow_redirects,\n                        save_to_file=save_to_file,\n                        include_httpx_metadata=include_httpx_metadata,\n                    )\n        else:\n            # No DNS pinning needed - use normal client\n            # This happens when SSRF protection is disabled or host is allowlisted\n            # - SSRF protection is disabled\n            # - Host is in the allowlist (e.g., localhost for Ollama)\n            # - Direct IP address was used (no DNS to pin)\n            async with httpx.AsyncClient() as client:\n                result = await self.make_request(\n                    client,\n                    method,\n                    url,\n                    headers,\n                    body,\n                    timeout,\n                    follow_redirects=follow_redirects,\n                    save_to_file=save_to_file,\n                    include_httpx_metadata=include_httpx_metadata,\n                )\n\n        self.status = result\n        return result\n\n    def update_build_config(self, build_config: dotdict, field_value: Any, field_name: str | None = None) -> dotdict:\n        \"\"\"Update the build config based on the selected mode.\"\"\"\n        if field_name != \"mode\":\n            if field_name == \"curl_input\" and self.mode == \"cURL\" and self.curl_input:\n                return self.parse_curl(self.curl_input, build_config)\n            return build_config\n\n        if field_value == \"cURL\":\n            set_field_display(build_config, \"curl_input\", value=True)\n            if build_config[\"curl_input\"][\"value\"]:\n                try:\n                    build_config = self.parse_curl(build_config[\"curl_input\"][\"value\"], build_config)\n                except ValueError as e:\n                    self.log(f\"Failed to parse cURL input: {e}\")\n        else:\n            set_field_display(build_config, \"curl_input\", value=False)\n\n        return set_current_fields(\n            build_config=build_config,\n            action_fields=MODE_FIELDS,\n            selected_action=field_value,\n            default_fields=DEFAULT_FIELDS,\n            func=set_field_advanced,\n            default_value=True,\n        )\n\n    async def _response_info(\n        self, response: httpx.Response, *, with_file_path: bool = False\n    ) -> tuple[bool, Path | None]:\n        \"\"\"Determine the file path and whether the response content is binary.\n\n        Args:\n            response (Response): The HTTP response object.\n            with_file_path (bool): Whether to save the response content to a file.\n\n        Returns:\n            Tuple[bool, Path | None]:\n                A tuple containing a boolean indicating if the content is binary and the full file path (if applicable).\n        \"\"\"\n        content_type = response.headers.get(\"Content-Type\", \"\")\n        is_binary = \"application/octet-stream\" in content_type or \"application/binary\" in content_type\n\n        if not with_file_path:\n            return is_binary, None\n\n        component_temp_dir = Path(tempfile.gettempdir()) / self.__class__.__name__\n\n        # Create directory asynchronously\n        await aiofiles_os.makedirs(component_temp_dir, exist_ok=True)\n\n        filename = None\n        if \"Content-Disposition\" in response.headers:\n            content_disposition = response.headers[\"Content-Disposition\"]\n            filename_match = re.search(r'filename=\"(.+?)\"', content_disposition)\n            if filename_match:\n                extracted_filename = filename_match.group(1)\n                filename = extracted_filename\n\n        # Step 3: Infer file extension or use part of the request URL if no filename\n        if not filename:\n            # Extract the last segment of the URL path\n            url_path = urlparse(str(response.request.url) if response.request else \"\").path\n            base_name = Path(url_path).name  # Get the last segment of the path\n            if not base_name:  # If the path ends with a slash or is empty\n                base_name = \"response\"\n\n            # Infer file extension\n            content_type_to_extension = {\n                \"text/plain\": \".txt\",\n                \"application/json\": \".json\",\n                \"image/jpeg\": \".jpg\",\n                \"image/png\": \".png\",\n                \"application/octet-stream\": \".bin\",\n            }\n            extension = content_type_to_extension.get(content_type, \".bin\" if is_binary else \".txt\")\n            filename = f\"{base_name}{extension}\"\n\n        # Step 4: Define the full file path\n        file_path = component_temp_dir / filename\n\n        # Step 5: Check if file exists asynchronously and handle accordingly\n        try:\n            # Try to create the file exclusively (x mode) to check existence\n            async with aiofiles.open(file_path, \"x\") as _:\n                pass  # File created successfully, we can use this path\n        except FileExistsError:\n            # If file exists, append a timestamp to the filename\n            timestamp = datetime.now(timezone.utc).strftime(\"%Y%m%d%H%M%S%f\")\n            file_path = component_temp_dir / f\"{timestamp}-{filename}\"\n\n        return is_binary, file_path\n"
               },
-              "gl": {
-                "_input_type": "MessageTextInput",
+              "curl_input": {
+                "_input_type": "MultilineInput",
                 "advanced": true,
-                "display_name": "Country (gl)",
+                "ai_enabled": false,
+                "copy_field": false,
+                "display_name": "cURL",
                 "dynamic": false,
-                "info": "Country code, e.g. US, FR, DE. Default: US.",
-                "input_types": [],
-                "list": false,
-                "list_add_label": "Add More",
-                "load_from_db": false,
-                "name": "gl",
-                "override_skip": false,
-                "placeholder": "",
-                "required": false,
-                "show": true,
-                "title_case": false,
-                "tool_mode": false,
-                "trace_as_input": true,
-                "trace_as_metadata": true,
-                "track_in_telemetry": false,
-                "type": "str",
-                "value": ""
-              },
-              "hl": {
-                "_input_type": "MessageTextInput",
-                "advanced": true,
-                "display_name": "Language (hl)",
-                "dynamic": false,
-                "info": "Language code, e.g. en-US, fr, de. Default: en-US.",
-                "input_types": [],
-                "list": false,
-                "list_add_label": "Add More",
-                "load_from_db": false,
-                "name": "hl",
-                "override_skip": false,
-                "placeholder": "",
-                "required": false,
-                "show": true,
-                "title_case": false,
-                "tool_mode": false,
-                "trace_as_input": true,
-                "trace_as_metadata": true,
-                "track_in_telemetry": false,
-                "type": "str",
-                "value": ""
-              },
-              "is_refresh": false,
-              "location": {
-                "_input_type": "MessageTextInput",
-                "advanced": true,
-                "display_name": "Location (Geo)",
-                "dynamic": false,
-                "info": "City, state, or country for location-based news. Leave blank for keyword search.",
-                "input_types": [],
-                "list": false,
-                "list_add_label": "Add More",
-                "load_from_db": false,
-                "name": "location",
-                "override_skip": false,
-                "placeholder": "",
-                "required": false,
-                "show": true,
-                "title_case": false,
-                "tool_mode": false,
-                "trace_as_input": true,
-                "trace_as_metadata": true,
-                "track_in_telemetry": false,
-                "type": "str",
-                "value": ""
-              },
-              "query": {
-                "_input_type": "MessageTextInput",
-                "advanced": false,
-                "display_name": "Search Query",
-                "dynamic": false,
-                "info": "Search keywords for news articles.",
+                "info": "Paste a curl command to populate the fields. This will fill in the dictionary fields for headers and body.",
                 "input_types": [
                   "Message"
                 ],
                 "list": false,
                 "list_add_label": "Add More",
                 "load_from_db": false,
-                "name": "query",
+                "multiline": true,
+                "name": "curl_input",
                 "override_skip": false,
+                "password": false,
                 "placeholder": "",
-                "required": true,
-                "show": true,
+                "real_time_refresh": true,
+                "required": false,
+                "show": false,
                 "title_case": false,
                 "tool_mode": true,
                 "trace_as_input": true,
@@ -1982,17 +1899,137 @@
                 "type": "str",
                 "value": ""
               },
-              "search_mode": {
+              "follow_redirects": {
+                "_input_type": "BoolInput",
+                "advanced": true,
+                "display_name": "Follow Redirects",
+                "dynamic": false,
+                "info": "Whether to follow HTTP redirects. WARNING: Enabling redirects may allow SSRF bypass attacks where a public URL redirects to internal resources. Only enable if you trust the target server. See OWASP SSRF Prevention Cheat Sheet for details.",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "follow_redirects",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "bool",
+                "value": false
+              },
+              "headers": {
+                "_input_type": "TableInput",
+                "advanced": true,
+                "display_name": "Headers",
+                "dynamic": false,
+                "info": "The headers to send with the request",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
+                "is_list": true,
+                "list_add_label": "Add More",
+                "name": "headers",
+                "override_skip": false,
+                "placeholder": "",
+                "real_time_refresh": true,
+                "required": false,
+                "show": true,
+                "table_icon": "Table",
+                "table_schema": [
+                  {
+                    "description": "Header name",
+                    "display_name": "Header",
+                    "formatter": "text",
+                    "name": "key",
+                    "type": "str"
+                  },
+                  {
+                    "description": "Header value",
+                    "display_name": "Value",
+                    "formatter": "text",
+                    "name": "value",
+                    "type": "str"
+                  }
+                ],
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "trigger_icon": "Table",
+                "trigger_text": "Open table",
+                "type": "table",
+                "value": [
+                  {
+                    "key": "User-Agent",
+                    "value": "Langflow/1.0"
+                  }
+                ]
+              },
+              "include_httpx_metadata": {
+                "_input_type": "BoolInput",
+                "advanced": true,
+                "display_name": "Include HTTPx Metadata",
+                "dynamic": false,
+                "info": "Include properties such as headers, status_code, response_headers, and redirection_history in the output.",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "include_httpx_metadata",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "bool",
+                "value": false
+              },
+              "is_refresh": false,
+              "method": {
+                "_input_type": "DropdownInput",
+                "advanced": false,
+                "combobox": false,
+                "dialog_inputs": {},
+                "display_name": "Method",
+                "dynamic": false,
+                "external_options": {},
+                "info": "The HTTP method to use.",
+                "name": "method",
+                "options": [
+                  "GET",
+                  "POST",
+                  "PATCH",
+                  "PUT",
+                  "DELETE"
+                ],
+                "options_metadata": [],
+                "override_skip": false,
+                "placeholder": "",
+                "real_time_refresh": true,
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "toggle": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "str",
+                "value": "POST"
+              },
+              "mode": {
                 "_input_type": "TabInput",
                 "advanced": false,
-                "display_name": "Search Mode",
+                "display_name": "Mode",
                 "dynamic": false,
-                "info": "Choose search mode: Web (DuckDuckGo), News (Google News), or RSS (Feed Reader)",
-                "name": "search_mode",
+                "info": "Enable cURL mode to populate fields from a cURL command.",
+                "name": "mode",
                 "options": [
-                  "Web",
-                  "News",
-                  "RSS"
+                  "URL",
+                  "cURL"
                 ],
                 "override_skip": false,
                 "placeholder": "",
@@ -2000,18 +2037,63 @@
                 "required": false,
                 "show": true,
                 "title_case": false,
-                "tool_mode": true,
+                "tool_mode": false,
                 "trace_as_metadata": true,
                 "track_in_telemetry": true,
                 "type": "tab",
-                "value": "Web"
+                "value": "URL"
+              },
+              "query_params": {
+                "_input_type": "JSONInput",
+                "advanced": true,
+                "display_name": "Query Parameters",
+                "dynamic": false,
+                "info": "The query parameters to append to the URL.",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "query_params",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "other",
+                "value": ""
+              },
+              "save_to_file": {
+                "_input_type": "BoolInput",
+                "advanced": true,
+                "display_name": "Save to File",
+                "dynamic": false,
+                "info": "Save the API response to a temporary file",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "save_to_file",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "bool",
+                "value": false
               },
               "timeout": {
                 "_input_type": "IntInput",
                 "advanced": true,
                 "display_name": "Timeout",
                 "dynamic": false,
-                "info": "Timeout for the request in seconds.",
+                "info": "The timeout to use for the request.",
                 "list": false,
                 "list_add_label": "Add More",
                 "name": "timeout",
@@ -2024,17 +2106,371 @@
                 "trace_as_metadata": true,
                 "track_in_telemetry": true,
                 "type": "int",
-                "value": 5
+                "value": 30
               },
-              "tools_metadata": {
-                "_input_type": "ToolsInput",
+              "url_input": {
+                "_input_type": "MessageTextInput",
                 "advanced": false,
-                "display_name": "Actions",
+                "display_name": "URL",
                 "dynamic": false,
-                "info": "Modify tool names and descriptions to help agents understand when to use each tool.",
+                "info": "Enter the URL for the request.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "url_input",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": true,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": "http://backend.local:9000/api/routes/safe"
+              }
+            },
+            "tool_mode": false
+          },
+          "showNode": true,
+          "type": "APIRequest"
+        },
+        "dragging": false,
+        "id": "APIRequest-r2nL5",
+        "measured": {
+          "height": 384,
+          "width": 320
+        },
+        "position": {
+          "x": 759.1917462594796,
+          "y": 676.6948806990088
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "APIRequest-74IMd",
+          "node": {
+            "base_classes": [
+              "JSON"
+            ],
+            "beta": false,
+            "conditional_paths": [],
+            "custom_fields": {},
+            "description": "Make HTTP requests using URL or cURL commands.",
+            "display_name": "SafePath Route Tool",
+            "documentation": "https://docs.langflow.org/api-request",
+            "edited": false,
+            "field_order": [
+              "url_input",
+              "curl_input",
+              "method",
+              "mode",
+              "query_params",
+              "body",
+              "headers",
+              "timeout",
+              "follow_redirects",
+              "save_to_file",
+              "include_httpx_metadata"
+            ],
+            "frozen": false,
+            "icon": "Globe",
+            "last_updated": "2026-05-24T21:09:36.828Z",
+            "legacy": false,
+            "lf_version": "1.9.3",
+            "metadata": {
+              "code_hash": "4f329dec9a39",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "aiofiles",
+                    "version": "24.1.0"
+                  },
+                  {
+                    "name": "httpx",
+                    "version": "0.28.1"
+                  },
+                  {
+                    "name": "validators",
+                    "version": "0.35.0"
+                  },
+                  {
+                    "name": "lfx",
+                    "version": "0.4.3"
+                  }
+                ],
+                "total_dependencies": 4
+              },
+              "module": "lfx.components.data_source.api_request.APIRequestComponent"
+            },
+            "minimized": false,
+            "output_types": [],
+            "outputs": [
+              {
+                "allows_loop": false,
+                "cache": true,
+                "display_name": "API Response",
+                "group_outputs": false,
+                "loop_types": null,
+                "method": "make_api_request",
+                "name": "data",
+                "options": null,
+                "required_inputs": null,
+                "selected": "JSON",
+                "tool_mode": true,
+                "types": [
+                  "JSON"
+                ],
+                "value": "__UNDEFINED__"
+              }
+            ],
+            "pinned": false,
+            "template": {
+              "_frontend_node_flow_id": {
+                "value": "63a16f8d-0f9e-4930-91c0-e41ec7e842fd"
+              },
+              "_frontend_node_folder_id": {
+                "value": "4f5a5ade-94c8-42a0-88d1-8050d6e48dc6"
+              },
+              "_type": "Component",
+              "body": {
+                "_input_type": "TableInput",
+                "advanced": true,
+                "display_name": "Body",
+                "dynamic": false,
+                "info": "The body to send with the request as a dictionary (for POST, PATCH, PUT).",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
                 "is_list": true,
                 "list_add_label": "Add More",
-                "name": "tools_metadata",
+                "name": "body",
+                "override_skip": false,
+                "placeholder": "",
+                "real_time_refresh": true,
+                "required": false,
+                "show": true,
+                "table_icon": "Table",
+                "table_schema": [
+                  {
+                    "description": "Parameter name",
+                    "display_name": "Key",
+                    "formatter": "text",
+                    "name": "key",
+                    "type": "str"
+                  },
+                  {
+                    "description": "Parameter value",
+                    "display_name": "Value",
+                    "formatter": "text",
+                    "name": "value"
+                  }
+                ],
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "trigger_icon": "Table",
+                "trigger_text": "Open table",
+                "type": "table",
+                "value": [
+                  {
+                    "key": "start",
+                    "value": "{\n    \"lat\": {{start_lat}},\n    \"lng\": {{start_lng}}\n  }"
+                  },
+                  {
+                    "key": "destination",
+                    "value": "{\n    \"lat\": {{dest_lat}},\n    \"lng\": {{dest_lng}}\n  }"
+                  }
+                ]
+              },
+              "code": {
+                "advanced": true,
+                "dynamic": true,
+                "fileTypes": [],
+                "file_path": "",
+                "info": "",
+                "list": false,
+                "load_from_db": false,
+                "multiline": true,
+                "name": "code",
+                "password": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "type": "code",
+                "value": "import json\nimport re\nimport tempfile\nfrom datetime import datetime, timezone\nfrom pathlib import Path\nfrom typing import Any\nfrom urllib.parse import parse_qsl, urlencode, urlparse, urlunparse\n\nimport aiofiles\nimport aiofiles.os as aiofiles_os\nimport httpx\nimport validators\n\nfrom lfx.base.curl.parse import parse_context\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.inputs.inputs import TabInput\nfrom lfx.io import (\n    BoolInput,\n    DataInput,\n    DropdownInput,\n    IntInput,\n    MessageTextInput,\n    MultilineInput,\n    Output,\n    TableInput,\n)\nfrom lfx.schema.data import Data\nfrom lfx.schema.dotdict import dotdict\nfrom lfx.utils.component_utils import set_current_fields, set_field_advanced, set_field_display\n\n# SSRF Protection imports - for preventing Server-Side Request Forgery attacks\nfrom lfx.utils.ssrf_protection import SSRFProtectionError, validate_and_resolve_url\nfrom lfx.utils.ssrf_transport import create_ssrf_protected_client\n\n# Define fields for each mode\nMODE_FIELDS = {\n    \"URL\": [\n        \"url_input\",\n        \"method\",\n    ],\n    \"cURL\": [\"curl_input\"],\n}\n\n# Fields that should always be visible\nDEFAULT_FIELDS = [\"mode\"]\n\n\nclass APIRequestComponent(Component):\n    display_name = \"API Request\"\n    description = \"Make HTTP requests using URL or cURL commands.\"\n    documentation: str = \"https://docs.langflow.org/api-request\"\n    icon = \"Globe\"\n    name = \"APIRequest\"\n\n    inputs = [\n        MessageTextInput(\n            name=\"url_input\",\n            display_name=\"URL\",\n            info=\"Enter the URL for the request.\",\n            advanced=False,\n            tool_mode=True,\n        ),\n        MultilineInput(\n            name=\"curl_input\",\n            display_name=\"cURL\",\n            info=(\n                \"Paste a curl command to populate the fields. \"\n                \"This will fill in the dictionary fields for headers and body.\"\n            ),\n            real_time_refresh=True,\n            tool_mode=True,\n            advanced=True,\n            show=False,\n        ),\n        DropdownInput(\n            name=\"method\",\n            display_name=\"Method\",\n            options=[\"GET\", \"POST\", \"PATCH\", \"PUT\", \"DELETE\"],\n            value=\"GET\",\n            info=\"The HTTP method to use.\",\n            real_time_refresh=True,\n        ),\n        TabInput(\n            name=\"mode\",\n            display_name=\"Mode\",\n            options=[\"URL\", \"cURL\"],\n            value=\"URL\",\n            info=\"Enable cURL mode to populate fields from a cURL command.\",\n            real_time_refresh=True,\n        ),\n        DataInput(\n            name=\"query_params\",\n            display_name=\"Query Parameters\",\n            info=\"The query parameters to append to the URL.\",\n            advanced=True,\n        ),\n        TableInput(\n            name=\"body\",\n            display_name=\"Body\",\n            info=\"The body to send with the request as a dictionary (for POST, PATCH, PUT).\",\n            table_schema=[\n                {\n                    \"name\": \"key\",\n                    \"display_name\": \"Key\",\n                    \"type\": \"str\",\n                    \"description\": \"Parameter name\",\n                },\n                {\n                    \"name\": \"value\",\n                    \"display_name\": \"Value\",\n                    \"description\": \"Parameter value\",\n                },\n            ],\n            value=[],\n            input_types=[\"Data\", \"JSON\"],\n            advanced=True,\n            real_time_refresh=True,\n        ),\n        TableInput(\n            name=\"headers\",\n            display_name=\"Headers\",\n            info=\"The headers to send with the request\",\n            table_schema=[\n                {\n                    \"name\": \"key\",\n                    \"display_name\": \"Header\",\n                    \"type\": \"str\",\n                    \"description\": \"Header name\",\n                },\n                {\n                    \"name\": \"value\",\n                    \"display_name\": \"Value\",\n                    \"type\": \"str\",\n                    \"description\": \"Header value\",\n                },\n            ],\n            value=[{\"key\": \"User-Agent\", \"value\": \"Langflow/1.0\"}],\n            advanced=True,\n            input_types=[\"Data\", \"JSON\"],\n            real_time_refresh=True,\n        ),\n        IntInput(\n            name=\"timeout\",\n            display_name=\"Timeout\",\n            value=30,\n            info=\"The timeout to use for the request.\",\n            advanced=True,\n        ),\n        BoolInput(\n            name=\"follow_redirects\",\n            display_name=\"Follow Redirects\",\n            value=False,\n            info=(\n                \"Whether to follow HTTP redirects. \"\n                \"WARNING: Enabling redirects may allow SSRF bypass attacks where a public URL \"\n                \"redirects to internal resources. Only enable if you trust the target server. \"\n                \"See OWASP SSRF Prevention Cheat Sheet for details.\"\n            ),\n            advanced=True,\n        ),\n        BoolInput(\n            name=\"save_to_file\",\n            display_name=\"Save to File\",\n            value=False,\n            info=\"Save the API response to a temporary file\",\n            advanced=True,\n        ),\n        BoolInput(\n            name=\"include_httpx_metadata\",\n            display_name=\"Include HTTPx Metadata\",\n            value=False,\n            info=(\n                \"Include properties such as headers, status_code, response_headers, \"\n                \"and redirection_history in the output.\"\n            ),\n            advanced=True,\n        ),\n    ]\n\n    outputs = [\n        Output(display_name=\"API Response\", name=\"data\", method=\"make_api_request\"),\n    ]\n\n    def _parse_json_value(self, value: Any) -> Any:\n        \"\"\"Parse a value that might be a JSON string.\"\"\"\n        if not isinstance(value, str):\n            return value\n\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError:\n            return value\n        else:\n            return parsed\n\n    def _process_body(self, body: Any) -> dict:\n        \"\"\"Process the body input into a valid dictionary.\"\"\"\n        if body is None:\n            return {}\n        if hasattr(body, \"data\"):\n            body = body.data\n        if isinstance(body, dict):\n            return self._process_dict_body(body)\n        if isinstance(body, str):\n            return self._process_string_body(body)\n        if isinstance(body, list):\n            return self._process_list_body(body)\n        return {}\n\n    def _process_dict_body(self, body: dict) -> dict:\n        \"\"\"Process dictionary body by parsing JSON values.\"\"\"\n        return {k: self._parse_json_value(v) for k, v in body.items()}\n\n    def _process_string_body(self, body: str) -> dict:\n        \"\"\"Process string body by attempting JSON parse.\"\"\"\n        try:\n            return self._process_body(json.loads(body))\n        except json.JSONDecodeError:\n            return {\"data\": body}\n\n    def _process_list_body(self, body: list) -> dict:\n        \"\"\"Process list body by converting to key-value dictionary.\"\"\"\n        processed_dict = {}\n        try:\n            for item in body:\n                # Unwrap Data objects\n                current_item = item\n                if hasattr(item, \"data\"):\n                    unwrapped_data = item.data\n                    # If the unwrapped data is a dict but not key-value format, use it directly\n                    if isinstance(unwrapped_data, dict) and not self._is_valid_key_value_item(unwrapped_data):\n                        return unwrapped_data\n                    current_item = unwrapped_data\n                if not self._is_valid_key_value_item(current_item):\n                    continue\n                key = current_item[\"key\"]\n                value = self._parse_json_value(current_item[\"value\"])\n                processed_dict[key] = value\n        except (KeyError, TypeError, ValueError) as e:\n            self.log(f\"Failed to process body list: {e}\")\n            return {}\n        return processed_dict\n\n    def _is_valid_key_value_item(self, item: Any) -> bool:\n        \"\"\"Check if an item is a valid key-value dictionary.\"\"\"\n        return isinstance(item, dict) and \"key\" in item and \"value\" in item\n\n    def parse_curl(self, curl: str, build_config: dotdict) -> dotdict:\n        \"\"\"Parse a cURL command and update build configuration.\"\"\"\n        try:\n            parsed = parse_context(curl)\n\n            # Update basic configuration\n            url = parsed.url\n            # Normalize URL before setting it\n            url = self._normalize_url(url)\n\n            build_config[\"url_input\"][\"value\"] = url\n            build_config[\"method\"][\"value\"] = parsed.method.upper()\n\n            # Process headers\n            headers_list = [{\"key\": k, \"value\": v} for k, v in parsed.headers.items()]\n            build_config[\"headers\"][\"value\"] = headers_list\n\n            # Process body data\n            if not parsed.data:\n                build_config[\"body\"][\"value\"] = []\n            elif parsed.data:\n                try:\n                    json_data = json.loads(parsed.data)\n                    if isinstance(json_data, dict):\n                        body_list = [\n                            {\"key\": k, \"value\": json.dumps(v) if isinstance(v, dict | list) else str(v)}\n                            for k, v in json_data.items()\n                        ]\n                        build_config[\"body\"][\"value\"] = body_list\n                    else:\n                        build_config[\"body\"][\"value\"] = [{\"key\": \"data\", \"value\": json.dumps(json_data)}]\n                except json.JSONDecodeError:\n                    build_config[\"body\"][\"value\"] = [{\"key\": \"data\", \"value\": parsed.data}]\n\n        except Exception as exc:\n            msg = f\"Error parsing curl: {exc}\"\n            self.log(msg)\n            raise ValueError(msg) from exc\n\n        return build_config\n\n    def _normalize_url(self, url: str) -> str:\n        \"\"\"Normalize URL by adding https:// if no protocol is specified.\"\"\"\n        if not url or not isinstance(url, str):\n            msg = \"URL cannot be empty\"\n            raise ValueError(msg)\n\n        url = url.strip()\n        if url.startswith((\"http://\", \"https://\")):\n            return url\n        return f\"https://{url}\"\n\n    async def make_request(\n        self,\n        client: httpx.AsyncClient,\n        method: str,\n        url: str,\n        headers: dict | None = None,\n        body: Any = None,\n        timeout: int = 5,\n        *,\n        follow_redirects: bool = True,\n        save_to_file: bool = False,\n        include_httpx_metadata: bool = False,\n    ) -> Data:\n        method = method.upper()\n        if method not in {\"GET\", \"POST\", \"PATCH\", \"PUT\", \"DELETE\"}:\n            msg = f\"Unsupported method: {method}\"\n            raise ValueError(msg)\n\n        processed_body = self._process_body(body)\n        redirection_history = []\n\n        try:\n            # Prepare request parameters\n            request_params = {\n                \"method\": method,\n                \"url\": url,\n                \"headers\": headers,\n                \"timeout\": timeout,\n                \"follow_redirects\": follow_redirects,\n            }\n            # Only include body for methods that support it (GET must not have a body per HTTP spec)\n            if method in {\"POST\", \"PATCH\", \"PUT\", \"DELETE\"} and processed_body is not None:\n                request_params[\"json\"] = processed_body\n            response = await client.request(**request_params)\n\n            redirection_history = [\n                {\n                    \"url\": redirect.headers.get(\"Location\", str(redirect.url)),\n                    \"status_code\": redirect.status_code,\n                }\n                for redirect in response.history\n            ]\n\n            is_binary, file_path = await self._response_info(response, with_file_path=save_to_file)\n            response_headers = self._headers_to_dict(response.headers)\n\n            # Base metadata\n            metadata = {\n                \"source\": url,\n                \"status_code\": response.status_code,\n                \"response_headers\": response_headers,\n            }\n\n            if redirection_history:\n                metadata[\"redirection_history\"] = redirection_history\n\n            if save_to_file:\n                mode = \"wb\" if is_binary else \"w\"\n                encoding = response.encoding if mode == \"w\" else None\n                if file_path:\n                    await aiofiles_os.makedirs(file_path.parent, exist_ok=True)\n                    if is_binary:\n                        async with aiofiles.open(file_path, \"wb\") as f:\n                            await f.write(response.content)\n                            await f.flush()\n                    else:\n                        async with aiofiles.open(file_path, \"w\", encoding=encoding) as f:\n                            await f.write(response.text)\n                            await f.flush()\n                    metadata[\"file_path\"] = str(file_path)\n\n                if include_httpx_metadata:\n                    metadata.update({\"headers\": headers})\n                return Data(data=metadata)\n\n            # Handle response content\n            if is_binary:\n                result = response.content\n            else:\n                try:\n                    result = response.json()\n                except json.JSONDecodeError:\n                    self.log(\"Failed to decode JSON response\")\n                    result = response.text.encode(\"utf-8\")\n\n            metadata[\"result\"] = result\n\n            if include_httpx_metadata:\n                metadata.update({\"headers\": headers})\n\n            return Data(data=metadata)\n        except (httpx.HTTPError, httpx.RequestError, httpx.TimeoutException) as exc:\n            self.log(f\"Error making request to {url}\")\n            return Data(\n                data={\n                    \"source\": url,\n                    \"headers\": headers,\n                    \"status_code\": 500,\n                    \"error\": str(exc),\n                    **({\"redirection_history\": redirection_history} if redirection_history else {}),\n                },\n            )\n\n    def add_query_params(self, url: str, params: dict) -> str:\n        \"\"\"Add query parameters to URL efficiently.\"\"\"\n        if not params:\n            return url\n        url_parts = list(urlparse(url))\n        query = dict(parse_qsl(url_parts[4]))\n        query.update(params)\n        url_parts[4] = urlencode(query)\n        return urlunparse(url_parts)\n\n    def _headers_to_dict(self, headers: httpx.Headers) -> dict[str, str]:\n        \"\"\"Convert HTTP headers to a dictionary with lowercased keys.\"\"\"\n        return {k.lower(): v for k, v in headers.items()}\n\n    def _process_headers(self, headers: Any) -> dict:\n        \"\"\"Process the headers input into a valid dictionary.\"\"\"\n        if headers is None:\n            return {}\n        if isinstance(headers, dict):\n            return headers\n        if isinstance(headers, list):\n            return {item[\"key\"]: item[\"value\"] for item in headers if self._is_valid_key_value_item(item)}\n        return {}\n\n    async def make_api_request(self) -> Data:\n        \"\"\"Make HTTP request with SSRF protection and DNS pinning.\n\n        This method implements comprehensive SSRF (Server-Side Request Forgery) protection\n        using DNS pinning to prevent DNS rebinding attacks. The protection works by:\n        1. Validating the URL and resolving DNS during security check\n        2. Pinning the validated IP address\n        3. Forcing the HTTP client to use the pinned IP for the actual request\n        4. Ignoring any subsequent DNS changes (prevents rebinding attacks)\n\n        Returns:\n            Data: Response data from the HTTP request\n\n        Raises:\n            ValueError: If URL is invalid or blocked by SSRF protection\n        \"\"\"\n        # Extract request parameters\n        method = self.method\n        url = self.url_input.strip() if isinstance(self.url_input, str) else \"\"\n        headers = self.headers or {}\n        body = self.body or {}\n        timeout = self.timeout\n        follow_redirects = self.follow_redirects\n        save_to_file = self.save_to_file\n        include_httpx_metadata = self.include_httpx_metadata\n\n        # Security warning: HTTP redirects can bypass SSRF protection\n        # A public URL could redirect to an internal resource\n        if follow_redirects:\n            self.log(\n                \"Security Warning: HTTP redirects are enabled. This may allow SSRF bypass attacks \"\n                \"where a public URL redirects to internal resources (e.g., cloud metadata endpoints). \"\n                \"Only enable this if you trust the target server.\"\n            )\n\n        # Normalize URL (add https:// if no protocol specified)\n        url = self._normalize_url(url)\n\n        # Basic URL format validation\n        if not validators.url(url):\n            msg = f\"Invalid URL provided: {url}\"\n            raise ValueError(msg)\n\n        # ============================================================================\n        # SSRF Protection with DNS Pinning\n        # ============================================================================\n        # This prevents DNS rebinding attacks by:\n        # 1. Resolving DNS and validating IPs during security check\n        # 2. Pinning the validated IP address\n        # 3. Using a custom HTTP transport that forces use of the pinned IP\n        # 4. Ignoring any new DNS resolutions (prevents rebinding)\n        #\n        # Without DNS pinning, an attacker could:\n        # - First DNS lookup: returns public IP (passes validation)\n        # - Second DNS lookup: returns internal IP (bypasses protection)\n        # - Attack succeeds: accesses internal services\n        #\n        # With DNS pinning:\n        # - First DNS lookup: returns public IP (passes validation)\n        # - IP is pinned: \"example.com = 93.184.216.34\"\n        # - HTTP request: uses pinned IP directly (no new DNS lookup)\n        # - Attack fails: even if DNS changes, we use the validated IP\n        # ============================================================================\n\n        try:\n            # Validate URL and get validated IPs for DNS pinning\n            _validated_url, validated_ips = validate_and_resolve_url(url)\n\n            # Log DNS pinning information for security auditing\n            if validated_ips:\n                self.log(f\"SSRF Protection: Using DNS pinning with {len(validated_ips)} validated IP(s)\")\n\n        except SSRFProtectionError as e:\n            # SSRF protection blocked the request (private IP, internal network, etc.)\n            msg = f\"SSRF Protection: {e}\"\n            raise ValueError(msg) from e\n\n        # Process query parameters (from string or Data object)\n        if isinstance(self.query_params, str):\n            query_params = dict(parse_qsl(self.query_params))\n        else:\n            query_params = self.query_params.data if self.query_params else {}\n\n        # Process headers and body into proper format\n        headers = self._process_headers(headers)\n        body = self._process_body(body)\n        url = self.add_query_params(url, query_params)\n\n        # ============================================================================\n        # Create HTTP Client with DNS Pinning (if SSRF protection enabled)\n        # ============================================================================\n        from lfx.utils.ssrf_protection import is_ssrf_protection_enabled\n\n        if is_ssrf_protection_enabled() and validated_ips:\n            # SSRF protection is enabled and DNS pinning is needed\n            # Extract hostname from the final URL (after query params added)\n            hostname = urlparse(url).hostname\n\n            if hostname:\n                # Create client with DNS pinning to prevent rebinding attacks\n                # The custom transport will try validated IPs in order (supports dual-stack/load balancing)\n                # while preserving the Host header for virtual hosting/SNI\n                async with create_ssrf_protected_client(\n                    hostname=hostname,\n                    validated_ips=validated_ips,  # Pass all validated IPs\n                ) as client:\n                    result = await self.make_request(\n                        client,\n                        method,\n                        url,\n                        headers,\n                        body,\n                        timeout,\n                        follow_redirects=follow_redirects,\n                        save_to_file=save_to_file,\n                        include_httpx_metadata=include_httpx_metadata,\n                    )\n            else:\n                # Hostname extraction failed - fallback to normal client\n                # This should rarely happen as URL was already validated\n                async with httpx.AsyncClient() as client:\n                    result = await self.make_request(\n                        client,\n                        method,\n                        url,\n                        headers,\n                        body,\n                        timeout,\n                        follow_redirects=follow_redirects,\n                        save_to_file=save_to_file,\n                        include_httpx_metadata=include_httpx_metadata,\n                    )\n        else:\n            # No DNS pinning needed - use normal client\n            # This happens when SSRF protection is disabled or host is allowlisted\n            # - SSRF protection is disabled\n            # - Host is in the allowlist (e.g., localhost for Ollama)\n            # - Direct IP address was used (no DNS to pin)\n            async with httpx.AsyncClient() as client:\n                result = await self.make_request(\n                    client,\n                    method,\n                    url,\n                    headers,\n                    body,\n                    timeout,\n                    follow_redirects=follow_redirects,\n                    save_to_file=save_to_file,\n                    include_httpx_metadata=include_httpx_metadata,\n                )\n\n        self.status = result\n        return result\n\n    def update_build_config(self, build_config: dotdict, field_value: Any, field_name: str | None = None) -> dotdict:\n        \"\"\"Update the build config based on the selected mode.\"\"\"\n        if field_name != \"mode\":\n            if field_name == \"curl_input\" and self.mode == \"cURL\" and self.curl_input:\n                return self.parse_curl(self.curl_input, build_config)\n            return build_config\n\n        if field_value == \"cURL\":\n            set_field_display(build_config, \"curl_input\", value=True)\n            if build_config[\"curl_input\"][\"value\"]:\n                try:\n                    build_config = self.parse_curl(build_config[\"curl_input\"][\"value\"], build_config)\n                except ValueError as e:\n                    self.log(f\"Failed to parse cURL input: {e}\")\n        else:\n            set_field_display(build_config, \"curl_input\", value=False)\n\n        return set_current_fields(\n            build_config=build_config,\n            action_fields=MODE_FIELDS,\n            selected_action=field_value,\n            default_fields=DEFAULT_FIELDS,\n            func=set_field_advanced,\n            default_value=True,\n        )\n\n    async def _response_info(\n        self, response: httpx.Response, *, with_file_path: bool = False\n    ) -> tuple[bool, Path | None]:\n        \"\"\"Determine the file path and whether the response content is binary.\n\n        Args:\n            response (Response): The HTTP response object.\n            with_file_path (bool): Whether to save the response content to a file.\n\n        Returns:\n            Tuple[bool, Path | None]:\n                A tuple containing a boolean indicating if the content is binary and the full file path (if applicable).\n        \"\"\"\n        content_type = response.headers.get(\"Content-Type\", \"\")\n        is_binary = \"application/octet-stream\" in content_type or \"application/binary\" in content_type\n\n        if not with_file_path:\n            return is_binary, None\n\n        component_temp_dir = Path(tempfile.gettempdir()) / self.__class__.__name__\n\n        # Create directory asynchronously\n        await aiofiles_os.makedirs(component_temp_dir, exist_ok=True)\n\n        filename = None\n        if \"Content-Disposition\" in response.headers:\n            content_disposition = response.headers[\"Content-Disposition\"]\n            filename_match = re.search(r'filename=\"(.+?)\"', content_disposition)\n            if filename_match:\n                extracted_filename = filename_match.group(1)\n                filename = extracted_filename\n\n        # Step 3: Infer file extension or use part of the request URL if no filename\n        if not filename:\n            # Extract the last segment of the URL path\n            url_path = urlparse(str(response.request.url) if response.request else \"\").path\n            base_name = Path(url_path).name  # Get the last segment of the path\n            if not base_name:  # If the path ends with a slash or is empty\n                base_name = \"response\"\n\n            # Infer file extension\n            content_type_to_extension = {\n                \"text/plain\": \".txt\",\n                \"application/json\": \".json\",\n                \"image/jpeg\": \".jpg\",\n                \"image/png\": \".png\",\n                \"application/octet-stream\": \".bin\",\n            }\n            extension = content_type_to_extension.get(content_type, \".bin\" if is_binary else \".txt\")\n            filename = f\"{base_name}{extension}\"\n\n        # Step 4: Define the full file path\n        file_path = component_temp_dir / filename\n\n        # Step 5: Check if file exists asynchronously and handle accordingly\n        try:\n            # Try to create the file exclusively (x mode) to check existence\n            async with aiofiles.open(file_path, \"x\") as _:\n                pass  # File created successfully, we can use this path\n        except FileExistsError:\n            # If file exists, append a timestamp to the filename\n            timestamp = datetime.now(timezone.utc).strftime(\"%Y%m%d%H%M%S%f\")\n            file_path = component_temp_dir / f\"{timestamp}-{filename}\"\n\n        return is_binary, file_path\n"
+              },
+              "curl_input": {
+                "_input_type": "MultilineInput",
+                "advanced": true,
+                "ai_enabled": false,
+                "copy_field": false,
+                "display_name": "cURL",
+                "dynamic": false,
+                "info": "Paste a curl command to populate the fields. This will fill in the dictionary fields for headers and body.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "multiline": true,
+                "name": "curl_input",
+                "override_skip": false,
+                "password": false,
+                "placeholder": "",
+                "real_time_refresh": true,
+                "required": false,
+                "show": false,
+                "title_case": false,
+                "tool_mode": true,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": ""
+              },
+              "follow_redirects": {
+                "_input_type": "BoolInput",
+                "advanced": true,
+                "display_name": "Follow Redirects",
+                "dynamic": false,
+                "info": "Whether to follow HTTP redirects. WARNING: Enabling redirects may allow SSRF bypass attacks where a public URL redirects to internal resources. Only enable if you trust the target server. See OWASP SSRF Prevention Cheat Sheet for details.",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "follow_redirects",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "bool",
+                "value": false
+              },
+              "headers": {
+                "_input_type": "TableInput",
+                "advanced": true,
+                "display_name": "Headers",
+                "dynamic": false,
+                "info": "The headers to send with the request",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
+                "is_list": true,
+                "list_add_label": "Add More",
+                "name": "headers",
+                "override_skip": false,
+                "placeholder": "",
+                "real_time_refresh": true,
+                "required": false,
+                "show": true,
+                "table_icon": "Table",
+                "table_schema": [
+                  {
+                    "description": "Header name",
+                    "display_name": "Header",
+                    "formatter": "text",
+                    "name": "key",
+                    "type": "str"
+                  },
+                  {
+                    "description": "Header value",
+                    "display_name": "Value",
+                    "formatter": "text",
+                    "name": "value",
+                    "type": "str"
+                  }
+                ],
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "trigger_icon": "Table",
+                "trigger_text": "Open table",
+                "type": "table",
+                "value": [
+                  {
+                    "key": "User-Agent",
+                    "value": "Langflow/1.0"
+                  }
+                ]
+              },
+              "include_httpx_metadata": {
+                "_input_type": "BoolInput",
+                "advanced": true,
+                "display_name": "Include HTTPx Metadata",
+                "dynamic": false,
+                "info": "Include properties such as headers, status_code, response_headers, and redirection_history in the output.",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "include_httpx_metadata",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "bool",
+                "value": false
+              },
+              "is_refresh": false,
+              "method": {
+                "_input_type": "DropdownInput",
+                "advanced": false,
+                "combobox": false,
+                "dialog_inputs": {},
+                "display_name": "Method",
+                "dynamic": false,
+                "external_options": {},
+                "info": "The HTTP method to use.",
+                "name": "method",
+                "options": [
+                  "GET",
+                  "POST",
+                  "PATCH",
+                  "PUT",
+                  "DELETE"
+                ],
+                "options_metadata": [],
+                "override_skip": false,
+                "placeholder": "",
+                "real_time_refresh": true,
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "toggle": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "str",
+                "value": "GET"
+              },
+              "mode": {
+                "_input_type": "TabInput",
+                "advanced": false,
+                "display_name": "Mode",
+                "dynamic": false,
+                "info": "Enable cURL mode to populate fields from a cURL command.",
+                "name": "mode",
+                "options": [
+                  "URL",
+                  "cURL"
+                ],
                 "override_skip": false,
                 "placeholder": "",
                 "real_time_refresh": true,
@@ -2043,52 +2479,23 @@
                 "title_case": false,
                 "tool_mode": false,
                 "trace_as_metadata": true,
-                "track_in_telemetry": false,
-                "type": "tools",
-                "value": [
-                  {
-                    "_uniqueId": "perform_search_perform_search_0",
-                    "args": {
-                      "query": {
-                        "description": "Search keywords for news articles.",
-                        "title": "Query",
-                        "type": "string"
-                      },
-                      "search_mode": {
-                        "default": "Web",
-                        "description": "Choose search mode: Web (DuckDuckGo), News (Google News), or RSS (Feed Reader)",
-                        "enum": [
-                          "Web",
-                          "News",
-                          "RSS"
-                        ],
-                        "title": "Search Mode",
-                        "type": "string"
-                      }
-                    },
-                    "description": "Search the web, news, or RSS feeds.",
-                    "display_description": "Search the web, news, or RSS feeds.",
-                    "display_name": "perform_search",
-                    "name": "perform_search",
-                    "readonly": false,
-                    "status": true,
-                    "tags": [
-                      "perform_search"
-                    ]
-                  }
-                ]
+                "track_in_telemetry": true,
+                "type": "tab",
+                "value": "URL"
               },
-              "topic": {
-                "_input_type": "MessageTextInput",
+              "query_params": {
+                "_input_type": "JSONInput",
                 "advanced": true,
-                "display_name": "Topic",
+                "display_name": "Query Parameters",
                 "dynamic": false,
-                "info": "One of: WORLD, NATION, BUSINESS, TECHNOLOGY, ENTERTAINMENT, SCIENCE, SPORTS, HEALTH.",
-                "input_types": [],
+                "info": "The query parameters to append to the URL.",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
                 "list": false,
                 "list_add_label": "Add More",
-                "load_from_db": false,
-                "name": "topic",
+                "name": "query_params",
                 "override_skip": false,
                 "placeholder": "",
                 "required": false,
@@ -2098,42 +2505,305 @@
                 "trace_as_input": true,
                 "trace_as_metadata": true,
                 "track_in_telemetry": false,
+                "type": "other",
+                "value": ""
+              },
+              "save_to_file": {
+                "_input_type": "BoolInput",
+                "advanced": true,
+                "display_name": "Save to File",
+                "dynamic": false,
+                "info": "Save the API response to a temporary file",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "save_to_file",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "bool",
+                "value": false
+              },
+              "timeout": {
+                "_input_type": "IntInput",
+                "advanced": true,
+                "display_name": "Timeout",
+                "dynamic": false,
+                "info": "The timeout to use for the request.",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "timeout",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "int",
+                "value": 30
+              },
+              "url_input": {
+                "_input_type": "MessageTextInput",
+                "advanced": false,
+                "display_name": "URL",
+                "dynamic": false,
+                "info": "Enter the URL for the request.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "url_input",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": true,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": "http://backend.local:9000/api/places?query=Central%20Park"
+              }
+            },
+            "tool_mode": false
+          },
+          "showNode": true,
+          "type": "APIRequest"
+        },
+        "dragging": false,
+        "id": "APIRequest-74IMd",
+        "measured": {
+          "height": 384,
+          "width": 320
+        },
+        "position": {
+          "x": 764.522206719141,
+          "y": 1097.5124690943726
+        },
+        "selected": false,
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "id": "Prompt Template-83YDb",
+          "node": {
+            "base_classes": [
+              "Message"
+            ],
+            "beta": false,
+            "conditional_paths": [],
+            "custom_fields": {
+              "template": [
+                "user_input"
+              ]
+            },
+            "description": "Create a prompt template with dynamic variables.",
+            "display_name": "Prompt Template",
+            "documentation": "https://docs.langflow.org/components-prompts",
+            "edited": false,
+            "error": null,
+            "field_order": [
+              "template",
+              "use_double_brackets",
+              "tool_placeholder"
+            ],
+            "frozen": false,
+            "full_path": null,
+            "icon": "prompts",
+            "is_composition": null,
+            "is_input": null,
+            "is_output": null,
+            "legacy": false,
+            "lf_version": "1.9.3",
+            "metadata": {
+              "code_hash": "3d3fd7b8a36f",
+              "dependencies": {
+                "dependencies": [
+                  {
+                    "name": "lfx",
+                    "version": "0.4.3"
+                  }
+                ],
+                "total_dependencies": 1
+              },
+              "module": "lfx.components.models_and_agents.prompt.PromptComponent"
+            },
+            "minimized": false,
+            "name": "",
+            "output_types": [],
+            "outputs": [
+              {
+                "allows_loop": false,
+                "cache": true,
+                "display_name": "Prompt",
+                "group_outputs": false,
+                "hidden": null,
+                "loop_types": null,
+                "method": "build_prompt",
+                "name": "prompt",
+                "options": null,
+                "required_inputs": null,
+                "selected": "Message",
+                "tool_mode": true,
+                "types": [
+                  "Message"
+                ],
+                "value": "__UNDEFINED__"
+              }
+            ],
+            "pinned": false,
+            "priority": null,
+            "replacement": null,
+            "template": {
+              "_type": "Component",
+              "code": {
+                "advanced": true,
+                "dynamic": true,
+                "fileTypes": [],
+                "file_path": "",
+                "info": "",
+                "list": false,
+                "load_from_db": false,
+                "multiline": true,
+                "name": "code",
+                "password": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "type": "code",
+                "value": "from typing import Any\n\nfrom lfx.base.prompts.api_utils import process_prompt_template\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.inputs.input_mixin import FieldTypes\nfrom lfx.inputs.inputs import DefaultPromptField\nfrom lfx.io import BoolInput, MessageTextInput, Output, PromptInput\nfrom lfx.log.logger import logger\nfrom lfx.schema.dotdict import dotdict\nfrom lfx.schema.message import Message\nfrom lfx.template.utils import update_template_values\nfrom lfx.utils.mustache_security import validate_mustache_template\n\n\nclass PromptComponent(Component):\n    display_name: str = \"Prompt Template\"\n    description: str = \"Create a prompt template with dynamic variables.\"\n    documentation: str = \"https://docs.langflow.org/components-prompts\"\n    icon = \"prompts\"\n    trace_type = \"prompt\"\n    name = \"Prompt Template\"\n\n    inputs = [\n        PromptInput(name=\"template\", display_name=\"Template\"),\n        BoolInput(\n            name=\"use_double_brackets\",\n            display_name=\"Use Double Brackets\",\n            value=False,\n            advanced=True,\n            info=\"Use {{variable}} syntax instead of {variable}.\",\n            real_time_refresh=True,\n        ),\n        MessageTextInput(\n            name=\"tool_placeholder\",\n            display_name=\"Tool Placeholder\",\n            tool_mode=True,\n            advanced=True,\n            show=False,\n            info=\"A placeholder input for tool mode.\",\n        ),\n    ]\n\n    outputs = [\n        Output(display_name=\"Prompt\", name=\"prompt\", method=\"build_prompt\"),\n    ]\n\n    def update_build_config(self, build_config: dotdict, field_value: Any, field_name: str | None = None) -> dotdict:\n        \"\"\"Update the template field type based on the selected mode.\"\"\"\n        if field_name == \"use_double_brackets\":\n            # Change the template field type based on mode\n            is_mustache = field_value is True\n            if is_mustache:\n                build_config[\"template\"][\"type\"] = FieldTypes.MUSTACHE_PROMPT.value\n            else:\n                build_config[\"template\"][\"type\"] = FieldTypes.PROMPT.value\n\n            # Re-process the template to update variables when mode changes\n            template_value = build_config.get(\"template\", {}).get(\"value\", \"\")\n            if template_value:\n                # Ensure custom_fields is properly initialized\n                if \"custom_fields\" not in build_config:\n                    build_config[\"custom_fields\"] = {}\n\n                # Clean up fields from the OLD mode before processing with NEW mode\n                # This ensures we don't keep fields with wrong syntax even if validation fails\n                old_custom_fields = build_config[\"custom_fields\"].get(\"template\", [])\n                for old_field in list(old_custom_fields):\n                    # Remove the field from custom_fields and template\n                    if old_field in old_custom_fields:\n                        old_custom_fields.remove(old_field)\n                    build_config.pop(old_field, None)\n\n                # Try to process template with new mode to add new variables\n                # If validation fails, at least we cleaned up old fields\n                try:\n                    # Validate mustache templates for security\n                    if is_mustache:\n                        validate_mustache_template(template_value)\n\n                    # Re-process template with new mode to add new variables\n                    _ = process_prompt_template(\n                        template=template_value,\n                        name=\"template\",\n                        custom_fields=build_config[\"custom_fields\"],\n                        frontend_node_template=build_config,\n                        is_mustache=is_mustache,\n                    )\n                except ValueError as e:\n                    # If validation fails, we still updated the mode and cleaned old fields\n                    # User will see error when they try to save\n                    logger.debug(f\"Template validation failed during mode switch: {e}\")\n        return build_config\n\n    async def build_prompt(self) -> Message:\n        use_double_brackets = self.use_double_brackets if hasattr(self, \"use_double_brackets\") else False\n        template_format = \"mustache\" if use_double_brackets else \"f-string\"\n        prompt = await Message.from_template_and_variables(template_format=template_format, **self._attributes)\n        self.status = prompt.text\n        return prompt\n\n    def _update_template(self, frontend_node: dict):\n        prompt_template = frontend_node[\"template\"][\"template\"][\"value\"]\n        use_double_brackets = frontend_node[\"template\"].get(\"use_double_brackets\", {}).get(\"value\", False)\n        is_mustache = use_double_brackets is True\n\n        try:\n            # Validate mustache templates for security\n            if is_mustache:\n                validate_mustache_template(prompt_template)\n\n            custom_fields = frontend_node[\"custom_fields\"]\n            frontend_node_template = frontend_node[\"template\"]\n            _ = process_prompt_template(\n                template=prompt_template,\n                name=\"template\",\n                custom_fields=custom_fields,\n                frontend_node_template=frontend_node_template,\n                is_mustache=is_mustache,\n            )\n        except ValueError as e:\n            # If validation fails, don't add variables but allow component to be created\n            logger.debug(f\"Template validation failed in _update_template: {e}\")\n        return frontend_node\n\n    async def update_frontend_node(self, new_frontend_node: dict, current_frontend_node: dict):\n        \"\"\"This function is called after the code validation is done.\"\"\"\n        frontend_node = await super().update_frontend_node(new_frontend_node, current_frontend_node)\n        template = frontend_node[\"template\"][\"template\"][\"value\"]\n        use_double_brackets = frontend_node[\"template\"].get(\"use_double_brackets\", {}).get(\"value\", False)\n        is_mustache = use_double_brackets is True\n\n        try:\n            # Validate mustache templates for security\n            if is_mustache:\n                validate_mustache_template(template)\n\n            # Kept it duplicated for backwards compatibility\n            _ = process_prompt_template(\n                template=template,\n                name=\"template\",\n                custom_fields=frontend_node[\"custom_fields\"],\n                frontend_node_template=frontend_node[\"template\"],\n                is_mustache=is_mustache,\n            )\n        except ValueError as e:\n            # If validation fails, don't add variables but allow component to be updated\n            logger.debug(f\"Template validation failed in update_frontend_node: {e}\")\n        # Now that template is updated, we need to grab any values that were set in the current_frontend_node\n        # and update the frontend_node with those values\n        update_template_values(new_template=frontend_node, previous_template=current_frontend_node[\"template\"])\n        return frontend_node\n\n    def _get_fallback_input(self, **kwargs):\n        return DefaultPromptField(**kwargs)\n"
+              },
+              "template": {
+                "_input_type": "PromptInput",
+                "advanced": false,
+                "display_name": "Template",
+                "dynamic": false,
+                "info": "",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "template",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "track_in_telemetry": false,
+                "type": "prompt",
+                "value": "{user_input}"
+              },
+              "tool_placeholder": {
+                "_input_type": "MessageTextInput",
+                "advanced": true,
+                "display_name": "Tool Placeholder",
+                "dynamic": false,
+                "info": "A placeholder input for tool mode.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "tool_placeholder",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": false,
+                "title_case": false,
+                "tool_mode": true,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": ""
+              },
+              "use_double_brackets": {
+                "_input_type": "BoolInput",
+                "advanced": true,
+                "display_name": "Use Double Brackets",
+                "dynamic": false,
+                "info": "Use {{variable}} syntax instead of {variable}.",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "use_double_brackets",
+                "override_skip": false,
+                "placeholder": "",
+                "real_time_refresh": true,
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "bool",
+                "value": false
+              },
+              "user_input": {
+                "advanced": false,
+                "display_name": "user_input",
+                "dynamic": false,
+                "field_type": "str",
+                "fileTypes": [],
+                "file_path": "",
+                "info": "",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "load_from_db": false,
+                "multiline": true,
+                "name": "user_input",
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
                 "type": "str",
                 "value": ""
               }
             },
-            "tool_mode": true
+            "tool_mode": false
           },
           "showNode": true,
-          "type": "UnifiedWebSearch"
+          "type": "Prompt Template"
         },
         "dragging": false,
-        "id": "UnifiedWebSearch-gpIHr",
+        "id": "Prompt Template-83YDb",
         "measured": {
-          "height": 204,
+          "height": 290,
           "width": 320
         },
         "position": {
-          "x": 1145.0703250804672,
-          "y": 526.2200943739574
+          "x": 2025.1018032444558,
+          "y": 1239.5756408576583
         },
         "selected": false,
         "type": "genericNode"
       }
     ],
     "viewport": {
-      "x": -279.1523325224848,
-      "y": 156.40888916904123,
-      "zoom": 0.7329206882669923
+      "x": -873.2599703716755,
+      "y": -303.74192613407683,
+      "zoom": 0.5325205359923227
     }
   },
-  "description": "A simple but powerful starter agent.",
+  "description": "Route Recommendation Agent which analyze the route and provide a reason for its suitability (e.g., safety, speed, news, events)",
   "endpoint_name": null,
   "id": "63a16f8d-0f9e-4930-91c0-e41ec7e842fd",
   "is_component": false,
-  "last_tested_version": "1.9.2",
+  "last_tested_version": "1.9.3",
   "locked": false,
-  "name": "Chat Agent",
+  "name": "Route Agent",
   "tags": [
     "assistants",
     "agents"

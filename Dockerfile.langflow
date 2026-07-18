@@ -1,0 +1,6 @@
+# Langflow pinned to the last release on Python 3.13 (1.9.3+ moved to Python 3.14,
+# where the langfuse v3 SDK fails to import due to Pydantic V1 incompatibility).
+# We add the langfuse v3 SDK, which Langflow's tracer requires for Langfuse tracing.
+FROM langflowai/langflow:1.9.2
+
+RUN uv pip install "langfuse>=3,<4"

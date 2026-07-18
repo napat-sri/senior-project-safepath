@@ -1,0 +1,143 @@
+services:
+  # ----------------------------------------------------------------------------
+  # SafePath Vue.js frontend
+  # ----------------------------------------------------------------------------
+     
+    
+  frontend:
+      build: ./frontend
+      command: npm run dev
+      ports:
+        - "8080:8080"
+      networks:
+        - langflow-net     # <-- so langflow can resolve "postgres"
+      volumes:
+         - ./frontend:/app
+         - /app/node_modules
+      stdin_open: true
+      tty: true
+      env_file:
+      - .env
+      environment:
+        CHOKIDAR_USEPOLLING: "true" #
+        WATCHPACK_POLLING: "true" #
+        NODE_ENV: development
+      depends_on:
+        - backend
+        - langflow
+    
+  backend:
+      build: ./backend
+      env_file:
+      - .env
+      ports:
+        - "9000:9000"
+      networks:
+        - langflow-net     # <-- so langflow can resolve "postgres"
+      volumes:
+        - ./backend:/app
+      environment:
+        - ENV=development
+      depends_on:
+        - langflow
+
+
+  # ----------------------------------------------------------------------------
+  # OpenStreetMap tile server (run-only)
+  #
+  # NOTE: This service expects the `berlin-data` volume to already contain an
+  # imported Berlin database. On a fresh machine you MUST run the `osm-import`
+  # service first (see below) before `docker-compose up` will produce tiles.
+  # ----------------------------------------------------------------------------
+  openstreetmap:
+    image: overv/openstreetmap-tile-server
+    container_name: openstreetmap
+    ports:
+      - "8081:80"
+    volumes:
+      - berlin-data:/data/database/
+    command: run
+    restart: always
+
+  # ----------------------------------------------------------------------------
+  # OpenStreetMap tile server (one-shot import)
+  #
+  # Activated only via the "setup" profile so it does not run on `up`.
+  # Run once on a fresh machine:
+  #
+  #   docker-compose --profile setup run --rm osm-import
+  #
+  # This downloads the Berlin .osm.pbf (~500 MB) and imports it into the
+  # shared `berlin-data` volume. The process takes 20-60 minutes and needs
+  # tens of GB of free disk. After it finishes, `docker-compose up` will
+  # start the `openstreetmap` service with data ready to serve.
+  # ----------------------------------------------------------------------------
+  osm-import:
+    image: overv/openstreetmap-tile-server
+    profiles: ["setup"]
+    volumes:
+      - berlin-data:/data/database/
+    environment:
+      - DOWNLOAD_PBF=https://download.geofabrik.de/europe/germany/berlin-latest.osm.pbf
+      - DOWNLOAD_POLY=https://download.geofabrik.de/europe/germany/berlin.poly
+    command: import
+
+  # ----------------------------------------------------------------------------
+  # Langflow (AI agent / chatbot)
+  #
+  # Flows committed under ./langflow/flows are auto-loaded on startup so any
+  # teammate cloning the repo gets the same agent without rebuilding it in
+  # the UI. Export updated flows from the Langflow UI and commit the JSON.
+  # ----------------------------------------------------------------------------
+  langflow:
+    image: langflowai/langflow:latest
+    container_name: langflow
+    ports:
+      - "7860:7860"
+    environment:
+      #LANGFLOW_LOAD_FLOWS_PATH: /app/flows
+      LANGFLOW_CONFIG_DIR: /app/langflow
+      LANGFLOW_DATABASE_URL: postgresql://langflow:langflow@postgres:5432/langflow
+      LANGFLOW_AUTO_LOGIN: 'true'
+      LANGFLOW_SKIP_AUTH_AUTO_LOGIN: 'true'
+      LANGFLOW_CORS_ORIGINS: 'http://localhost:8080,http://127.0.0.1:8080'
+      LANGFLOW_CORS_ALLOW_METHODS: 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+      LANGFLOW_CORS_ALLOW_HEADERS: 'Content-Type,Authorization,x-api-key'
+      LANGFLOW_CORS_ALLOW_CREDENTIALS: 'True' 
+      LANGFLOW_SSRF_ALLOWED_HOSTS: 'backend.local,backend,host.docker.internal'     
+    volumes:
+      #- ./langflow/flows:/app/flows
+      - langflow-data:/app/langflow
+    restart: unless-stopped
+    networks:
+      - langflow-net
+      
+  postgres:
+    # Pinned to a specific Debian base (trixie) so the postgres:16 tag does not
+    # silently roll its OS underneath us — that roll causes a glibc collation
+    # version mismatch warning on existing volumes. Matches the langflow image
+    # base. See https://github.com/langflow-ai/langflow/issues/9608
+    image: postgres:16-trixie
+    environment:
+      POSTGRES_USER: langflow
+      POSTGRES_PASSWORD: langflow
+      POSTGRES_DB: langflow
+    # ports:
+      # - "5432:5432"
+    networks:
+      - langflow-net
+
+    volumes:
+      - langflow-postgres:/var/lib/postgresql/data
+ 
+volumes:
+  langflow-data:
+  langflow-postgres:
+  berlin-data:
+
+
+networks:
+  langflow-net:
+    driver: bridge
+  
+
