@@ -1,7 +1,6 @@
 <template>
     <v-layout class="app-shell">
         <SafePathNavDrawer />
-
         <v-main>
             <v-container fluid>
                 <v-card class="mb-4" rounded="lg">
@@ -14,7 +13,6 @@
                         </v-card-subtitle>
                     </v-card-text>
                 </v-card>
-
                 <v-row>
                     <v-col cols="12" lg="4">
                         <v-card rounded="lg" elevation="2" class="mb-4">
@@ -27,31 +25,26 @@
                                         placeholder="e.g., Alexanderplatz" variant="outlined" density="comfortable"
                                         :error-messages="startError ? [startError] : []" @focus="startFocused = true"
                                         @blur="handleFieldBlur('start')" />
-
                                     <v-list v-if="startSuggestions.length && startFocused" density="compact"
                                         class="mb-3 suggestion-list">
                                         <v-list-item v-for="suggestion in startSuggestions"
                                             :key="`start-${suggestion.name}`" :title="suggestion.name"
                                             @mousedown.prevent="selectSuggestion('start', suggestion)" />
                                     </v-list>
-
                                     <v-text-field v-model="destination" label="🚩 Destination"
                                         placeholder="e.g., Brandenburg Gate" variant="outlined" density="comfortable"
                                         :error-messages="destinationError ? [destinationError] : []"
                                         @focus="destinationFocused = true" @blur="handleFieldBlur('destination')" />
-
                                     <v-list v-if="destinationSuggestions.length && destinationFocused" density="compact"
                                         class="mb-3 suggestion-list">
                                         <v-list-item v-for="suggestion in destinationSuggestions"
                                             :key="`destination-${suggestion.name}`" :title="suggestion.name"
                                             @mousedown.prevent="selectSuggestion('destination', suggestion)" />
                                     </v-list>
-
                                     <v-alert v-if="searchError" type="error" variant="tonal" density="compact"
                                         class="mb-3">
                                         {{ searchError }}
                                     </v-alert>
-
                                     <div class="d-flex ga-2">
                                         <v-btn color="primary" type="submit" :loading="searchLoading">Search Safe
                                             Route</v-btn>
@@ -60,7 +53,6 @@
                                 </v-form>
                             </v-card-text>
                         </v-card>
-
                         <v-card v-if="showResults" rounded="lg" elevation="2">
                             <v-card-title class="d-flex justify-space-between align-center">
                                 <span>Suggested Routes</span>
@@ -71,7 +63,6 @@
                             <v-card-text>
                                 <v-alert v-if="routes.length === 0" type="info" variant="tonal">No routes
                                     found.</v-alert>
-
                                 <v-card v-for="route in routes" :key="route.id" variant="outlined" class="mb-3"
                                     rounded="lg">
                                     <v-card-text>
@@ -83,19 +74,15 @@
                                             <v-chip :style="scorePillStyle(route.safetyScore)">{{ route.safetyScore
                                                 }}/100</v-chip>
                                         </div>
-
                                         <div
                                             class="d-flex justify-space-between text-caption text-medium-emphasis mb-2">
                                             <span>Distance {{ route.distance }}</span>
                                             <span>Time {{ route.duration }}</span>
                                         </div>
-
                                         <v-progress-linear :model-value="route.safetyScore" height="9" rounded
                                             :color="route.accentColor || getSafetyTone(route.safetyScore).color"
                                             class="mb-3" />
-
                                         <p class="text-body-2 mb-3">{{ route.summary }}</p>
-
                                         <div class="d-flex justify-space-between align-center">
                                             <v-btn size="small" variant="tonal" color="primary"
                                                 @click="openRouteDetails(route.id)">
@@ -107,7 +94,6 @@
                             </v-card-text>
                         </v-card>
                     </v-col>
-
                     <v-col cols="12" lg="8">
                         <v-card rounded="lg" elevation="2">
                             <v-card-title>Berlin Safety Map</v-card-title>
@@ -124,7 +110,6 @@
         </v-main>
     </v-layout>
 </template>
-
 <script setup>
 import L from 'leaflet';
 import 'leaflet-control-geocoder';
@@ -135,17 +120,18 @@ import 'leaflet/dist/leaflet.css';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import SafePathNavDrawer from '../components/SafePathNavDrawer.vue';
-
 import {
     getSafetyTone,
     setRouteSuggestions,
     validateBerlinLocation
 } from '../data/routeAnalysis';
 import { mountLangflowChat } from '../utils/langflowChat';
-
 import { placeService, routeService } from '../services/api';
+import { getIdentity } from '../utils/identity';
 
-const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png';
+//const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png'; //dev
+//const TILE_URL = process.env.VUE_APP_TILE_URL || 'https://osm.safepath.duckdns.org/tile/{z}/{x}/{y}.png'; //prod
+const TILE_URL = process.env.VUE_APP_TILE_URL
 
 const DefaultIcon = L.icon({
     iconUrl: icon,
@@ -153,9 +139,7 @@ const DefaultIcon = L.icon({
     iconSize: [25, 41],
     iconAnchor: [12, 41]
 });
-
 L.Marker.prototype.options.icon = DefaultIcon;
-
 const router = useRouter();
 const map = ref(null);
 const routeOverlay = ref(null);
@@ -167,35 +151,29 @@ const startFocused = ref(false);
 const destinationFocused = ref(false);
 const showResults = ref(false);
 const searchError = ref('');
-
 const searchLoading = ref(false);
-const routes = ref([]);
+const routes = ref([]); // Replace the computed with a ref
 const selectedRoute = computed(() => (routes.value && routes.value.length > 0 ? routes.value[0] : null));
 const hasSearched = ref(false);
-
 const startError = computed(() => {
     if (!hasSearched.value) return '';
     return validateBerlinLocation(startLocation.value);
 });
-
 const destinationError = computed(() => {
     if (!hasSearched.value) return '';
     return validateBerlinLocation(destination.value);
 });
-
 const suggestionCache = {};
-
 async function fetchSuggestions(query) {
     if (!query || query.trim().length < 3) return [];
-
     const normalizedQuery = query.trim().toLowerCase();
-
     if (suggestionCache[normalizedQuery]) {
         return suggestionCache[normalizedQuery];
     }
-
     try {
         const { data } = await placeService.search(query);
+        // console.log("query: ", query)
+        // console.log("data: ", data)
         const results = data.places || [];
         suggestionCache[normalizedQuery] = results;
         return results;
@@ -203,20 +181,16 @@ async function fetchSuggestions(query) {
         return [];
     }
 }
-
 const startSuggestions = ref([]);
 const selectedStartPlace = ref(null);
 const skipStartWatch = ref(false);
 let startDebounceTimer = null;
-
 watch(startLocation, async (value) => {
     if (skipStartWatch.value) {
         skipStartWatch.value = false;
         return;
     }
-
     clearTimeout(startDebounceTimer);
-
     startDebounceTimer = setTimeout(async () => {
         const results = await fetchSuggestions(value);
         startSuggestions.value = results.filter(
@@ -224,27 +198,22 @@ watch(startLocation, async (value) => {
         );
     }, 500);
 });
-
 const destinationSuggestions = ref([]);
 const selectedDestinationPlace = ref(null);
 const skipDestinationWatch = ref(false);
 let destinationDebounceTimer = null;
-
 watch(destination, async (value) => {
     if (skipDestinationWatch.value) {
         skipDestinationWatch.value = false;
         return;
     }
-
     clearTimeout(destinationDebounceTimer);
-
     destinationDebounceTimer = setTimeout(async () => {
         destinationSuggestions.value = (await fetchSuggestions(value)).filter(
             (item) => item.name !== startLocation.value
         );
     }, 500);
 });
-
 function selectSuggestion(type, suggestion) {
     if (type === 'start') {
         skipStartWatch.value = true;
@@ -261,48 +230,41 @@ function selectSuggestion(type, suggestion) {
         destinationFocused.value = false;
     }
 }
-
 function scorePillStyle(score) {
     const tone = getSafetyTone(score);
-
     return {
         color: tone.color,
         backgroundColor: tone.soft
     };
 }
-
 function handleFieldBlur(field) {
     window.setTimeout(() => {
         if (field === 'start') {
             startTouched.value = true;
             startFocused.value = false;
         }
-
         if (field === 'destination') {
             destinationTouched.value = true;
             destinationFocused.value = false;
         }
     }, 120);
 }
-
 async function fetchSafeRoute() {
     searchLoading.value = true;
-
     try {
-        const startCoords = selectedStartPlace.value;
-        const destCoords = selectedDestinationPlace.value;
-
+        // --- Call backend with hardcoded coordinates ---
+        const startCoords = selectedStartPlace.value
+        const destCoords = selectedDestinationPlace.value
         const payload = {
             start: { lat: startCoords.lat, lng: startCoords.lng },
             destination: { lat: destCoords.lat, lng: destCoords.lng },
             startName: startLocation.value,
-            destinationName: destination.value
+            destinationName: destination.value,
+            // Anonymous guest tracking for Langfuse (until real auth exists).
+            ...getIdentity(),
         };
-
         const res = await routeService.safe(payload);
-
         if (res.status !== 200) throw new Error('API error: ' + res.status);
-
         const data = await res.data;
         routes.value = data.route_suggestions || [];
         searchResult.value = data;
@@ -315,25 +277,20 @@ async function fetchSafeRoute() {
         searchLoading.value = false;
     }
 }
-
 function renderRoutePreview() {
     if (!map.value || !routes.value.length) return;
-
     if (routeOverlay.value) {
         routeOverlay.value.clearLayers();
     }
-
     routes.value.forEach((route, idx) => {
         const tone = getSafetyTone(route.safetyScore);
         const color = route.accentColor || tone.color;
-
         const path = L.polyline(route.coordinates, {
             color: color,
             weight: 6,
             opacity: 0.7 + (idx === 0 ? 0.2 : 0)
         });
         routeOverlay.value.addLayer(path);
-
         const startMarker = L.circleMarker(route.coordinates[0], {
             radius: 9,
             color: '#FFFFFF',
@@ -342,7 +299,6 @@ function renderRoutePreview() {
             fillOpacity: 1
         });
         routeOverlay.value.addLayer(startMarker);
-
         const endMarker = L.circleMarker(route.coordinates[route.coordinates.length - 1], {
             radius: 9,
             color: '#FFFFFF',
@@ -352,43 +308,35 @@ function renderRoutePreview() {
         });
         routeOverlay.value.addLayer(endMarker);
     });
-
     const allCoords = routes.value.flatMap(r => r.coordinates);
     if (allCoords.length) {
         map.value.fitBounds(allCoords, { padding: [40, 40] });
     }
 }
-
 function initMap() {
     if (map.value) {
         return;
     }
-
     map.value = L.map('home-map', {
         zoomControl: false
     }).setView([52.52, 13.405], 12);
-
     L.control.zoom({ position: 'topright' }).addTo(map.value);
-
     L.tileLayer(TILE_URL, {
         maxZoom: 18,
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map.value);
-
     L.Control.geocoder({
         defaultMarkGeocode: false,
         placeholder: 'Search Berlin locations'
     }).addTo(map.value);
-
     routeOverlay.value = L.layerGroup().addTo(map.value);
     renderRoutePreview();
 }
-
 function initChat() {
     mountLangflowChat('chat-container');
 }
-
 function openRouteDetails(routeId) {
+    // Save search state to sessionStorage before navigating
     sessionStorage.setItem('searchState', JSON.stringify({
         startLocation: startLocation.value,
         destination: destination.value,
@@ -397,7 +345,6 @@ function openRouteDetails(routeId) {
         selectedDestinationPlace: selectedDestinationPlace.value,
         showResults: showResults.value
     }));
-
     router.push({
         name: 'route-details',
         params: { routeId },
@@ -407,14 +354,12 @@ function openRouteDetails(routeId) {
         }
     });
 }
-
 function searchRoute() {
     hasSearched.value = true;
     searchError.value = '';
     showResults.value = true;
     fetchSafeRoute();
 }
-
 function searchClear() {
     hasSearched.value = false;
     searchError.value = '';
@@ -426,9 +371,7 @@ function searchClear() {
     routeOverlay.value?.clearLayers();
     showResults.value = false;
 }
-
 const searchResult = ref(null);
-
 onMounted(() => {
     const saved = sessionStorage.getItem('searchState');
     if (saved) {
@@ -439,14 +382,11 @@ onMounted(() => {
         selectedStartPlace.value = searchData.selectedStartPlace;
         selectedDestinationPlace.value = searchData.selectedDestinationPlace;
         showResults.value = searchData.showResults;
-
         sessionStorage.removeItem('searchState');
     }
-
     initMap();
     initChat();
 });
-
 onBeforeUnmount(() => {
     if (map.value) {
         map.value.remove();
@@ -454,28 +394,23 @@ onBeforeUnmount(() => {
     }
 });
 </script>
-
 <style scoped>
 .app-shell {
     min-height: 100vh;
 }
-
 .suggestion-list {
     border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
     border-radius: 12px;
 }
-
 #map-container {
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
-
 #home-map {
     width: 100%;
     min-height: 380px;
 }
-
 /*
  * The Langflow widget is injected into #chat-container. By default the div is a
  * full-width block at the bottom of <v-main>, so it overlaps the page and blocks
