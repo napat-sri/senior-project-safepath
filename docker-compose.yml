@@ -14,6 +14,7 @@ services:
     #  - langflow
     networks:
       - caddy
+      - langflow-net     # <-- so langflow can resolve "postgres"
     labels:
       # Public entry point. Caddy serves the UI and reverse-proxies the
       # browser-facing backends so they can stay private (no public domain):
@@ -149,17 +150,6 @@ services:
       - DOWNLOAD_PBF=https://download.geofabrik.de/europe/germany/berlin-latest.osm.pbf
       - DOWNLOAD_POLY=https://download.geofabrik.de/europe/germany/berlin.poly
     command: import 
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.1
-    command: start-dev --import-realm       # built-in H2, HTTP, relaxed hostname
-    environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-    ports:
-      - "8090:8080"                         # 8081 is taken by openstreetmap; use 8090
-    volumes:
-      - ./keycloak/import:/opt/keycloak/data/import:ro   # optional auto-import (D4)
 
 volumes:
   berlin-data:
