@@ -24,7 +24,7 @@
 
   <!-- <v-navigation-drawer v-model="drawer" :rail="rail" permanent class="pt-4" :width="width" rail-width="88"> -->
 
-  <v-navigation-drawer v-model="drawer" temporary class="pt-4">
+  <!-- <v-navigation-drawer v-model="drawer" temporary class="pt-4">
     <v-list>
       <v-list-item v-if="isAuthenticated" :title="username" :subtitle="isAdmin ? 'Admin' : 'Member'"
         prepend-icon="mdi-account-circle" />
@@ -47,8 +47,8 @@
       </div>
     </template>
   </v-navigation-drawer>
-</template>
-<!-- <v-navigation-drawer v-model="drawer" temporary class="pt-4">
+</template> -->
+<v-navigation-drawer v-model="drawer" temporary class="pt-4">
     <v-list>
       <v-list-item prepend-avatar="https://randomuser.me/api/portraits/men/85.jpg" title="John Leider">
       </v-list-item>
@@ -61,7 +61,7 @@
       <slot />
     </v-list>
   </v-navigation-drawer>
-</template> -->
+</template>
 
 <script setup>
 import { computed, ref } from 'vue';
@@ -70,12 +70,47 @@ import safePathLogo from '../assets/Berlin.png';
 // import keycloak from '../services/keycloak';
 
 // Optional explicit override; when null, the menu is derived from the user's role.
-const props = defineProps({
-  items: { type: Array, default: null },
-  width: { type: [Number, String], default: 280 },
-});
+// const props = defineProps({
+//   items: { type: Array, default: null },
+//   width: { type: [Number, String], default: 280 },
+// });
 
 const drawer = ref(false);
+
+// The single source of truth for the main app navigation.
+// Change a label, icon, or route here and every view that uses the
+// default menu updates. Pass a custom `items` array (e.g. the admin
+// view) to override it.
+defineProps({
+  items: {
+    type: Array,
+    default: () => [
+      { title: 'Home', icon: 'mdi-home', to: '/home' },
+      { title: 'Profile', icon: 'mdi-account', to: '/profile' },
+      { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' },
+      { title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' }
+    ]
+  },
+  width: {
+    type: [Number, String],
+    default: 280
+  }
+});
+
+// const drawer = ref(false)
+
+// Light/dark toggle. The switch is "on" for light mode (sun icon); the choice
+// is applied globally via Vuetify and remembered across reloads.
+const theme = useTheme();
+const isLight = computed({
+  get: () => theme.name.value === 'safepathLight',
+  set: (value) => {
+    const next = value ? 'safepathLight' : 'safepathDark';
+    theme.change(next);
+    localStorage.setItem('safepath-theme', next);
+  }
+});
+</script>
 
 // ---- Identity / roles ----
 // const isAuthenticated = computed(() => !!keycloak.authenticated);
@@ -104,48 +139,13 @@ const drawer = ref(false);
 // const logout = () => keycloak.logout({ redirectUri: window.location.origin + '/home' });
 
 // ---- Light/dark toggle (unchanged) ----
-const theme = useTheme();
-const isLight = computed({
-  get: () => theme.name.value === 'safepathLight',
-  set: (value) => {
-    const next = value ? 'safepathLight' : 'safepathDark';
-    theme.change(next);
-    localStorage.setItem('safepath-theme', next);
-  },
-});
-</script>
+// const theme = useTheme();
+// const isLight = computed({
+//   get: () => theme.name.value === 'safepathLight',
+//   set: (value) => {
+//     const next = value ? 'safepathLight' : 'safepathDark';
+//     theme.change(next);
+//     localStorage.setItem('safepath-theme', next);
+//   },
+// });
 
-<!-- // The single source of truth for the main app navigation.
-// Change a label, icon, or route here and every view that uses the
-// default menu updates. Pass a custom `items` array (e.g. the admin
-// view) to override it.
-defineProps({
-  items: {
-    type: Array,
-    default: () => [
-      { title: 'Home', icon: 'mdi-home', to: '/home' },
-      { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-      { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' },
-      { title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' }
-    ]
-  },
-  width: {
-    type: [Number, String],
-    default: 280
-  }
-});
-
-const drawer = ref(false)
-
-// Light/dark toggle. The switch is "on" for light mode (sun icon); the choice
-// is applied globally via Vuetify and remembered across reloads.
-const theme = useTheme();
-const isLight = computed({
-  get: () => theme.name.value === 'safepathLight',
-  set: (value) => {
-    const next = value ? 'safepathLight' : 'safepathDark';
-    theme.change(next);
-    localStorage.setItem('safepath-theme', next);
-  }
-});
-</script> -->
