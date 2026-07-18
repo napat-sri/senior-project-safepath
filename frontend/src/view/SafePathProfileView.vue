@@ -177,6 +177,14 @@ const showEditModal = ref(false);
 //   accountType: 'Standard',
 // });
 
+const user = ref({
+  name: 'SafePath User',
+  email: 'safepath@hotmail.com',
+  provider: 'email',
+  memberSince: 'June 2026',
+  accountType: 'Standard',
+});
+
 // const logout = () => keycloak.logout({ redirectUri: window.location.origin + '/login' });
 
 const editableProfile = ref({
