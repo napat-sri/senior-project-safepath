@@ -9,6 +9,8 @@ services:
       command: npm run dev
       ports:
         - "8080:8080"
+      networks:
+        - langflow-net     # <-- so langflow can resolve "postgres"
       volumes:
          - ./frontend:/app
          - /app/node_modules

@@ -1,7 +1,6 @@
 <template>
     <v-layout class="app-shell">
         <SafePathNavDrawer />
-
         <v-main>
             <v-container fluid class="pa-4 pa-md-6">
                 <v-card class="mb-5" rounded="lg" elevation="2">
@@ -17,7 +16,6 @@
                         <v-btn variant="tonal" color="primary" @click="goHome">Back to Search</v-btn>
                     </v-card-text>
                 </v-card>
-
                 <v-row>
                     <v-col cols="12" md="8">
                         <v-card rounded="lg" elevation="2" height="100%">
@@ -27,13 +25,11 @@
                                         {{ selectedRoute.name }}
                                     </v-chip>
                                 </div>
-
                                 <v-card-text class="text-body-1 text-medium-emphasis mb-2">{{ selectedRoute.summary
-                                    }}</v-card-text>
+                                }}</v-card-text>
                             </v-card-text>
                         </v-card>
                     </v-col>
-
                     <v-col cols="12" md="4">
                         <v-card rounded="lg" elevation="2">
                             <v-card-text>
@@ -41,17 +37,15 @@
                                     <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
                                         Overall Safety
                                     </v-card-title>
-                                    <v-progress-circular
-                                        :model-value="selectedRoute.safetyScore" :size="175" :width="20"
-                                        bg-color="surface-light" :style="scoreBadgeStyle(selectedRoute.safetyScore)"
-                                        reveal rounded>
+                                    <v-progress-circular :model-value="selectedRoute.safetyScore" :size="175"
+                                        :width="20" bg-color="surface-light"
+                                        :style="scoreBadgeStyle(selectedRoute.safetyScore)" reveal rounded>
                                         <v-avatar color="surface-light" size="115"><span class="text-headline-small">{{
                                             selectedRoute.safetyScore }}/100</span></v-avatar></v-progress-circular>
                                 </div>
                             </v-card-text>
                         </v-card>
                     </v-col>
-
                     <v-col cols="12" md="7">
                         <v-card rounded="lg" elevation="2" height="100%">
                             <v-card-title>Route Information</v-card-title>
@@ -80,7 +74,6 @@
                                             </template>
                                         </v-list-item>
                                     </div>
-
                                     <div class="d-flex justify-space-between align-center">
                                         <v-list-item title="Journey" :subtitle="displayJourney">
                                             <template v-slot:prepend>
@@ -94,7 +87,6 @@
                             </v-card-text>
                         </v-card>
                     </v-col>
-
                     <v-col cols="12" md="5">
                         <v-card rounded="lg" elevation="2" height="100%">
                             <v-card-title>Safety Score Breakdown</v-card-title>
@@ -111,7 +103,6 @@
                             </v-card-text>
                         </v-card>
                     </v-col>
-
                     <v-col cols="12">
                         <v-card rounded="lg" elevation="2">
                             <v-card-title class="d-flex justify-space-between align-center">
@@ -146,67 +137,53 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet/dist/leaflet.css';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-
 import { getRouteById, getSafetyTone } from '../data/routeAnalysis';
 import SafePathNavDrawer from '../components/SafePathNavDrawer.vue';
 import { mountLangflowChat } from '../utils/langflowChat';
-
-const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png';
-
+//const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png'; //dev
+//const TILE_URL = process.env.VUE_APP_TILE_URL || 'https://osm.safepath.duckdns.org/tile/{z}/{x}/{y}.png'; //prod
+const TILE_URL = process.env.VUE_APP_TILE_URL
 const DefaultIcon = L.icon({
     iconUrl: icon,
     shadowUrl: iconShadow,
     iconSize: [25, 41],
     iconAnchor: [12, 41]
 });
-
 L.Marker.prototype.options.icon = DefaultIcon;
-
 const router = useRouter();
 const route = useRoute();
 const map = ref(null);
 const routeOverlay = ref(null);
-
 const selectedRoute = computed(() => getRouteById(route.params.routeId));
-
 const displayJourney = computed(() => {
     const start = String(route.query.start || selectedRoute.value.origin).trim();
     const destination = String(route.query.destination || selectedRoute.value.destination).trim();
     return `${start} to ${destination}`;
 });
-
 function scoreBadgeStyle(score) {
     const tone = getSafetyTone(score);
-
     return {
         color: tone.color,
         // backgroundColor: tone.soft
     };
 }
-
 function goHome() {
-    router.back();
+    router.back(); // Browser history will restore the page naturally
 }
-
 function renderRoute(routeData = selectedRoute.value) {
     if (!map.value || !routeData) {
         return;
     }
-
     const tone = getSafetyTone(routeData.safetyScore);
-
     if (routeOverlay.value) {
         routeOverlay.value.clearLayers();
     }
-
     const path = L.polyline(routeData.coordinates, {
         color: tone.color,
         weight: 6,
         opacity: 0.95
     });
-
     routeOverlay.value.addLayer(path);
-
     routeOverlay.value.addLayer(
         L.circleMarker(routeData.coordinates[0], {
             radius: 9,
@@ -216,7 +193,6 @@ function renderRoute(routeData = selectedRoute.value) {
             fillOpacity: 1
         })
     );
-
     routeOverlay.value.addLayer(
         L.circleMarker(routeData.coordinates[routeData.coordinates.length - 1], {
             radius: 9,
@@ -226,46 +202,36 @@ function renderRoute(routeData = selectedRoute.value) {
             fillOpacity: 1
         })
     );
-
     map.value.fitBounds(path.getBounds().pad(0.22));
 }
-
 function initMap() {
     if (map.value) {
         return;
     }
-
     map.value = L.map('detail-map', {
         zoomControl: false
     }).setView([52.52, 13.405], 12);
-
     L.control.zoom({ position: 'topright' }).addTo(map.value);
-
     L.tileLayer(TILE_URL, {
         maxZoom: 18,
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map.value);
-
     routeOverlay.value = L.layerGroup().addTo(map.value);
     renderRoute();
 }
-
 function initChat() {
     mountLangflowChat('chat-container');
 }
-
 watch(
     () => route.params.routeId,
     () => {
         renderRoute();
     }
 );
-
 onMounted(() => {
     initMap();
     initChat();
 });
-
 onBeforeUnmount(() => {
     if (map.value) {
         map.value.remove();

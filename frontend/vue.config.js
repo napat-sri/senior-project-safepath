@@ -9,6 +9,13 @@ module.exports = {
     client: {
       webSocketURL: 'auto://0.0.0.0:0/ws',
     },
+    proxy: {
+    '/langflow': {
+      target: 'http://langflow:7860', // reachable once frontend joins langflow-net (change 3)
+      changeOrigin: true,
+      pathRewrite: { '^/langflow': '' },
+    },
+  },
 
     // If the refresh loop persists, uncomment these to disable live reload
     // entirely (fine for a deployed/demo build; flip back on for local dev):
