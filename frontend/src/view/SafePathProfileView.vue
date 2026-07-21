@@ -160,7 +160,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import SafePathNavDrawer from '../components/SafePathNavDrawer.vue';
-// import keycloak from '../services/keycloak';
+import keycloak from '../services/keycloak';
 
 const router = useRouter();
 
@@ -169,21 +169,21 @@ const deleteConfirmText = ref('');
 const profilePreview = ref('');
 const showEditModal = ref(false);
 
-// const user = ref({
-//   name: keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'SafePath User',
-//   email: keycloak.tokenParsed?.email || '',
-//   provider: keycloak.tokenParsed?.identity_provider || 'email',
-//   memberSince: '',
-//   accountType: 'Standard',
-// });
-
 const user = ref({
-  name: 'SafePath User',
-  email: 'safepath@hotmail.com',
-  provider: 'email',
-  memberSince: 'June 2026',
+  name: keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'SafePath User',
+  email: keycloak.tokenParsed?.email || '',
+  provider: keycloak.tokenParsed?.identity_provider || 'email',
+  memberSince: '',
   accountType: 'Standard',
 });
+
+// const user = ref({
+//   name: 'SafePath User',
+//   email: 'safepath@hotmail.com',
+//   provider: 'email',
+//   memberSince: 'June 2026',
+//   accountType: 'Standard',
+// });
 
 // const logout = () => keycloak.logout({ redirectUri: window.location.origin + '/login' });
 
