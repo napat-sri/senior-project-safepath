@@ -111,6 +111,17 @@ services:
     restart: unless-stopped
     networks:
       - langflow-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    command: start-dev --import-realm       # built-in H2, HTTP, relaxed hostname
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8090:8080"                         # 8081 is taken by openstreetmap; use 8090
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import:ro   # optional auto-import (D4)
       
   postgres:
     # Pinned to a specific Debian base (trixie) so the postgres:16 tag does not
