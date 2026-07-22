@@ -75,7 +75,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import safepathLogo from '../assets/Berlin.png';
-// import keycloak from '../services/keycloak';
+import keycloak from '../services/keycloak';
 
 const email = ref('');
 const password = ref('');
@@ -90,15 +90,15 @@ const primaryProviders = [
 ];
 
 // Redirect to Keycloak's hosted login; returns to /home once authenticated.
-// const Login = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
-// const handleLogin = Login;                       // Enter-to-submit also works
+const Login = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
+const handleLogin = Login;                       // Enter-to-submit also works
 
-// // Social provider (Google) → jump straight to that IdP.
-// const registerWithProvider = (providerKey) =>
-//   keycloak.login({ idpHint: providerKey, redirectUri: window.location.origin + '/home' });
+// Social provider (Google) → jump straight to that IdP.
+const registerWithProvider = (providerKey) =>
+  keycloak.login({ idpHint: providerKey, redirectUri: window.location.origin + '/home' });
 
-// // "Register" → Keycloak's hosted registration page.
-// const goToRegister = () => keycloak.register({ redirectUri: window.location.origin + '/home' });</script>
+// "Register" → Keycloak's hosted registration page.
+const goToRegister = () => keycloak.register({ redirectUri: window.location.origin + '/home' });</script>
 
 <style scoped>
 .auth-page {

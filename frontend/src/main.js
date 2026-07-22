@@ -3,7 +3,7 @@ import App from './App.vue';
 import router from './router';
 
 // keycloak
-// import keycloak from './services/keycloak';
+import keycloak from './services/keycloak';
 
 // Vuetify
 import 'vuetify/styles'
@@ -82,32 +82,32 @@ app.use(vuetify);
 app.mount('#app');
 
 // keycloak
-// keycloak
-//   .init({
-//     onLoad: 'check-sso',
-//     silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
-//     pkceMethod: 'S256',
-//   })
-//   .then(() => {
-//     const app = createApp(App);
-//     app.use(router);
-//     app.use(vuetify);
-//     app.provide('keycloak', keycloak);
-//     app.mount('#app');
+keycloak
+  .init({
+    onLoad: 'check-sso',
+    silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+    pkceMethod: 'S256',
+  })
+  .then(() => {
+    const app = createApp(App);
+    app.use(router);
+    app.use(vuetify);
+    app.provide('keycloak', keycloak);
+    app.mount('#app');
 
-//     // After the router settles, strip any OAuth params still on the URL.
-//     router.isReady().then(() => {
-//       if (/[#?&](state|session_state|iss|code)=/.test(window.location.href)) {
-//         const clean = window.location.pathname + window.location.search
-//           .replace(/[?&](state|session_state|iss|code)=[^&]*/g, '')
-//           .replace(/^&/, '?');
-//         window.history.replaceState(window.history.state, '', clean || '/');
-//       }
-//     });
+    // After the router settles, strip any OAuth params still on the URL.
+    router.isReady().then(() => {
+      if (/[#?&](state|session_state|iss|code)=/.test(window.location.href)) {
+        const clean = window.location.pathname + window.location.search
+          .replace(/[?&](state|session_state|iss|code)=[^&]*/g, '')
+          .replace(/^&/, '?');
+        window.history.replaceState(window.history.state, '', clean || '/');
+      }
+    });
 
-//     // // Keep the access token fresh; if refresh fails, prompt re-login.
-//     // setInterval(() => {
-//     //   keycloak.updateToken(60).catch(() => keycloak.login());
-//     // }, 60000);
-//   })
-//   .catch((err) => console.error('Keycloak init failed', err));
+    // // Keep the access token fresh; if refresh fails, prompt re-login.
+    // setInterval(() => {
+    //   keycloak.updateToken(60).catch(() => keycloak.login());
+    // }, 60000);
+  })
+  .catch((err) => console.error('Keycloak init failed', err));

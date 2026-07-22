@@ -24,7 +24,7 @@
 
   <!-- <v-navigation-drawer v-model="drawer" :rail="rail" permanent class="pt-4" :width="width" rail-width="88"> -->
 
-  <!-- <v-navigation-drawer v-model="drawer" temporary class="pt-4">
+  <v-navigation-drawer v-model="drawer" temporary class="pt-4">
     <v-list>
       <v-list-item v-if="isAuthenticated" :title="username" :subtitle="isAdmin ? 'Admin' : 'Member'"
         prepend-icon="mdi-account-circle" />
@@ -47,8 +47,8 @@
       </div>
     </template>
   </v-navigation-drawer>
-</template> -->
-<v-navigation-drawer v-model="drawer" temporary class="pt-4">
+</template>
+<!-- <v-navigation-drawer v-model="drawer" temporary class="pt-4">
     <v-list>
       <v-list-item prepend-avatar="https://randomuser.me/api/portraits/men/85.jpg" title="John Leider">
       </v-list-item>
@@ -61,41 +61,44 @@
       <slot />
     </v-list>
   </v-navigation-drawer>
-</template>
+</template> -->
 
 <script setup>
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useTheme } from 'vuetify';
 import safePathLogo from '../assets/Berlin.png';
-// import keycloak from '../services/keycloak';
+import keycloak from '../services/keycloak';
+
+const router = useRouter();
 
 // Optional explicit override; when null, the menu is derived from the user's role.
-// const props = defineProps({
-//   items: { type: Array, default: null },
-//   width: { type: [Number, String], default: 280 },
-// });
+const props = defineProps({
+  items: { type: Array, default: null },
+  width: { type: [Number, String], default: 280 },
+});
 
 const drawer = ref(false);
 
-// The single source of truth for the main app navigation.
-// Change a label, icon, or route here and every view that uses the
-// default menu updates. Pass a custom `items` array (e.g. the admin
-// view) to override it.
-defineProps({
-  items: {
-    type: Array,
-    default: () => [
-      { title: 'Home', icon: 'mdi-home', to: '/home' },
-      { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-      { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' },
-      { title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' }
-    ]
-  },
-  width: {
-    type: [Number, String],
-    default: 280
-  }
-});
+// // The single source of truth for the main app navigation.
+// // Change a label, icon, or route here and every view that uses the
+// // default menu updates. Pass a custom `items` array (e.g. the admin
+// // view) to override it.
+// defineProps({
+//   items: {
+//     type: Array,
+//     default: () => [
+//       { title: 'Home', icon: 'mdi-home', to: '/home' },
+//       { title: 'Profile', icon: 'mdi-account', to: '/profile' },
+//       { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' },
+//       { title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' }
+//     ]
+//   },
+//   width: {
+//     type: [Number, String],
+//     default: 280
+//   }
+// });
 
 // const drawer = ref(false)
 
@@ -110,42 +113,32 @@ const isLight = computed({
     localStorage.setItem('safepath-theme', next);
   }
 });
-</script>
 
 // ---- Identity / roles ----
-// const isAuthenticated = computed(() => !!keycloak.authenticated);
-// const isAdmin = computed(() => keycloak.authenticated && keycloak.hasRealmRole('Admin'));
-// const username = computed(
-//   () => keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'Account'
-// );
+const isAuthenticated = computed(() => !!keycloak.authenticated);
+const isAdmin = computed(() => keycloak.authenticated && keycloak.hasRealmRole('Admin'));
+const username = computed(
+  () => keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'Account'
+);
 
-// // Home for everyone; member items when logged in; Dashboard only for admins.
-// const navItems = computed(() => {
-//   if (props.items) return props.items;                       // explicit override still works
-//   const list = [{ title: 'Home', icon: 'mdi-home', to: '/home' }];
-//   if (isAuthenticated.value) {
-//     list.push(
-//       { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-//       { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
-//     );
-//   }
-//   if (isAdmin.value) {
-//     list.push({ title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' });
-//   }
-//   return list;
-// });
+// Home for everyone; member items when logged in; Dashboard only for admins.
+const navItems = computed(() => {
+  if (props.items) return props.items;                       // explicit override still works
+  const list = [{ title: 'Home', icon: 'mdi-home', to: '/home' }];
+  if (isAuthenticated.value) {
+    list.push(
+      { title: 'Profile', icon: 'mdi-account', to: '/profile' },
+      { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
+    );
+  }
+  if (isAdmin.value) {
+    list.push({ title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' });
+  }
+  return list;
+});
 
 // const login = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
-// const logout = () => keycloak.logout({ redirectUri: window.location.origin + '/home' });
+const login = () => router.push('/login');
+const logout = () => keycloak.logout({ redirectUri: window.location.origin + '/home' });
 
-// ---- Light/dark toggle (unchanged) ----
-// const theme = useTheme();
-// const isLight = computed({
-//   get: () => theme.name.value === 'safepathLight',
-//   set: (value) => {
-//     const next = value ? 'safepathLight' : 'safepathDark';
-//     theme.change(next);
-//     localStorage.setItem('safepath-theme', next);
-//   },
-// });
-
+</script>
