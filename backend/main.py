@@ -1,21 +1,36 @@
+# main fixed AI
 """SafePath API.
 
 Endpoints:
-  GET  /             - banner
-  GET  /api/health   - liveness check
-  POST /api/routes   - candidate routes between two points (via OSRM)
+    
+    Static endpoints:
+    Get / :display a welcome message.
+    Get /api/health :check the health of the API.
+    Get /api/langflow/health :check the health of the Langflow service.
+    Get /api/monitor/health :check the health of the Langfuse monitoring service.
+    
+    Langfuse monitoring endpoints (read-only):
+    Get /api/monitor/traces :fetch recent traces from Langfuse.
+    Get /api/monitor/traces/{trace_id} :fetch detailed information for a specific trace.
+    Get /api/monitor/alerts :fetch alerts from Langfuse.
+    Get /api/monitor/stats :fetch aggregated statistics from Langfuse.
+    Get /api/monitor/export :export recent traces from Langfuse in CSV or JSON format.
+    
+    SafePath routing endpoints:
+    Get /api/places :search for locations by name using LocationIQ's Autocomplete API.
+    Get /api/routes/safe :fetch safe routes between two points, scored by AI for safety.
+    
+
 """
 
-import asyncio
 import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 import csv
 import io
 import json
-import re
 import time
 import uuid
 from datetime import datetime, timezone
@@ -25,6 +40,16 @@ from dotenv import load_dotenv
 
 import langfuse_monitor
 import langfuse_prompts
+
+from typing import List, Optional
+from openai import AsyncOpenAI
+LITELLM_PROXY_URL = os.getenv("LITELLM_PROXY_URL")# default for local dev
+LITELLM_VIRTUAL_KEY = os.getenv("LITELLM_VIRTUAL_KEY")# default for local dev
+litellm_client = AsyncOpenAI(
+    base_url=LITELLM_PROXY_URL,    
+    api_key=LITELLM_VIRTUAL_KEY,  
+)
+
 
 load_dotenv()
 
@@ -50,10 +75,10 @@ OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
 OSRM_FOOT_URL = "https://router.project-osrm.org/route/v1/foot"
 FLOW_ID = os.getenv("VUE_APP_LANGFLOW_ROUTE_AGENT_FLOW_ID")
 LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}" 
-#LANGFLOW_URL = f"https://langflow.safepath.duckdns.org/api/v1/run/{FLOW_ID}"  # public subdomain removed; langflow is private now 
 # Authentication Key for Langflow (Required if login is enabled in the Langflow UI)
 LANGFLOW_API_KEY = os.getenv("VUE_APP_LANGFLOW_API_KEY")
-
+# LocationIQ API Key for geocoding (autocomplete) requests. Required.
+LOCATIONIQ_API_KEY = os.getenv("LOCATIONIQ_API_KEY")
 
 # ---------------------------------------------------------------------------
 # Route-safety prompt fallback.
@@ -68,6 +93,9 @@ LANGFLOW_API_KEY = os.getenv("VUE_APP_LANGFLOW_API_KEY")
 # {{to_lat}}, {{to_lng}}, {{routes_json}}. Single braces are literal JSON.
 # ---------------------------------------------------------------------------
 FALLBACK_ROUTE_PROMPT = """You are SafePath Berlin, a safety-first navigation assistant for students, tourists, and commuters in Berlin.
+
+Your ENTIRE response MUST be ONLY a JSON array — it must start with [ and end with ]. Do NOT include any reasoning, explanation, calculations, markdown, or any text before or after the array.
+
 FROM:
 {{from_lat}}, {{from_lng}}
 TO:
@@ -75,23 +103,24 @@ TO:
 
 ROUTES:
 {{routes_json}}
-Rules:
-- accident risk 35%
-- crime level 35%
-- street lighting 30%
 
-Color:
-85+ = #10B981
-70-84 = #F59E0B
-<70 = #EF4444
-Return ONLY valid JSON array.
+Scoring weights: accident risk 35%, crime level 35%, street lighting 30%.
+Every score (safetyScore and each breakdown score) MUST be an integer from 0 to 100.
+accentColor MUST be exactly one of these, chosen from the route's safetyScore:
+  "#0B8043" for 85+, "#E8590C" for 70-84, "#C1121F" for below 70.
+
+Rules:
+- Never use placeholders, dashes (---), dots (.), null, or blanks. Every field must have a real value.
+- Return one object per route in the ROUTES input, keeping the same "id".
+
+Example of the exact format (values illustrative only):
 [
   {
     "id": "route-1",
     "name": "Route 1",
     "safetyScore": 85,
-    "summary": "2 sentences: why this rank and one trade-off vs the other routes.",
-    "accentColor": "<hex per rules above>",
+    "summary": "Two sentences: why this rank, and one trade-off vs the other routes.",
+    "accentColor": "#0B8043",
     "breakdown": [
       { "label": "Accident Risk", "score": 80 },
       { "label": "Crime Level", "score": 90 },
@@ -99,10 +128,9 @@ Return ONLY valid JSON array.
     ]
   }
 ]
+
+Output ONLY the JSON array. Your first character must be [ and your last character must be ].
 """
-
-
-
 
 class Point(BaseModel):
     lat: float
@@ -119,7 +147,24 @@ class RouteRequest(BaseModel):
     startName: str | None = None
     destinationName: str | None = None
 
+class BreakdownItem(BaseModel):
+    label: str
+    score: int = Field(ge=0, le=100)
 
+class AIRoute(BaseModel):
+    id: str
+    name: Optional[str] = None
+    routeType: str = "driving"
+    safetyScore: int = Field(ge=0, le=100)
+    summary: str = "No analysis available."
+    accentColor: str = "#F59E0B"
+    breakdown: List[BreakdownItem] = []
+
+# DeepSeek JSON mode requires the root to be an OBJECT, not a bare array,
+# so wrap the list in a key.
+class AIRouteList(BaseModel):
+    routes: List[AIRoute]
+    
 @app.get("/")
 def root():
     return {"message": "Welcome to SafePath API"}
@@ -129,16 +174,12 @@ def root():
 def health():
     return {"status": "ok"}
 
-@app.get("/api/test")
-def test():
-    return {"data": [{"id": 1,"name": "Route 1"}, {"id": 2,"name": "Route 2"}, {"id": 3,"name": "Route 3"   }]}
-
 @app.get("/api/langflow/health")
 def langflow_health():
     return {
         "status": "ok",
         "langflow_target": LANGFLOW_URL,
-        "auth_configured": LANGFLOW_API_KEY
+        "auth_configured": bool(LANGFLOW_API_KEY)
     }
 
 
@@ -278,7 +319,7 @@ def monitor_export(
         },
     )
 
-
+'''
 @app.get("/api/places")
 def search_places(query: str):
     """
@@ -290,11 +331,7 @@ def search_places(query: str):
         return {"places": []}
 
     url = "https://nominatim.openstreetmap.org/search"
-    # params = {
-    #     "q": query,
-    #     "format": "json",
-    #     "limit": 5, 
-    # }
+ 
     params = {
         "q": query,
         "format": "json",
@@ -327,48 +364,69 @@ def search_places(query: str):
         })
 
     return {"places": places}
-
 '''
-@app.post("/api/routes")
-def get_routes(req: RouteRequest):
-    """Return candidate routes between start and destination.
 
-    Calls OSRM with alternatives enabled and normalises the response into a
-    small shape the frontend can draw directly. Coordinates are returned as
-    [lat, lng] pairs (OSRM gives [lng, lat], so we swap).
+@app.get("/api/places")
+def search_places(query: str):
     """
-    s, d = req.start, req.destination
-    url = f"{OSRM_URL}/{s.lng},{s.lat};{d.lng},{d.lat}"
-    params = {"overview": "full", "geometries": "geojson", "alternatives": "true"}
+    Search for locations by name using LocationIQ's Autocomplete API
+    (built on Nominatim/OSM data, but keyed instead of IP-based —
+    avoids the 403 blocks from free anonymous demo servers).
+    """
+    if not query or len(query) < 3:
+        return {"places": []}
+
+    url = "https://api.locationiq.com/v1/autocomplete"
+
+    params = {
+        "key": LOCATIONIQ_API_KEY,
+        "q": query,
+        "format": "json",
+        "limit": 5,
+        "countrycodes": "de",
+        "viewbox": "13.0883,52.3383,13.7611,52.6755",
+        "bounded": 1,
+        "normalizeaddress": 1,
+    }
 
     try:
-        resp = httpx.get(url, params=params, timeout=20.0)
+        resp = httpx.get(url, params=params, timeout=10.0)
         resp.raise_for_status()
         data = resp.json()
+    except httpx.HTTPStatusError as exc:
+        # LocationIQ returns 404 with a JSON body when there are simply no results
+        if exc.response.status_code == 404:
+            return {"places": []}
+        raise HTTPException(status_code=502, detail=f"Geocoding service error: {exc}")
     except httpx.HTTPError as exc:
-        raise HTTPException(status_code=502, detail=f"Routing service error: {exc}")
+        raise HTTPException(status_code=502, detail=f"Geocoding service error: {exc}")
 
-    if data.get("code") != "Ok" or not data.get("routes"):
-        raise HTTPException(
-            status_code=404, detail="No route found between those points."
+    places = []
+    for item in data:
+        address = item.get("address") or {}
+
+        name = (
+            address.get("name")
+            or item.get("display_place")
+            or address.get("road")
+            or item.get("display_name")
         )
 
-    routes = []
-    for i, route in enumerate(data["routes"]):
-        coords = [[lat, lng] for lng, lat in route["geometry"]["coordinates"]]
-        routes.append(
-            {
-                "id": f"route-{i + 1}",
-                "geometry": coords,
-                "distance_m": round(route["distance"]),
-                "duration_s": round(route["duration"]),
-            }
-        )
+        subtitle_parts = [
+            address.get("suburb") or address.get("city_district"),
+            address.get("city") or address.get("town"),
+        ]
+        subtitle = ", ".join(p for p in subtitle_parts if p)
 
-    return {"routes": routes}
-'''
+        places.append({
+            "name": item.get("display_name"),
+            "subtitle": subtitle,
+            #"display_name": item.get("display_name"),
+            "lat": float(item["lat"]),
+            "lng": float(item["lon"]),
+        })
 
-
+    return {"places": places}
 
 
 @app.post("/api/routes/safe")
@@ -446,7 +504,7 @@ async def get_safe_routes(req: RouteRequest):
     
     process_routes_end = time.perf_counter()
     print(
-    f"[TIME] Route processing: "
+    f"[TIME] {routes.__len__()} Route processing: "
     f"{process_routes_end - process_routes_start:.2f} sec"
 )
     # ---------------------------------------------------
@@ -500,62 +558,9 @@ async def get_safe_routes(req: RouteRequest):
         print("[LANGFLOW] WARNING: No API Key found in .env. Requests will fail if Langflow has login enabled.")
 
     ai_routes = []
-    async with httpx.AsyncClient() as client:
-        try:
-            langflow_start = time.perf_counter()
-            lf_resp = await client.post(
-                LANGFLOW_URL,
-                json=langflow_payload,
-                headers=headers,
-                timeout=45.0
-            )
-
-            lf_resp.raise_for_status()
-            langflow_end = time.perf_counter()
-            print(
-                f"[TIME] Langflow request: "
-                f"{langflow_end - langflow_start:.2f} sec"
-            )
-            lf_data = lf_resp.json()
-            json_parse_start = time.perf_counter()
-            raw_text = (
-                lf_data["outputs"][0]
-                ["outputs"][0]
-                ["results"]["message"]["text"]
-            )
-
-            # ---------------------------------------------
-            # CLEAN AI RESPONSE
-            # ---------------------------------------------
-
-            raw_text = raw_text.strip()
-            # Remove markdown fences
-            raw_text = re.sub(
-                r"^```(?:json)?|```$",
-                "",
-                raw_text,
-                flags=re.MULTILINE
-            ).strip()
-
-            # Extract JSON array safely
-            match = re.search(r"\[.*\]", raw_text, re.DOTALL)
-            if not match:
-                raise ValueError("No JSON array found")
-
-            json_text = match.group(0)
-            ai_routes = json.loads(json_text)
-            json_parse_end = time.perf_counter()
-            print(
-                f"[TIME] JSON parsing: "
-                f"{json_parse_end - json_parse_start:.2f} sec"
-            )
-            if not isinstance(ai_routes, list):
-                raise ValueError("AI response is not a list")
-
-        except Exception as exc:
-            print("Langflow parsing error:", exc)
-            ai_routes = []
-
+    langflow_start = time.perf_counter()
+    ai_routes = await score_routes_with_ai(prompt)
+    print(f"[TIME] AI scoring: {time.perf_counter() - langflow_start:.2f} sec")
     # ---------------------------------------------------
     # STEP 3: MERGE AI + OSRM DATA
     # ---------------------------------------------------
@@ -652,3 +657,46 @@ async def get_safe_routes(req: RouteRequest):
     return {
         "route_suggestions": route_suggestions
     }
+
+
+async def score_routes_with_ai(prompt: str) -> list[dict]:
+    messages = [{"role": "user", "content": prompt}]
+    last_err = None
+
+    for _ in range(2):  # initial try + one retry
+        resp = await litellm_client.chat.completions.create(
+            model="deepseek/deepseek-v3.2",
+            messages=messages,
+            response_format={"type": "json_object"},  # forces valid JSON
+            max_tokens=2000,                           # high, so it never truncates
+            temperature=0,                             # deterministic scoring
+        )
+
+        # Read CONTENT ONLY — never reasoning_content. This kills the Chinese leak.
+        content = resp.choices[0].message.content or ""
+
+        # Defensive: if the proxy ever merges reasoning in, drop everything
+        # up to and including the last </think>.
+        if "</think>" in content:
+            content = content.rsplit("</think>", 1)[-1].strip()
+
+        if not content:
+            last_err = "empty content"
+            messages.append({"role": "user",
+                             "content": "You returned empty content. Return only the JSON object."})
+            continue
+
+        try:
+            parsed = AIRouteList.model_validate_json(content)
+            return [r.model_dump() for r in parsed.routes]
+        except Exception as e:
+            last_err = str(e)
+            messages.append({"role": "assistant", "content": content})
+            messages.append({"role": "user",
+                             "content": f"Your last response was invalid: {e}. "
+                                        "Return ONLY a JSON object matching the schema. "
+                                        "All scores must be integers 0-100."})
+
+    print("AI scoring failed:", last_err)
+    print("Message:", messages)
+    return []  # your existing fallback block then takes over
