@@ -27,7 +27,7 @@
                                 <v-list v-if="startSuggestions.length && startFocused" density="compact"
                                     class="mb-3 suggestion-list">
                                     <v-list-item v-for="suggestion in startSuggestions"
-                                        :key="`start-${suggestion.name}`" :title="suggestion.name"
+                                        :key="`start-${suggestion.display_name}`" :title="suggestion.display_name"
                                         @mousedown.prevent="selectSuggestion('start', suggestion)" />
                                 </v-list>
                                 <v-text-field v-model="destination" label="🚩 Destination"
@@ -37,7 +37,7 @@
                                 <v-list v-if="destinationSuggestions.length && destinationFocused" density="compact"
                                     class="mb-3 suggestion-list">
                                     <v-list-item v-for="suggestion in destinationSuggestions"
-                                        :key="`destination-${suggestion.name}`" :title="suggestion.name"
+                                        :key="`destination-${suggestion.display_name}`" :title="suggestion.display_name"
                                         @mousedown.prevent="selectSuggestion('destination', suggestion)" />
                                 </v-list>
                                 <v-alert v-if="searchError" type="error" variant="tonal" density="compact" class="mb-3">
@@ -54,10 +54,16 @@
                     <v-card v-if="showResults && !searchLoading" rounded="lg" elevation="2">
                         <v-card-title class="d-flex justify-space-between align-center">
                             <span>Suggested Routes</span>
-                            <v-chip size="small" color="primary" variant="tonal">{{ routes.length }} routes</v-chip>
+                            <v-chip v-if="routes.length == 1" size="small" color="primary" variant="tonal">
+                                {{ routes.length }} route
+                            </v-chip>
+                            <v-chip v-if="routes.length > 1" size="small" color="primary" variant="tonal">
+                                {{ routes.length }} routes
+                            </v-chip>
                         </v-card-title>
-                        <v-card-subtitle>Route options appear below your search and can be opened in
-                            detail.</v-card-subtitle>
+                        <v-card-subtitle>
+                            Routes appear below and can be opened indetail.
+                        </v-card-subtitle>
                         <v-card-text>
                             <v-alert v-if="routes.length === 0" type="info" variant="tonal">No routes
                                 found.</v-alert>
@@ -82,7 +88,7 @@
                                     <p class="text-body-2 mb-3">{{ route.summary }}</p>
                                     <div class="d-flex justify-space-between align-center">
                                         <v-btn size="small" variant="tonal" color="primary"
-                                            @click="openRouteDetails(route.id)">
+                                            @click="handleViewDetails(route.id)">
                                             View Details
                                         </v-btn>
                                     </div>
@@ -103,6 +109,22 @@
                 </v-col>
             </v-row>
             <div id="chat-container"></div>
+
+            <!-- Guests must sign in before opening detailed route safety. -->
+            <v-dialog v-model="dialog" max-width="400" persistent>
+                <v-card prepend-icon="mdi-lock"
+                    title="Login required"
+                    text="Viewing detailed route safety is available to registered users only.">
+                    <v-card-text>
+                        Please log in to continue.
+                    </v-card-text>
+                    <template v-slot:actions>
+                        <v-spacer></v-spacer>
+                        <v-btn @click="dialog = false">Cancel</v-btn>
+                        <v-btn variant="outlined" color="primary" @click="goToLogin">Login</v-btn>
+                    </template>
+                </v-card>
+            </v-dialog>
         </v-container>
     </v-main>
 </template>
@@ -124,6 +146,7 @@ import {
 import { mountLangflowChat } from '../utils/langflowChat';
 import { placeService, routeService } from '../services/api';
 import { getIdentity } from '../utils/identity';
+import keycloak from '../services/keycloak';
 
 //const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png'; //dev
 //const TILE_URL = process.env.VUE_APP_TILE_URL || 'https://osm.safepath.duckdns.org/tile/{z}/{x}/{y}.png'; //prod
@@ -146,6 +169,7 @@ const destinationTouched = ref(false);
 const startFocused = ref(false);
 const destinationFocused = ref(false);
 const showResults = ref(false);
+const dialog = ref(false)
 const searchError = ref('');
 const searchLoading = ref(false);
 const routes = ref([]); // Replace the computed with a ref
@@ -213,14 +237,14 @@ watch(destination, async (value) => {
 function selectSuggestion(type, suggestion) {
     if (type === 'start') {
         skipStartWatch.value = true;
-        startLocation.value = suggestion.name;
+        startLocation.value = suggestion.display_name;
         selectedStartPlace.value = suggestion;
         startSuggestions.value = [];
         startFocused.value = false;
     }
     if (type === 'destination') {
         skipDestinationWatch.value = true;
-        destination.value = suggestion.name;
+        destination.value = suggestion.display_name;
         selectedDestinationPlace.value = suggestion;
         destinationSuggestions.value = [];
         destinationFocused.value = false;
@@ -330,6 +354,18 @@ function initMap() {
 }
 function initChat() {
     mountLangflowChat('chat-container');
+}
+// Gate "View Details" behind auth: guests get the login prompt, members navigate.
+function handleViewDetails(routeId) {
+    if (!keycloak.authenticated) {
+        dialog.value = true;
+        return;
+    }
+    openRouteDetails(routeId);
+}
+function goToLogin() {
+    dialog.value = false;
+    router.push('/login');
 }
 function openRouteDetails(routeId) {
     // Save search state to sessionStorage before navigating

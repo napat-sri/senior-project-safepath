@@ -79,6 +79,7 @@ LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}"
 LANGFLOW_API_KEY = os.getenv("VUE_APP_LANGFLOW_API_KEY")
 # LocationIQ API Key for geocoding (autocomplete) requests. Required.
 LOCATIONIQ_API_KEY = os.getenv("LOCATIONIQ_API_KEY")
+print(LOCATIONIQ_API_KEY)
 
 # ---------------------------------------------------------------------------
 # Route-safety prompt fallback.
