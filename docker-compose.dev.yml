@@ -90,7 +90,10 @@ services:
   # the UI. Export updated flows from the Langflow UI and commit the JSON.
   # ----------------------------------------------------------------------------
   langflow:
-    image: langflowai/langflow:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.langflow
+    image: langflow-langfuse:pinned
     container_name: langflow
     ports:
       - "7860:7860"
@@ -122,6 +125,7 @@ services:
       - "8090:8080"                         # 8081 is taken by openstreetmap; use 8090
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import:ro   # optional auto-import (D4)
+      - keycloak_data:/opt/keycloak/data
       
   postgres:
     # Pinned to a specific Debian base (trixie) so the postgres:16 tag does not
@@ -140,11 +144,13 @@ services:
 
     volumes:
       - langflow-postgres:/var/lib/postgresql/data
- 
+
 volumes:
   langflow-data:
   langflow-postgres:
   berlin-data:
+  keycloak_data:
+  
 
 
 networks:

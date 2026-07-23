@@ -419,9 +419,9 @@ def search_places(query: str):
         subtitle = ", ".join(p for p in subtitle_parts if p)
 
         places.append({
-            "name": item.get("display_name"),
+            "name": name,
             "subtitle": subtitle,
-            #"display_name": item.get("display_name"),
+            "display_name": item.get("display_name"),
             "lat": float(item["lat"]),
             "lng": float(item["lon"]),
         })
@@ -525,6 +525,7 @@ async def get_safe_routes(req: RouteRequest):
         },
         fallback=FALLBACK_ROUTE_PROMPT,
     )
+    print("Prompt for AI scoring:\n", prompt)
 
     langflow_payload = {
         "input_value": prompt,
