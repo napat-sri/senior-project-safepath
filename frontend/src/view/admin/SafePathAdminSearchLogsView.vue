@@ -344,7 +344,4 @@ const exportReport = () => {
 </script>
 
 <style scoped>
-.app-shell {
-    min-height: 100vh;
-}
 </style>

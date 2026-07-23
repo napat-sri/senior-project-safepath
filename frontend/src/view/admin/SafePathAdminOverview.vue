@@ -183,10 +183,6 @@ const exportReport = () => {
 </script>
 
 <style scoped>
-.app-shell {
-    min-height: 100vh;
-}
-
 .overview-stat-card {
     height: 100%;
     border: 1px solid rgba(0, 0, 0, 0.08);
