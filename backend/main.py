@@ -16,6 +16,9 @@ Endpoints:
     Get /api/monitor/stats :fetch aggregated statistics from Langfuse.
     Get /api/monitor/export :export recent traces from Langfuse in CSV or JSON format.
     
+    Admin endpoints (read-only, sourced from Langfuse):
+    Get /api/admin/search-logs :fetch user route-search logs for the admin table.
+
     SafePath routing endpoints:
     Get /api/places :search for locations by name using LocationIQ's Autocomplete API.
     Get /api/routes/safe :fetch safe routes between two points, scored by AI for safety.
@@ -40,6 +43,7 @@ from dotenv import load_dotenv
 
 import langfuse_monitor
 import langfuse_prompts
+import langfuse_search_logs
 
 from typing import List, Optional
 from openai import AsyncOpenAI
@@ -320,6 +324,29 @@ def monitor_export(
         },
     )
 
+# ---------------------------------------------------------------------------
+# Admin — user route-search logs (read-only, sourced from Langfuse).
+# Powers SafePathAdminSearchLogsView.vue (replaces its hard-coded mock array).
+# ---------------------------------------------------------------------------
+@app.get("/api/admin/search-logs")
+def admin_search_logs(minutes: int = 1440, limit: int = 100):
+    """Recent user route searches, newest first (default: last 24h).
+
+    Each row: user (masked), start, destination, date, time, safetyScore,
+    status — the exact shape the admin "User Search Logs" table renders.
+    """
+    try:
+        return {
+            "logs": langfuse_search_logs.fetch_search_logs(
+                minutes=minutes, limit=limit
+            )
+        }
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+
 '''
 @app.get("/api/places")
 def search_places(query: str):
@@ -430,6 +457,80 @@ def search_places(query: str):
     return {"places": places}
 
 
+def log_route_search_trace(
+    *,
+    guest_id: str,
+    session_id: str,
+    start_name: str | None,
+    dest_name: str | None,
+    start_coords: str,
+    dest_coords: str,
+    route_suggestions: list[dict],
+    ai_ok: bool,
+    duration_s: float,
+) -> None:
+    """Record one route search as a Langfuse trace ("safepath-route-search").
+
+    Written directly from the backend with the Langfuse SDK, so tracing does
+    NOT depend on Langflow or the LiteLLM proxy forwarding anything. This is
+    the source the admin search-logs endpoint reads back. Best-effort: any
+    failure is logged and swallowed so a user's route request never breaks.
+    """
+    try:
+        client = langfuse_monitor.get_client()
+    except langfuse_monitor.LangfuseConfigError:
+        return  # credentials not configured — skip tracing silently
+
+    try:
+        start_label = start_name or start_coords
+        dest_label = dest_name or dest_coords
+        best_score = max(
+            (r.get("safetyScore", 0) for r in route_suggestions), default=0
+        )
+        trace_input = {"start": start_label, "destination": dest_label}
+        trace_metadata = {
+            "startName": start_name or "",
+            "destinationName": dest_name or "",
+            "start_coords": start_coords,
+            "destination_coords": dest_coords,
+        }
+        trace_output = {
+            "status": "Success" if route_suggestions else "Failed",
+            "aiScored": ai_ok,
+            "routeCount": len(route_suggestions),
+            "bestSafetyScore": best_score,
+            "durationSeconds": round(duration_s, 2),
+            "routes": [
+                {
+                    "id": r.get("id"),
+                    "safetyScore": r.get("safetyScore"),
+                    "distance": r.get("distance"),
+                    "duration": r.get("duration"),
+                    "summary": r.get("summary"),
+                    "breakdown": r.get("breakdown", []),
+                }
+                for r in route_suggestions
+            ],
+        }
+
+        with client.start_as_current_span(
+            name="safepath-route-search", input=trace_input
+        ) as span:
+            span.update_trace(
+                name="safepath-route-search",
+                user_id=guest_id,
+                session_id=session_id,
+                tags=["route-search"],
+                input=trace_input,
+                output=trace_output,
+                metadata=trace_metadata,
+            )
+        # No blocking flush() here: the SDK exports in the background so we
+        # don't stall the async request. Traces flush on interval / shutdown.
+    except Exception as exc:  # never let tracing break routing
+        print(f"[LANGFUSE] route-search trace failed: {exc}")
+
+
 @app.post("/api/routes/safe")
 async def get_safe_routes(req: RouteRequest):
     api_start = time.perf_counter()
@@ -527,6 +628,7 @@ async def get_safe_routes(req: RouteRequest):
         fallback=FALLBACK_ROUTE_PROMPT,
     )
     print("Prompt for AI scoring:\n", prompt)
+    print("Start Name:", req.startName, "Destination Name:", req.destinationName)
 
     langflow_payload = {
         "input_value": prompt,
@@ -547,8 +649,9 @@ async def get_safe_routes(req: RouteRequest):
     # ("chat_...") or with the user's other route requests — which is what
     # prevents the cross-flow / cross-request hallucination bleed.
     guest_id = req.user_id or req.session_id or f"guest_{uuid.uuid4()}"
-    langflow_payload["session_id"] = f"route_{guest_id}_{uuid.uuid4()}"
-    print("UserId:",guest_id)    
+    route_session_id = f"route_{guest_id}_{uuid.uuid4()}"
+    langflow_payload["session_id"] = route_session_id
+    print("UserId:",guest_id)
     # Setup headers, injecting API keys securely if available
     headers = {
         "Content-Type": "application/json"
@@ -656,6 +759,21 @@ async def get_safe_routes(req: RouteRequest):
         f"[TIME] TOTAL API: "
         f"{api_end - api_start:.2f} sec"
     )
+
+    # Trace this route search in Langfuse (best-effort; never breaks routing).
+    # This is the single source of truth for the admin "User Search Logs".
+    log_route_search_trace(
+        guest_id=guest_id,
+        session_id=route_session_id,
+        start_name=req.startName,
+        dest_name=req.destinationName,
+        start_coords=f"{s.lat:.5f}, {s.lng:.5f}",
+        dest_coords=f"{d.lat:.5f}, {d.lng:.5f}",
+        route_suggestions=route_suggestions,
+        ai_ok=bool(ai_routes),
+        duration_s=api_end - api_start,
+    )
+
     return {
         "route_suggestions": route_suggestions
     }
