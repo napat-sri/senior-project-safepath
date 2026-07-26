@@ -28,4 +28,9 @@ export const routeService = {
   safe: (payload) =>
     api.post('/routes/safe', payload),
 };
+// Admin: user route-search logs, sourced from Langfuse traces.
+// params: { minutes, limit } — both optional (backend defaults 1440 / 100).
+export const adminService = {
+  searchLogs: (params = {}) => api.get('/admin/search-logs', { params }),
+};
 export default api;
