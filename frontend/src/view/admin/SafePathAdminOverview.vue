@@ -3,23 +3,25 @@
         <v-main>
             <v-container fluid class="pa-4 pa-md-6">
                 <v-row class="mb-5">
-                    <v-col cols="12" sm="6" lg="3" v-for="item in overviewStats" :key="item.label">
-                        <v-card rounded="xl" elevation="0" max-height="100%">
-                            <v-card-text class="overview-stat-card__content">
-                                <v-avatar size="52" color="primary" variant="tonal">
-                                    <v-icon :icon="item.icon" size="24" />
-                                </v-avatar>
-                                <div>
-                                    <span class="text-medium-emphasis">{{ item.label }}</span>
-                                    <div class="overview-stat-card__value">{{ item.value }}</div>
-                                    <v-chip class="overview-stat-card__chip" size="small"
-                                        :color="item.trendType === 'positive' ? 'success' : item.trendType === 'warning' ? 'warning' : 'primary'"
-                                        variant="tonal">
-                                        {{ item.trend }}
-                                    </v-chip>
-                                </div>
-                            </v-card-text>
-                        </v-card>
+                    <v-col cols="12" sm="6" lg="4" v-for="item in overviewStats" :key="item.label">
+                        <v-col cols="12" md="6">
+                            <v-card rounded="lg" class="mx-auto" :subtitle=item.label>
+                                <template v-slot:prepend>
+                                    <v-avatar color="primary" size="24">
+                                        <v-icon :icon=item.icon size="16"></v-icon>
+                                    </v-avatar>
+                                </template>
+                                <v-card-text>
+                                    <div class="overview-stat-card__value">{{ item.value }}
+                                        <v-chip class="overview-stat-card__chip" size="small"
+                                            :color="item.trendType === 'positive' ? 'success' : item.trendType === 'error' ? 'error' : ''"
+                                            variant="tonal" rounded="lg" v-if="item.trend != ''">
+                                            {{ item.trend }}
+                                        </v-chip>
+                                    </div>
+                                </v-card-text>
+                            </v-card>
+                        </v-col>
                     </v-col>
                 </v-row>
 
@@ -89,30 +91,30 @@ const overviewStats = ref([
         label: 'Total Users',
         value: '1,248',
         icon: 'mdi-account-group',
-        trend: '+12 this week',
+        trend: '+12',
         trendType: 'positive'
     },
     {
         label: 'Route Searches',
         value: '8,920',
         icon: 'mdi-magnify',
-        trend: '+18% today',
+        trend: '+18%',
         trendType: 'positive'
     },
     {
         label: 'Incident Reports',
         value: '312',
         icon: 'mdi-alert-circle',
-        trend: '24 pending',
-        trendType: 'warning'
+        trend: '',
+        trendType: ''
     },
-    {
-        label: 'Top Search Place',
-        value: 'Alexanderplatz',
-        icon: 'mdi-map-marker',
-        trend: '842 searches',
-        trendType: 'neutral'
-    }
+    // {
+    //     label: 'Top Search Place',
+    //     value: 'Alexanderplatz',
+    //     icon: 'mdi-map-marker',
+    //     trend: '842 searches',
+    //     trendType: 'neutral'
+    // }
 ]);
 
 const mostSearchedPlaces = ref([
@@ -218,16 +220,16 @@ const exportReport = () => {
 }
 
 .overview-stat-card__value {
-    font-size: x-large;
+    font-size: xx-large;
     line-height: 1.05;
-    font-weight: 800;
+    font-weight: 700;
     word-break: break-word;
     margin-top: 5px;
 }
 
 .overview-stat-card__chip {
-    align-self: flex-start;
-    font-weight: 700;
-    margin-top: 10px;
+    /* align-self: flex-start; */
+    font-weight: 600;
+    margin-left: 10px;
 }
 </style>

@@ -18,6 +18,12 @@ Endpoints:
     
     Admin endpoints (read-only, sourced from Langfuse):
     Get /api/admin/search-logs :fetch user route-search logs for the admin table.
+    
+    Admin endpoints (Keycloak user management, Admin role required):
+    Get    /api/admin/users                 :list/search Keycloak users (paginated).
+    Post   /api/admin/users                 :create a new Keycloak user.
+    Put    /api/admin/users/{user_id}       :update a user's name/email/role/status.
+    Post   /api/admin/users/{user_id}/deactivate :disable a user's Keycloak account.
 
     SafePath routing endpoints:
     Get /api/places :search for locations by name using LocationIQ's Autocomplete API.
@@ -27,7 +33,7 @@ Endpoints:
 """
 
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from pydantic import BaseModel,Field
@@ -53,6 +59,9 @@ litellm_client = AsyncOpenAI(
     base_url=LITELLM_PROXY_URL,    
     api_key=LITELLM_VIRTUAL_KEY,  
 )
+
+import keycloak_admin
+from auth import require_admin
 
 
 load_dotenv()
@@ -345,6 +354,79 @@ def admin_search_logs(minutes: int = 1440, limit: int = 100):
         raise HTTPException(status_code=500, detail=str(exc))
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Admin — Keycloak user management (read/write).
+# Powers SafePathAdminUserManagement.vue (replaces its hard-coded mock array).
+# All four routes require the caller's token to carry the Admin realm role.
+# ---------------------------------------------------------------------------
+class UserWriteRequest(BaseModel):
+    name: str
+    email: str
+    role: str      # one of keycloak_admin.KNOWN_ROLES: "Admin" | "Member"
+
+@app.get("/api/admin/users")
+def admin_list_users(
+    search: str = "", first: int = 0, max: int = 20, _admin=Depends(require_admin)
+):
+    """One page of Keycloak users, matching `search` against name/username/email."""
+    try:
+        return keycloak_admin.fetch_users(search=search, first=first, max=max)
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
+
+
+@app.post("/api/admin/users")
+def admin_create_user(payload: UserWriteRequest, _admin=Depends(require_admin)):
+    """Create a Keycloak user (Add User button). Sets a random temp password
+    and forces a password reset on first login — see keycloak_admin.create_user."""
+    try:
+        return keycloak_admin.create_user(
+            name=payload.name, email=payload.email, role=payload.role
+        )
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
+
+
+@app.put("/api/admin/users/{user_id}")
+def admin_update_user(user_id: str, payload: UserWriteRequest, _admin=Depends(require_admin)):
+    try:
+        return keycloak_admin.update_user(
+            user_id, name=payload.name, email=payload.email, role=payload.role
+        )
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 404:
+            raise HTTPException(status_code=404, detail="User not found.")
+        raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
+
+
+@app.delete("/api/admin/users/{user_id}")
+def admin_delete_user(user_id: str, _admin=Depends(require_admin)):
+    """Permanently delete a Keycloak user (Delete button)."""
+    try:
+        keycloak_admin.delete_user(user_id)
+        return {"deleted": True}
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 404:
+            raise HTTPException(status_code=404, detail="User not found.")
+        raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
 
 
 '''

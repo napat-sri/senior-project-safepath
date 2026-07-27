@@ -5,14 +5,22 @@
                 <v-card id="search-logs" rounded="lg" elevation="2" class="mb-3">
                     <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
                         User Search Logs
-                        <v-text-field v-model="searchLogFilter" label="Filter search logs" density="compact"
-                            variant="outlined" hide-details prepend-inner-icon="mdi-magnify"
-                            style="max-width: 250px" />
+                        <div class="d-flex align-center ga-2">
+                            <v-text-field v-model="searchLogFilter" label="Filter search logs" density="compact"
+                                variant="outlined" hide-details prepend-inner-icon="mdi-magnify"
+                                style="max-width: 250px" />
+                            <v-btn icon="mdi-refresh" variant="text" :loading="logsLoading"
+                                aria-label="Refresh search logs" @click="loadSearchLogs" />
+                        </div>
                     </v-card-title>
                     <v-card-subtitle class="text-medium-emphasis mb-2">
                         Track route searches with safety score and status.
                     </v-card-subtitle>
+                    <v-progress-linear v-if="logsLoading" indeterminate color="primary" />
                     <v-card-text>
+                        <v-alert v-if="logsError" type="error" variant="tonal" density="compact" class="mb-3">
+                            {{ logsError }}
+                        </v-alert>
                         <v-data-table>
                             <thead>
                                 <tr>
@@ -26,6 +34,11 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="!logsLoading && filteredSearchLogs.length === 0">
+                                    <td colspan="7" class="text-center text-medium-emphasis py-6">
+                                        {{ logsError ? 'No logs to show.' : 'No route searches yet.' }}
+                                    </td>
+                                </tr>
                                 <tr v-for="log in filteredSearchLogs" :key="log.id">
                                     <td>
                                         <div class="d-flex align-center ga-2">
@@ -81,9 +94,10 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import SafePathNavDrawer from '../../components/SafePathNavDrawer.vue';
+import { adminService } from '../../services/api';
 
 const router = useRouter();
 
@@ -106,56 +120,29 @@ const items = [
     'User Managemant',
 ]
 
-const searchLogs = ref([
-    {
-        id: 1,
-        user: 'Nora Klein',
-        userInitial: 'N',
-        email: 'n***@gmail.com',
-        start: 'Alexanderplatz',
-        destination: 'Berlin Hbf',
-        date: '2026-06-24',
-        time: '18:42',
-        safetyScore: 82,
-        status: 'Success'
-    },
-    {
-        id: 2,
-        user: 'Emre Yilmaz',
-        userInitial: 'E',
-        email: 'e***@outlook.com',
-        start: 'Kottbusser Tor',
-        destination: 'Hermannplatz',
-        date: '2026-06-24',
-        time: '21:18',
-        safetyScore: 61,
-        status: 'Success'
-    },
-    {
-        id: 3,
-        user: 'SafePath User',
-        userInitial: 'S',
-        email: 's***@example.com',
-        start: 'Warschauer Straße',
-        destination: 'Ostkreuz',
-        date: '2026-06-24',
-        time: '22:05',
-        safetyScore: 54,
-        status: 'Success'
-    },
-    {
-        id: 4,
-        user: 'Lina Weber',
-        userInitial: 'L',
-        email: 'l***@icloud.com',
-        start: 'Potsdamer Platz',
-        destination: 'Brandenburg Gate',
-        date: '2026-06-23',
-        time: '17:36',
-        safetyScore: 91,
-        status: 'Success'
+// Real route-search logs, fetched from the backend (Langfuse-sourced).
+const searchLogs = ref([]);
+const logsLoading = ref(false);
+const logsError = ref('');
+
+const loadSearchLogs = async () => {
+    logsLoading.value = true;
+    logsError.value = '';
+
+    try {
+        const { data } = await adminService.searchLogs();
+        searchLogs.value = data.logs ?? [];
+    } catch (err) {
+        logsError.value =
+            err.response?.data?.detail ||
+            'Could not load search logs. Please try again.';
+        searchLogs.value = [];
+    } finally {
+        logsLoading.value = false;
     }
-]);
+};
+
+onMounted(loadSearchLogs);
 
 const users = ref([
     {

@@ -40,3 +40,22 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_
     except JWTError as exc:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, f"Invalid token: {exc}",
                             headers={"WWW-Authenticate": "Bearer"})
+
+
+def require_admin(user: dict = Depends(get_current_user)) -> dict:
+    """FastAPI dependency: 403s unless the caller's token has the Admin realm role.
+
+    Chains off get_current_user, so a request first proves it's a *valid,
+    signed* Keycloak token (get_current_user), then this checks *which* roles
+    that token carries. Mirrors the frontend's own
+    `keycloak.hasRealmRole('Admin')` check (SafePathNavDrawer.vue,
+    router/index.js) — but done server-side, where it can't be bypassed by
+    calling the API directly instead of going through the Vue app.
+    """
+    roles = user.get("realm_access", {}).get("roles", [])
+    if "Admin" not in roles:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Admin role required.",
+        )
+    return user
