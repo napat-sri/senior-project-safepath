@@ -32,5 +32,10 @@ export const routeService = {
 // params: { minutes, limit } — both optional (backend defaults 1440 / 100).
 export const adminService = {
   searchLogs: (params = {}) => api.get('/admin/search-logs', { params }),
+
+  listUsers: (params = {}) => api.get('/admin/users', { params }),
+  createUser: (payload) => api.post('/admin/users', payload),
+  updateUser: (id, payload) => api.put(`/admin/users/${id}`, payload),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
 };
 export default api;

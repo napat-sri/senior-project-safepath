@@ -124,7 +124,9 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     ports:
-      - "8090:8080"                         # 8081 is taken by openstreetmap; use 8090
+      - "8090:8080"
+    networks:
+      - langflow-net                         # 8081 is taken by openstreetmap; use 8090
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import:ro   # optional auto-import (D4)
       - keycloak_data:/opt/keycloak/data
