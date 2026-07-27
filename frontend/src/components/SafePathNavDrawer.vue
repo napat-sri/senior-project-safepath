@@ -132,7 +132,7 @@ const navItems = computed(() => {
     );
   }
   if (isAdmin.value) {
-    list.push({ title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' });
+    list.push({ title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/overview' });
   }
   return list;
 });

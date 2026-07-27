@@ -7,8 +7,6 @@
             <v-list-item title="Incidents" prepend-icon="mdi-alert-circle" @click="scrollToSection('incidents')" />
             <v-list-item title="Location Insights" prepend-icon="mdi-map-marker"
                 @click="scrollToSection('locations')" /> -->
-            <v-divider class="my-2" />
-            <v-list-item title="User App" prepend-icon="mdi-map" @click="goToHome" />
         </SafePathNavDrawer>
 
         <v-main>
@@ -114,9 +112,10 @@ import SafePathAdminUserManagement from '../admin/SafePathAdminUserManagement.vu
 const router = useRouter();
 
 const adminMenu = [
-    { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/overview' },
+    { title: 'User App ', icon: 'mdi-map', to: '/home' },
     { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-    { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
+    { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' },
+    { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/overview' },
 ];
 
 const searchLogFilter = ref('');
