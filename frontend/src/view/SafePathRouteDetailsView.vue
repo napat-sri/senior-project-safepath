@@ -24,8 +24,8 @@
                                     {{ selectedRoute.name }}
                                 </v-chip>
                             </div>
-                            <v-card-text class="text-body-1 text-medium-emphasis mb-2">{{ selectedRoute.summary
-                                }}</v-card-text>
+                            <v-card-text class="text-body-large text-medium-emphasis mb-2">{{ selectedRoute.summary
+                            }}</v-card-text>
                         </v-card-text>
                     </v-card>
                 </v-col>
@@ -50,38 +50,44 @@
                         <v-card-title>Route Information</v-card-title>
                         <v-card-text>
                             <v-list lines="two">
-                                <div class="d-flex justify-space-between align-center mb-2">
-                                    <v-list-item title="Distance covered" :subtitle="selectedRoute.distance">
-                                        <template v-slot:prepend>
-                                            <v-avatar color="grey-lighten-1">
-                                                <v-icon color="white">mdi-road-variant</v-icon>
-                                            </v-avatar>
-                                        </template>
-                                    </v-list-item>
-                                    <v-list-item title="Estimated duration" :subtitle="selectedRoute.duration">
-                                        <template v-slot:prepend>
-                                            <v-avatar color="grey-lighten-1">
-                                                <v-icon color="white">mdi-clock-outline</v-icon>
-                                            </v-avatar>
-                                        </template>
-                                    </v-list-item>
-                                    <v-list-item title="Route type" :subtitle="selectedRoute.routeType">
-                                        <template v-slot:prepend>
-                                            <v-avatar color="grey-lighten-1">
-                                                <v-icon color="white">mdi-train-car</v-icon>
-                                            </v-avatar>
-                                        </template>
-                                    </v-list-item>
-                                </div>
-                                <div class="d-flex justify-space-between align-center">
-                                    <v-list-item title="Journey" :subtitle="displayJourney">
-                                        <template v-slot:prepend>
-                                            <v-avatar color="grey-lighten-1">
-                                                <v-icon color="white">mdi-map-marker-distance</v-icon>
-                                            </v-avatar>
-                                        </template>
-                                    </v-list-item>
-                                </div>
+                                <v-row>
+                                    <v-col cols="12" md="5">
+                                        <v-list-item title="Distance covered" :subtitle="selectedRoute.distance">
+                                            <template v-slot:prepend>
+                                                <v-avatar color="grey-lighten-1">
+                                                    <v-icon color="white">mdi-road-variant</v-icon>
+                                                </v-avatar>
+                                            </template>
+                                        </v-list-item>
+                                    </v-col>
+                                    <v-col cols="12" md="7">
+                                        <v-list-item title="Estimated duration" :subtitle="selectedRoute.duration">
+                                            <template v-slot:prepend>
+                                                <v-avatar color="grey-lighten-1">
+                                                    <v-icon color="white">mdi-clock-outline</v-icon>
+                                                </v-avatar>
+                                            </template>
+                                        </v-list-item>
+                                    </v-col>
+                                    <v-col cols="12" md="5">
+                                        <v-list-item title="Route type" :subtitle="selectedRoute.routeType">
+                                            <template v-slot:prepend>
+                                                <v-avatar color="grey-lighten-1">
+                                                    <v-icon color="white">mdi-train-car</v-icon>
+                                                </v-avatar>
+                                            </template>
+                                        </v-list-item>
+                                    </v-col>
+                                    <v-col cols="12" md="7">
+                                        <v-list-item title="Journey" :subtitle="displayJourney">
+                                            <template v-slot:prepend>
+                                                <v-avatar color="grey-lighten-1">
+                                                    <v-icon color="white">mdi-map-marker-distance</v-icon>
+                                                </v-avatar>
+                                            </template>
+                                        </v-list-item>
+                                    </v-col>
+                                </v-row>
                             </v-list>
                         </v-card-text>
                     </v-card>
