@@ -96,7 +96,7 @@
                                     <span>{{ item.score }}/100</span>
                                 </div>
                                 <v-progress-linear :model-value="item.score"
-                                    :color="selectedRoute.accentColor || getSafetyTone(selectedRoute.safetyScore).color"
+                                    :color="getSafetyTone(item.score).color"
                                     height="8" rounded />
                             </div>
                         </v-card-text>
