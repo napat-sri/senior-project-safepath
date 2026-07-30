@@ -32,27 +32,25 @@ Endpoints:
 
 """
 
-import httpx
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
-from pydantic import BaseModel,Field
 import csv
 import io
 import json
+import os
 import time
 import uuid
 from datetime import datetime, timezone
 
-import os
-from dotenv import load_dotenv
-
+import httpx
 import langfuse_monitor
 import langfuse_prompts
 import langfuse_search_logs
-
-from typing import List, Optional
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from openai import AsyncOpenAI
+from pydantic import BaseModel, Field
+
 LITELLM_PROXY_URL = os.getenv("LITELLM_PROXY_URL")# default for local dev
 LITELLM_VIRTUAL_KEY = os.getenv("LITELLM_VIRTUAL_KEY")# default for local dev
 litellm_client = AsyncOpenAI(
@@ -62,7 +60,6 @@ litellm_client = AsyncOpenAI(
 
 import keycloak_admin
 from auth import require_admin
-
 
 load_dotenv()
 
@@ -167,17 +164,17 @@ class BreakdownItem(BaseModel):
 
 class AIRoute(BaseModel):
     id: str
-    name: Optional[str] = None
+    name: str | None = None
     routeType: str = "driving"
     safetyScore: int = Field(ge=0, le=100)
     summary: str = "No analysis available."
     accentColor: str = "#F59E0B"
-    breakdown: List[BreakdownItem] = []
+    breakdown: list[BreakdownItem] = []
 
 # DeepSeek JSON mode requires the root to be an OBJECT, not a bare array,
 # so wrap the list in a key.
 class AIRouteList(BaseModel):
-    routes: List[AIRoute]
+    routes: list[AIRoute]
     
 @app.get("/")
 def root():
@@ -207,7 +204,7 @@ def monitor_health():
         return langfuse_monitor.ping()
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse unreachable: {exc}")
 
 
@@ -225,7 +222,7 @@ def monitor_traces(minutes: int = 60, limit: int = 50, include_io: bool = False)
         }
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
 
@@ -236,7 +233,7 @@ def monitor_trace_detail(trace_id: str):
         return langfuse_monitor.fetch_trace_detail(trace_id)
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
 
@@ -257,7 +254,7 @@ def monitor_alerts(
         )
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
 
@@ -268,7 +265,7 @@ def monitor_stats(minutes: int = 1440, limit: int = 500):
         return langfuse_monitor.build_stats(minutes=minutes, limit=limit)
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
 @app.get("/api/monitor/export")
@@ -295,7 +292,7 @@ def monitor_export(
         )
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
@@ -352,7 +349,7 @@ def admin_search_logs(minutes: int = 1440, limit: int = 100):
         }
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
 
@@ -368,7 +365,7 @@ class UserWriteRequest(BaseModel):
 
 @app.get("/api/admin/users")
 def admin_list_users(
-    search: str = "", first: int = 0, max: int = 20, _admin=Depends(require_admin)
+    search: str = "", first: int = 0, max: int = 20, _admin=Depends(require_admin)  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
 ):
     """One page of Keycloak users, matching `search` against name/username/email."""
     try:
@@ -382,7 +379,7 @@ def admin_list_users(
 
 
 @app.post("/api/admin/users")
-def admin_create_user(payload: UserWriteRequest, _admin=Depends(require_admin)):
+def admin_create_user(payload: UserWriteRequest, _admin=Depends(require_admin)):  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
     """Create a Keycloak user (Add User button). Sets a random temp password
     and forces a password reset on first login — see keycloak_admin.create_user."""
     try:
@@ -398,7 +395,7 @@ def admin_create_user(payload: UserWriteRequest, _admin=Depends(require_admin)):
 
 
 @app.put("/api/admin/users/{user_id}")
-def admin_update_user(user_id: str, payload: UserWriteRequest, _admin=Depends(require_admin)):
+def admin_update_user(user_id: str, payload: UserWriteRequest, _admin=Depends(require_admin)):  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
     try:
         return keycloak_admin.update_user(
             user_id, name=payload.name, email=payload.email, role=payload.role
@@ -414,7 +411,7 @@ def admin_update_user(user_id: str, payload: UserWriteRequest, _admin=Depends(re
 
 
 @app.delete("/api/admin/users/{user_id}")
-def admin_delete_user(user_id: str, _admin=Depends(require_admin)):
+def admin_delete_user(user_id: str, _admin=Depends(require_admin)):  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
     """Permanently delete a Keycloak user (Delete button)."""
     try:
         keycloak_admin.delete_user(user_id)
@@ -609,7 +606,7 @@ def log_route_search_trace(
             )
         # No blocking flush() here: the SDK exports in the background so we
         # don't stall the async request. Traces flush on interval / shutdown.
-    except Exception as exc:  # never let tracing break routing
+    except Exception as exc:  # noqa: BLE001 -- never let tracing break routing
         print(f"[LANGFUSE] route-search trace failed: {exc}")
 
 
@@ -891,7 +888,7 @@ async def score_routes_with_ai(prompt: str) -> list[dict]:
         try:
             parsed = AIRouteList.model_validate_json(content)
             return [r.model_dump() for r in parsed.routes]
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
             last_err = str(e)
             messages.append({"role": "assistant", "content": content})
             messages.append({"role": "user",
