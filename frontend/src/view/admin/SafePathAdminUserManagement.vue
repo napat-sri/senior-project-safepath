@@ -7,13 +7,14 @@
                         User Management
                         <div class="d-flex align-center ga-2">
                             <v-text-field v-model="userSearch" label="Search by name or email" variant="outlined"
-                                density="compact" prepend-inner-icon="mdi-magnify" hide-details style="width: 300px" />
+                                density="compact" prepend-inner-icon="mdi-magnify" hide-details style="width: 300px"
+                                name="admin-user-search" autocomplete="off" clearable />
                             <v-btn variant="outlined" color="primary" @click="openUserModal()"
                                 prepend-icon="mdi-account-plus">
                                 Add User
                             </v-btn>
-                            <v-btn icon="mdi-refresh" variant="text" :loading="usersLoading"
-                                aria-label="Refresh user" @click="fetchUsers" />
+                            <v-btn icon="mdi-refresh" variant="text" :loading="usersLoading" aria-label="Refresh user"
+                                @click="fetchUsers" />
                         </div>
                     </v-card-title>
                     <v-card-subtitle class="text-medium-emphasis mb-2">
@@ -66,7 +67,8 @@
                                             <v-tooltip text="Delete">
                                                 <template v-slot:activator="{ props }">
                                                     <v-btn size="small" variant="text" color="error" v-bind="props"
-                                                        @click="deactivateUser(user.id)" icon="mdi-delete"></v-btn>
+                                                        @click="openDeleteUserModal(user)" icon="mdi-delete"></v-btn>
+                                                    <!-- @click="deleteUser(user.id)" icon="mdi-delete"></v-btn> -->
                                                 </template>
                                             </v-tooltip>
                                         </div>
@@ -101,6 +103,33 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+
+    <v-dialog v-model="showDeleteUserModal" max-width="500">
+        <v-card rounded="lg" color="error">
+            <template v-slot:title>
+                <span class="font-weight-black">Delete account?</span>
+            </template>
+            <v-card-text class="bg-surface-light pt-1">
+                <p class="text-emphasis mb-2">Are you sure you want to delete "<b>{{ userToDelete?.name }}</b>"?</p>
+                <p class="text-medium-emphasis mb-2">This action cannot be undone.</p>
+            </v-card-text>
+            <v-card-actions class="bg-surface-light">
+                <v-spacer />
+                <v-btn variant="text" @click="closeDeleteUserModal">Cancel</v-btn>
+                <v-btn color="error" @click="deleteUser">
+                    Delete
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000" timer="top" location="bottom"
+        prepend-icon="mdi-check-circle">
+        {{ snackbar.text }}
+        <template v-slot:actions>
+            <v-btn variant="text" @click="snackbar.show = false">Close</v-btn>
+        </template>
+    </v-snackbar>
 </template>
 
 <script setup>
@@ -122,6 +151,17 @@ const searchLogFilter = ref('');
 const incidentStatusFilter = ref('All');
 const showUserModal = ref(false);
 const selectedUser = ref(null);
+const showDeleteUserModal = ref(false);
+const userToDelete = ref(null);
+const snackbar = ref({
+    show: false,
+    text: '',
+    color: 'success',
+});
+
+const notify = (text, color = 'success') => {
+    snackbar.value = { show: true, text, color };
+};
 
 const tab = ref('Overview')
 
@@ -208,10 +248,11 @@ const saveUser = async () => {
     usersError.value = null;
     try {
         if (selectedUser.value) {
-            // console.log(selectedUser)
             await adminService.updateUser(selectedUser.value.id, { ...userForm.value });
+            notify(`User "${userForm.value.name}" updated.`);        // <-- edit success
         } else {
             await adminService.createUser({ ...userForm.value });
+            notify(`User "${userForm.value.name}" added.`);          // <-- add success
         }
         closeUserModal();
         await fetchUsers();
@@ -220,14 +261,25 @@ const saveUser = async () => {
     }
 };
 
-const deleteUser = async (userId) => {
-    if (!window.confirm('Permanently delete this user? This cannot be undone.')) {
-        return;
-    }
+const openDeleteUserModal = (user) => {
+    userToDelete.value = user;
+    showDeleteUserModal.value = true;
+};
+
+const closeDeleteUserModal = () => {
+    showDeleteUserModal.value = false;
+    userToDelete.value = null;
+};
+
+const deleteUser = async () => {
+    if (!userToDelete.value) return;
     usersError.value = null;
     try {
-        await adminService.deleteUser(userId);
+        const name = userToDelete.value.name;
+        await adminService.deleteUser(userToDelete.value.id);
+        closeDeleteUserModal();
         await fetchUsers();
+        notify(`User "${name}" deleted.`, 'success');                // <-- delete success
     } catch (err) {
         usersError.value = err.response?.data?.detail || 'Failed to delete user.';
     }
