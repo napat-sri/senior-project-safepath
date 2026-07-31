@@ -941,7 +941,6 @@ class IncidentCreate(BaseModel):
     date: str          # "YYYY-MM-DD"
     time: str          # "HH:MM"
     details: str
-    evidence: List[str] = []
 
 class IncidentOut(BaseModel):
     id: int
@@ -953,7 +952,6 @@ class IncidentOut(BaseModel):
     date: str
     time: str
     details: str
-    evidence: List[str]
     submittedBy: str | None
     createdAt: str
 
@@ -963,7 +961,7 @@ class IncidentOut(BaseModel):
             id=r.id, reporterName=r.reporter_name, incidentType=r.incident_type,
             location=r.location, latitude=r.latitude, longitude=r.longitude,
             date=r.incident_date.isoformat(), time=r.incident_time,
-            details=r.details, evidence=r.evidence or [],
+            details=r.details,
             submittedBy=r.submitted_by, createdAt=r.created_at.isoformat(),
         )
 
@@ -983,7 +981,6 @@ def create_incident(
         incident_date=date.fromisoformat(payload.date),
         incident_time=payload.time,
         details=payload.details,
-        evidence=payload.evidence,
         submitted_by=(user.get("email") or user.get("preferred_username") or user.get("sub")),
     )
     db.add(row)
