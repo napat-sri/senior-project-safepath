@@ -80,3 +80,28 @@ docker compose up --build
 If you do not need the tile server locally, skip the import step — the rest of the stack will run without it.
 
 The frontend runs on port 8080, the backend on port 9000, Langflow on port 7860, and the tile server on port 8081.
+
+### First-time walking-route data build (osrm-foot)
+
+Walking directions (`travelMode: "walking"`) are served by a self-hosted OSRM
+instance, not the public demo server — the public server only has a driving
+dataset (its `/foot/` path silently returns driving-speed results instead of
+erroring). This also needs a one-time data build on a fresh machine, using
+`docker-compose.dev.yml`:
+
+```bash
+# Run once only on first setup, IN ORDER — downloads Berlin's .osm.pbf, then
+# builds the OSRM foot-profile dataset from it. Takes a few minutes total.
+docker compose -f docker-compose.dev.yml --profile setup run --rm osrm-foot-download
+docker compose -f docker-compose.dev.yml --profile setup run --rm osrm-foot-import
+```
+
+(Two separate steps because the `osrm/osrm-backend` image itself is built on
+an EOL Debian release with dead apt mirrors, so it can't reliably install a
+downloader — the small Alpine-based `osrm-foot-download` step fetches the
+file into the shared volume instead.)
+
+After it completes, start the stack as normal and `travelMode: "walking"`
+requests to `/api/routes/safe` will route through `osrm-foot`. If you skip
+this step, walking requests will fail to reach OSRM until it's run — driving
+requests are unaffected either way.

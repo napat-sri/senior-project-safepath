@@ -43,6 +43,14 @@
                                 <v-alert v-if="searchError" type="error" variant="tonal" density="compact" class="mb-3">
                                     {{ searchError }}
                                 </v-alert>
+                                <div class="mb-3">
+                                    <div class="text-caption text-medium-emphasis mb-1">Travel mode</div>
+                                    <v-btn-toggle v-model="travelMode" mandatory color="primary"
+                                        density="comfortable" variant="outlined" divided>
+                                        <v-btn value="walking" prepend-icon="mdi-walk">Walking</v-btn>
+                                        <v-btn value="driving" prepend-icon="mdi-car">Driving</v-btn>
+                                    </v-btn-toggle>
+                                </div>
                                 <div class="d-flex ga-2">
                                     <v-btn color="primary" type="submit" :loading="searchLoading">Search Safe
                                         Route</v-btn>
@@ -164,6 +172,7 @@ const map = ref(null);
 const routeOverlay = ref(null);
 const startLocation = ref('');
 const destination = ref('');
+const travelMode = ref('walking'); // 'walking' or 'driving' — sent to /api/routes/safe
 const startTouched = ref(false);
 const destinationTouched = ref(false);
 const startFocused = ref(false);
@@ -280,6 +289,7 @@ async function fetchSafeRoute() {
             destination: { lat: destCoords.lat, lng: destCoords.lng },
             startName: startLocation.value,
             destinationName: destination.value,
+            travelMode: travelMode.value,
             // Anonymous guest tracking for Langfuse (until real auth exists).
             ...getIdentity(),
         };
@@ -396,6 +406,7 @@ function searchClear() {
     searchError.value = '';
     startLocation.value = '';
     destination.value = '';
+    travelMode.value = 'walking';
     routes.value = [];
     selectedStartPlace.value = null;
     selectedDestinationPlace.value = null;
