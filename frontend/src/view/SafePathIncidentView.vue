@@ -88,18 +88,20 @@
                             <v-alert v-if="!reports.length" type="info" variant="tonal">No reports submitted
                                 yet.</v-alert>
 
-                            <v-card v-for="report in reports" :key="report.id" variant="outlined" class="mb-3"
-                                rounded="lg">
+                            <v-card v-for="report in paginatedReports" :key="report.id" variant="outlined"
+                                class="mb-2" rounded="lg">
                                 <v-card-text>
                                     <div class="d-flex justify-space-between align-start">
                                         <div>
-                                            <v-chip size="small" variant="tonal">{{ report.incidentType }}</v-chip>
+                                            <v-chip :color="incidentTypeColor(report.incidentType)" size="small"
+                                                variant="tonal" label>
+                                                {{ report.incidentType }}
+                                            </v-chip>
                                             <h4 class="text-h6">{{ report.location }}</h4>
                                         </div>
-                                        <!-- <v-chip size="small" color="warning" variant="tonal">Pending Review</v-chip> -->
                                     </div>
 
-                                    <div class="d-flex justify-space-between text-caption text-medium-emphasis mb-2">
+                                    <div class="d-flex justify-space-between text-caption text-medium-emphasis mb-1">
                                         <span>{{ report.reporterName || 'Anonymous' }}</span>
                                         <span>{{ formatDateTime(report.date, report.time) }}</span>
                                     </div>
@@ -107,6 +109,9 @@
                                     <p class="text-body-2">{{ report.details }}</p>
                                 </v-card-text>
                             </v-card>
+                            <div class="text-center">
+                                <v-pagination v-model="page" :length="pageCount":total-visible="5"></v-pagination>
+                            </div>
                         </v-card-text>
                     </v-card>
                 </v-col>
@@ -116,10 +121,23 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch, computed } from 'vue';
-import { placeService } from '../services/api';
+import { reactive, ref, watch, computed, onMounted } from 'vue';
+import { placeService, incidentService } from '../services/api';
 import SafePathNavDrawer from '../components/SafePathNavDrawer.vue';
 import { validateBerlinLocation } from '../data/routeAnalysis';
+import { incidentTypeColor } from '../data/incidentTypes.js'
+
+const reports = ref([]);      // was a 2-item mock array — start empty, load from API
+
+const loadRecent = async () => {
+    try {
+        const { data } = await incidentService.recent({ limit: 10 });
+        reports.value = data.incidents || [];
+    } catch (e) {
+        reports.value = [];
+    }
+};
+onMounted(loadRecent);
 
 const reportLocation = ref('');
 const startSuggestions = ref([]);
@@ -132,7 +150,15 @@ const startError = computed(() => {
     if (!hasSearched.value) return '';
     return validateBerlinLocation(reportLocation.value);
 });
+const page = ref(1)
+const itemsPerPage = 2
 
+const pageCount = computed(() => Math.ceil(reports.value.length / itemsPerPage))
+
+const paginatedReports = computed(() => {
+  const start = (page.value - 1) * itemsPerPage
+  return reports.value.slice(start, start + itemsPerPage)
+});
 const suggestionCache = {};
 async function fetchSuggestions(query) {
     if (!query || query.trim().length < 3) return [];
@@ -211,7 +237,7 @@ const form = reactive({
 });
 
 watch(reportLocation, (value) => {
-  form.location = value;
+    form.location = value;
 }, { immediate: true });
 
 const incidentTypes = [
@@ -222,29 +248,6 @@ const incidentTypes = [
     'Transport issue',
     'Other'
 ];
-
-const reports = ref([
-    {
-        id: 1,
-        reporterName: 'Anonymous',
-        incidentType: 'Unsafe area',
-        location: 'Kottbusser Tor, Berlin',
-        date: '2026-06-25',
-        time: '21:30',
-        details: 'Poor lighting and uncomfortable crowding near the station entrance.',
-        evidence: ['area-photo.jpg']
-    },
-    {
-        id: 2,
-        reporterName: 'M. P.',
-        incidentType: 'Suspicious activity',
-        location: 'Alexanderplatz, Berlin',
-        date: '2026-06-24',
-        time: '18:15',
-        details: 'A user reported repeated suspicious behavior near the tram stop.',
-        evidence: []
-    }
-]);
 
 const handleEvidenceUpload = (files) => {
     const selected = Array.isArray(files) ? files : [];
@@ -265,35 +268,41 @@ const validateForm = () => {
     );
 };
 
-const submitReport = () => {
+const submitReport = async () => {
     hasSearched.value = true;
-    // searchError.value = '';
     submitMessage.value = '';
+    if (!validateForm()) return;
 
-    if (!validateForm()) {
-        return;
+    try {
+        await incidentService.create({
+            reporterName: form.reporterName.trim() || 'Anonymous',
+            incidentType: form.incidentType,
+            location: form.location.trim(),
+            latitude: selectedStartPlace.value?.lat ?? null,
+            longitude: selectedStartPlace.value?.lng ?? null,
+            date: form.date,
+            time: form.time,
+            details: form.details.trim(),
+            evidence: [...form.evidence],
+        });
+
+        // reset the form (same fields as today)
+        form.reporterName = '';
+        form.incidentType = '';
+        form.location = '';
+        form.date = '';
+        form.time = '';
+        form.details = '';
+        form.evidence = [];
+        reportLocation.value = '';
+        selectedStartPlace.value = null;
+
+        submitMessage.value = 'Incident report submitted successfully.';
+        await loadRecent();               // refresh the panel from the DB
+    } catch (err) {
+        submitMessage.value = '';
+        // optionally surface err.response?.data?.detail in an error alert
     }
-
-    reports.value.unshift({
-        id: Date.now(),
-        reporterName: form.reporterName.trim() || 'Anonymous',
-        incidentType: form.incidentType,
-        location: form.location.trim(),
-        date: form.date,
-        time: form.time,
-        details: form.details.trim(),
-        evidence: [...form.evidence]
-    });
-
-    form.reporterName = '';
-    form.incidentType = '';
-    form.location = '';
-    form.date = '';
-    form.time = '';
-    form.details = '';
-    form.evidence = [];
-
-    submitMessage.value = 'Incident report submitted successfully.';
 };
 
 const formatDateTime = (date, time) => {

@@ -39,3 +39,10 @@ export const adminService = {
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
 };
 export default api;
+
+// Incident reports. create/recent are public; listAdmin/updateStatus require Admin.
+export const incidentService = {
+  create: (payload) => api.post('/incidents', payload),
+  recent: (params = {}) => api.get('/incidents/recent', { params }),
+  listAdmin: (params = {}) => api.get('/admin/incidents', { params }),
+};
