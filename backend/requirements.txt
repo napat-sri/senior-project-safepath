@@ -11,3 +11,13 @@ python-jose[cryptography]
 # Database dependencies
 sqlalchemy>=2.0,<2.1
 psycopg[binary]>=3.1
+
+# safepath-mcp service dependencies (same image, different command — see docker-compose.dev.yml)
+# Pinned below 2.0: mcp 2.0.0 renamed FastMCP -> MCPServer and moved it to
+# mcp.server.mcpserver (dropping mcp.server.fastmcp + the host/port/transport_security
+# constructor args our mcp_server.py relies on). Revisit this pin if/when we migrate.
+mcp[cli]>=1.27,<2.0
+shapely
+openpyxl
+pyproj
+cachetools

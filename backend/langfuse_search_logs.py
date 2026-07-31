@@ -32,7 +32,7 @@ from datetime import datetime
 from typing import Any
 
 # Reuse the single cached client + window helper + trace-url builder.
-from langfuse_monitor import get_client, _window_start, _trace_url
+from langfuse_monitor import _trace_url, _window_start, get_client
 
 # Traces the route flow stamps with this tag are definitely route searches.
 ROUTE_TAG = "route-search"
