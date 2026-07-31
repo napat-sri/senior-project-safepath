@@ -7,3 +7,7 @@ langfuse>=3,<4
 
 # Authentication dependencies.
 python-jose[cryptography]
+
+# Database dependencies
+sqlalchemy>=2.0,<2.1
+psycopg[binary]>=3.1

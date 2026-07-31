@@ -141,8 +141,8 @@ services:
       POSTGRES_USER: langflow
       POSTGRES_PASSWORD: langflow
       POSTGRES_DB: langflow
-    # ports:
-      # - "5432:5432"
+    ports:
+      - "5432:5432"
     networks:
       - langflow-net
 

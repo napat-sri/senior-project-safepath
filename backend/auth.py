@@ -59,3 +59,17 @@ def require_admin(user: dict = Depends(get_current_user)) -> dict:
             "Admin role required.",
         )
     return user
+
+def require_member(user: dict = Depends(get_current_user)) -> dict:
+    """FastAPI dependency: 403s unless the caller has the Member OR Admin realm role.
+
+    Same pattern as require_admin, but for endpoints usable by regular members
+    too. Chains off get_current_user, so the token is first verified/signed.
+    """
+    roles = user.get("realm_access", {}).get("roles", [])
+    if not ({"Member", "Admin"} & set(roles)):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Member or Admin role required.",
+        )
+    return user

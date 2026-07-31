@@ -44,6 +44,9 @@
                     <v-tabs-window-item value="Search Logs">
                         <SafePathAdminSearchLogs />
                     </v-tabs-window-item>
+                    <v-tabs-window-item value="Incident Logs">
+                        <SafePathAdminIncidentLogs />
+                    </v-tabs-window-item>
                     <v-tabs-window-item value="User Management">
                         <SafePathAdminUserManagement />
                     </v-tabs-window-item>
@@ -107,6 +110,7 @@ import { useRouter } from 'vue-router';
 import SafePathNavDrawer from '../../components/SafePathNavDrawer.vue';
 import SafePathAdminOverview from '../admin/SafePathAdminOverview.vue';
 import SafePathAdminSearchLogs from '../admin/SafePathAdminSearchLogsView.vue';
+import SafePathAdminIncidentLogs from '../admin/SafePathAdminIncidentLogsView.vue';
 import SafePathAdminUserManagement from '../admin/SafePathAdminUserManagement.vue';
 
 const router = useRouter();
@@ -128,6 +132,7 @@ const tab = ref('Overview')
 const items = [
     'Overview',
     'Search Logs',
+    'Incident Logs',
     'User Management',
 ];
 

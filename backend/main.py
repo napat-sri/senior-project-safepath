@@ -61,8 +61,11 @@ litellm_client = AsyncOpenAI(
 )
 
 import keycloak_admin
-from auth import require_admin
-
+from datetime import date
+from sqlalchemy import select, desc
+from sqlalchemy.orm import Session
+from database import IncidentReport, init_db, get_db
+from auth import require_admin, require_member
 
 load_dotenv()
 
@@ -902,3 +905,91 @@ async def score_routes_with_ai(prompt: str) -> list[dict]:
     print("AI scoring failed:", last_err)
     print("Message:", messages)
     return []  # your existing fallback block then takes over
+
+@app.on_event("startup")
+def _startup() -> None:
+    init_db()
+
+class IncidentCreate(BaseModel):
+    reporterName: str | None = None
+    incidentType: str
+    location: str
+    latitude: float | None = None
+    longitude: float | None = None
+    date: str          # "YYYY-MM-DD"
+    time: str          # "HH:MM"
+    details: str
+    evidence: List[str] = []
+
+class IncidentOut(BaseModel):
+    id: int
+    reporterName: str | None
+    incidentType: str
+    location: str
+    latitude: float | None
+    longitude: float | None
+    date: str
+    time: str
+    details: str
+    evidence: List[str]
+    submittedBy: str | None
+    createdAt: str
+
+    @staticmethod
+    def from_row(r: IncidentReport) -> "IncidentOut":
+        return IncidentOut(
+            id=r.id, reporterName=r.reporter_name, incidentType=r.incident_type,
+            location=r.location, latitude=r.latitude, longitude=r.longitude,
+            date=r.incident_date.isoformat(), time=r.incident_time,
+            details=r.details, evidence=r.evidence or [],
+            submittedBy=r.submitted_by, createdAt=r.created_at.isoformat(),
+        )
+
+# Member/Admin only: submit a report. Always records who submitted it.
+@app.post("/api/incidents", response_model=IncidentOut)
+def create_incident(
+    payload: IncidentCreate,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_member),
+):
+    row = IncidentReport(
+        reporter_name=(payload.reporterName or "Anonymous"),
+        incident_type=payload.incidentType,
+        location=payload.location,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
+        incident_date=date.fromisoformat(payload.date),
+        incident_time=payload.time,
+        details=payload.details,
+        evidence=payload.evidence,
+        submitted_by=(user.get("email") or user.get("preferred_username") or user.get("sub")),
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return IncidentOut.from_row(row)
+
+# Member/Admin only: recent reports for the form's "Recently Submitted Reports" panel.
+@app.get("/api/incidents/recent")
+def recent_incidents(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    _member=Depends(require_member),
+):
+    rows = db.execute(
+        select(IncidentReport).order_by(desc(IncidentReport.created_at)).limit(limit)
+    ).scalars().all()
+    return {"incidents": [IncidentOut.from_row(r).model_dump() for r in rows]}
+
+# Admin only: full list for the admin table, newest first, optional status filter.
+@app.get("/api/admin/incidents")
+def admin_incidents(
+    status: str | None = None, limit: int = 100,
+    db: Session = Depends(get_db), _admin=Depends(require_admin),
+):
+    stmt = select(IncidentReport)
+    if status and status != "All":
+        stmt = stmt.where(IncidentReport.status == status)
+    stmt = stmt.order_by(desc(IncidentReport.created_at)).limit(limit)
+    rows = db.execute(stmt).scalars().all()
+    return {"incidents": [IncidentOut.from_row(r).model_dump() for r in rows]}
