@@ -22,8 +22,8 @@ Endpoints:
     Admin endpoints (Keycloak user management, Admin role required):
     Get    /api/admin/users                 :list/search Keycloak users (paginated).
     Post   /api/admin/users                 :create a new Keycloak user.
-    Put    /api/admin/users/{user_id}       :update a user's name/email/role/status.
-    Post   /api/admin/users/{user_id}/deactivate :disable a user's Keycloak account.
+    Put    /api/admin/users/{user_id}       :update a user's name/email/role.
+    Delete /api/admin/users/{user_id}       :delete a Keycloak user.
 
     SafePath routing endpoints:
     Get /api/places :search for locations by name using LocationIQ's Autocomplete API.
