@@ -155,15 +155,35 @@ services:
 
   
   mcp:
-    build:
-      context: /opt/apps/senior-project-safepath/backend
-      dockerfile: Dockerfile
+    # This compose file is invoked from inside the webhook container (which
+    # has the Docker socket mounted to control the *real* host's daemon, and
+    # its own bind mount maps the real host path
+    # /opt/apps/senior-project-safepath to /app inside itself).
+    #
+    # build.context stays RELATIVE ("./backend"): the compose CLI reads build
+    # context files itself (client-side, i.e. from inside the webhook
+    # container), so it needs a path valid in *that* container's own
+    # filesystem — "./backend" resolves to /app/backend there, which is
+    # correct. An absolute real-host path here breaks the build ("path not
+    # found"), since the webhook container has no /opt/apps/... mounted.
+    #
+    # The volumes: bind mount is the OPPOSITE case: it's resolved by the
+    # Docker DAEMON on the real host, not by the webhook container. A
+    # relative path there resolves against the webhook container's view
+    # (-> /app/backend) and gets handed to the daemon as if that were a real
+    # host path — but the real host has no /app, so Docker silently creates
+    # an empty directory there (create_host_path: true) and mounts THAT
+    # instead of the real backend/ folder. Hence the absolute real-host path
+    # here. If this deploy path ever changes, update this one line.
+    build: ./backend
     working_dir: /app/mcp
     command: ["python", "mcp_server.py"]
     volumes:
       - /opt/apps/senior-project-safepath/backend:/app
     networks:
-      - caddy  
+      - caddy
+    depends_on:
+      - backend
 
   # ----------------------------------------------------------------------------
   # OSRM walking-profile routing engine (run-only)
