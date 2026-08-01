@@ -55,19 +55,34 @@
                             <v-col cols="12" md="6">
                                 <v-card variant="outlined" rounded="lg">
                                     <v-card-title>Most Incident Report Places</v-card-title>
-                                    <v-card-text>
+                                    <v-divider class="mb-2"></v-divider>
+                                    <v-chip-group v-model="selectedTypes" selected-class="text-warning" multiple
+                                        class="mt-2">
+                                        <v-chip v-for="item in incidentTypes" :key="item" :value="item"
+                                            :text="item"></v-chip>
+                                    </v-chip-group> <v-card-text>
                                         <div v-for="place in mostReportedPlaces" :key="place.name" class="mb-4">
                                             <div class="d-flex justify-space-between mb-1">
                                                 <strong>{{ place.name }}</strong>
                                                 <span class="text-caption text-medium-emphasis">{{ place.count }}
                                                     reports</span>
                                             </div>
-                                            <p class="text-caption text-medium-emphasis mb-2">{{ place.topIncident }}
-                                            </p>
+                                            <v-card-subtitle v-if="selectedTypes.length != 1"
+                                                class="text-caption text-medium-emphasis mb-1">
+                                                <b>Most common:</b> {{ place.topIncident }}
+                                            </v-card-subtitle>
                                             <v-progress-linear :model-value="place.percent" color="error" height="8"
                                                 rounded />
                                         </div>
                                     </v-card-text>
+                                    <div v-if="incidentsLoading" class="text-caption text-medium-emphasis">Loading…
+                                    </div>
+                                    <div v-else-if="incidentsError" class="text-caption text-error">{{ incidentsError }}
+                                    </div>
+                                    <div v-else-if="!mostReportedPlaces.length"
+                                        class="text-caption text-medium-emphasis">
+                                        No incident reports yet.
+                                    </div>
                                 </v-card>
                             </v-col>
                         </v-row>
@@ -79,42 +94,91 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { incidentService } from '../../services/api.js';
+import { incidentTypeColor } from '../../data/incidentTypes.js';
 
 const router = useRouter();
 
 const tab = ref('Overview')
 
-const overviewStats = ref([
-    {
-        label: 'Total Users',
-        value: '1,248',
-        icon: 'mdi-account-group',
-        trend: '+12',
-        trendType: 'positive'
-    },
-    {
-        label: 'Route Searches',
-        value: '8,920',
-        icon: 'mdi-magnify',
-        trend: '+18%',
-        trendType: 'positive'
-    },
+const incidentTypes = [
+    'Harassment',
+    'Theft',
+    'Unsafe area',
+    'Suspicious activity',
+    'Transport issue',
+    'Other'
+];
+
+const incidents = ref([]);              // raw rows from the API
+const incidentsLoading = ref(false);
+const incidentsError = ref('');
+const selectedTypes = ref([]);          // bound to the chip group; [] = all types
+
+// First segment of the display name, e.g. "Zoologischer Garten".
+const placeKey = (location) => (location || '').split(',')[0].trim();
+
+const loadIncidents = async () => {
+    incidentsLoading.value = true;
+    incidentsError.value = '';
+    try {
+        const { data } = await incidentService.listAdmin({ limit: 10000 });   // no status param
+        incidents.value = data.incidents || [];
+    } catch (err) {
+        incidentsError.value = err.response?.data?.detail || 'Could not load incident reports.';
+        incidents.value = [];
+    } finally {
+        incidentsLoading.value = false;
+    }
+};
+onMounted(loadIncidents);
+
+const mostReportedPlaces = computed(() => {
+    const types = selectedTypes.value;
+    // No chips selected => all types.
+    const rows = types.length
+        ? incidents.value.filter((i) => types.includes(i.incidentType))
+        : incidents.value;
+
+    // Group by first segment of location.
+    const byPlace = new Map();   // name -> { name, count, typeCounts }
+    for (const i of rows) {
+        const name = placeKey(i.location);
+        if (!name) continue;
+        if (!byPlace.has(name)) byPlace.set(name, { name, count: 0, typeCounts: {} });
+        const p = byPlace.get(name);
+        p.count += 1;
+        p.typeCounts[i.incidentType] = (p.typeCounts[i.incidentType] || 0) + 1;
+    }
+
+    const places = [...byPlace.values()]
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+    const max = places.length ? places[0].count : 0;
+    return places.map((p) => ({
+        name: p.name,
+        count: p.count,
+        percent: max ? Math.round((p.count / max) * 100) : 0,
+        // most common incident type at this place (for the sub-label)
+        topIncident: Object.entries(p.typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '',
+    }));
+});
+
+const totalIncidents = computed(() => incidents.value.length);
+
+const overviewStats = computed(() => [
+    { label: 'Total Users',   value: '1,248', icon: 'mdi-account-group', trend: '+12',  trendType: 'positive' },
+    { label: 'Route Searches',value: '8,920', icon: 'mdi-magnify',       trend: '+18%', trendType: 'positive' },
     {
         label: 'Incident Reports',
-        value: '312',
+        value: incidentsLoading.value ? '…' : totalIncidents.value.toLocaleString(),
         icon: 'mdi-alert-circle',
         trend: '',
-        trendType: ''
+        trendType: '',
     },
-    // {
-    //     label: 'Top Search Place',
-    //     value: 'Alexanderplatz',
-    //     icon: 'mdi-map-marker',
-    //     trend: '842 searches',
-    //     trendType: 'neutral'
-    // }
 ]);
 
 const mostSearchedPlaces = ref([
@@ -141,33 +205,6 @@ const mostSearchedPlaces = ref([
         type: 'Start searches',
         count: 490,
         percent: 58
-    }
-]);
-
-const mostReportedPlaces = ref([
-    {
-        name: 'Kottbusser Tor',
-        topIncident: 'Harassment reports',
-        count: 28,
-        percent: 100
-    },
-    {
-        name: 'Alexanderplatz',
-        topIncident: 'Suspicious activity',
-        count: 21,
-        percent: 75
-    },
-    {
-        name: 'Warschauer Straße',
-        topIncident: 'Poor lighting',
-        count: 18,
-        percent: 64
-    },
-    {
-        name: 'Hermannplatz',
-        topIncident: 'Crowding / disturbance',
-        count: 13,
-        percent: 46
     }
 ]);
 
