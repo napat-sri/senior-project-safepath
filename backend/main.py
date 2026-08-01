@@ -26,9 +26,8 @@ Endpoints:
     Delete /api/admin/users/{user_id}       :delete a Keycloak user.
 
     SafePath routing endpoints:
-    Get /api/places :search for locations by name using LocationIQ's Autocomplete API.
-    Get /api/routes/safe :fetch safe routes between two points, scored by AI for safety.
-    
+    Get  /api/places      :search for locations by name using LocationIQ's Autocomplete API.
+    Post /api/routes/safe :fetch safe routes between two points, scored by real data + AI summary.
 
 """
 
