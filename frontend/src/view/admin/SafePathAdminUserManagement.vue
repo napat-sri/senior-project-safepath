@@ -45,8 +45,11 @@
                                 <tr v-for="user in users" :key="user.id">
                                     <td>
                                         <div class="d-flex align-center ga-2">
-                                            <v-avatar size="28" color="primary" variant="tonal">{{ user.initial
-                                            }}</v-avatar>
+                                            <v-avatar size="36" color="primary" variant="tonal">
+                                                <v-img v-if="user.avatar" :src="user.avatar" alt="Profile picture"
+                                                    cover />
+                                                <span v-else>{{ user.initial }}</span>
+                                            </v-avatar>
                                             <div>
                                                 <div class="font-weight-medium">{{ user.name }}</div>
                                                 <div class="text-caption text-medium-emphasis">{{ user.email }}</div>

@@ -26,8 +26,14 @@
 
   <v-navigation-drawer v-model="drawer" temporary class="pt-4">
     <v-list>
-      <v-list-item v-if="isAuthenticated" :title="username" :subtitle="isAdmin ? 'Admin' : 'Member'"
-        prepend-icon="mdi-account-circle" />
+      <v-list-item v-if="isAuthenticated" :title="username" :subtitle="isAdmin ? 'Admin' : 'Member'">
+        <template #prepend>
+          <v-avatar size="40" color="primary" variant="tonal">
+            <v-img v-if="avatar" :src="avatar" alt="Profile picture" cover />
+            <v-icon v-else>mdi-account-circle</v-icon>
+          </v-avatar>
+        </template>
+      </v-list-item>
       <v-list-item v-else title="Guest" subtitle="Not signed in" prepend-icon="mdi-account-outline" />
     </v-list>
 
@@ -64,9 +70,10 @@
 </template> -->
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTheme } from 'vuetify';
+import { userService } from '../services/api';
 import safePathLogo from '../assets/Berlin.png';
 import keycloak from '../services/keycloak';
 
@@ -76,6 +83,18 @@ const router = useRouter();
 const props = defineProps({
   items: { type: Array, default: null },
   width: { type: [Number, String], default: 280 },
+});
+
+const avatar = ref('');
+
+onMounted(async () => {
+  if (!keycloak.authenticated) return;
+  try {
+    const { data } = await userService.getAvatar();
+    if (data.avatar) avatar.value = data.avatar;
+  } catch (err) {
+    console.error('Failed to load avatar', err);
+  }
 });
 
 const drawer = ref(false);
