@@ -110,7 +110,7 @@
                                 </v-card-text>
                             </v-card>
                             <div class="text-center">
-                                <v-pagination v-model="page" :length="pageCount":total-visible="5"></v-pagination>
+                                <v-pagination v-model="page" :length="pageCount" :total-visible="5"></v-pagination>
                             </div>
                         </v-card-text>
                     </v-card>
@@ -168,8 +168,6 @@ async function fetchSuggestions(query) {
     }
     try {
         const { data } = await placeService.search(query);
-        console.log("query: ", query)
-        console.log("data: ", data)
         const results = data.places || [];
         suggestionCache[normalizedQuery] = results;
         return results;

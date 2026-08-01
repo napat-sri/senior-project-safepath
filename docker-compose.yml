@@ -14,7 +14,7 @@ services:
     #  - langflow
     networks:
       - caddy
-      - langflow-net     # <-- so langflow can resolve "postgres"
+    #  - langflow-net     # <-- so langflow can resolve "postgres"
     labels:
       # Public entry point. Caddy serves the UI and reverse-proxies the
       # browser-facing backends so they can stay private (no public domain):
@@ -40,6 +40,7 @@ services:
     networks:
       # Keep on the caddy network so other containers (e.g. langflow's
       # SSRF allow-list "backend.local") can still reach it internally.
+      langflow-net:
       caddy:
         aliases:
           - backend.local
@@ -151,6 +152,130 @@ services:
       - DOWNLOAD_POLY=https://download.geofabrik.de/europe/germany/berlin.poly
     command: import 
 
+
+  
+  mcp:
+    # This compose file is invoked from inside the webhook container (which
+    # has the Docker socket mounted to control the *real* host's daemon, and
+    # its own bind mount maps the real host path
+    # /opt/apps/senior-project-safepath to /app inside itself).
+    #
+    # build.context stays RELATIVE ("./backend"): the compose CLI reads build
+    # context files itself (client-side, i.e. from inside the webhook
+    # container), so it needs a path valid in *that* container's own
+    # filesystem — "./backend" resolves to /app/backend there, which is
+    # correct. An absolute real-host path here breaks the build ("path not
+    # found"), since the webhook container has no /opt/apps/... mounted.
+    #
+    # The volumes: bind mount is the OPPOSITE case: it's resolved by the
+    # Docker DAEMON on the real host, not by the webhook container. A
+    # relative path there resolves against the webhook container's view
+    # (-> /app/backend) and gets handed to the daemon as if that were a real
+    # host path — but the real host has no /app, so Docker silently creates
+    # an empty directory there (create_host_path: true) and mounts THAT
+    # instead of the real backend/ folder. Hence the absolute real-host path
+    # here. If this deploy path ever changes, update this one line.
+    build: ./backend
+    working_dir: /app/mcp
+    command: ["python", "mcp_server.py"]
+    volumes:
+      - /opt/apps/senior-project-safepath/backend:/app
+    networks:
+      - caddy
+    depends_on:
+      - backend
+
+  # ----------------------------------------------------------------------------
+  # OSRM walking-profile routing engine (run-only)
+  #
+  # Serves real pedestrian routes for travelMode="walking". The public OSRM
+  # demo server (used for driving) does NOT actually have a foot dataset —
+  # verified by comparing its /route/v1/driving/ and /route/v1/foot/ responses
+  # for the same two points: identical distance/duration, i.e. "foot" silently
+  # falls back to driving-speed results instead of erroring. Self-hosting with
+  # OSRM's bundled foot.lua profile gives real walking routes/durations.
+  #
+  # NOTE: expects the `osrm-foot-data` volume to already contain a processed
+  # Berlin extract. On a fresh machine you MUST run `osrm-foot-import` first
+  # (see below) before this serves real routes.
+  # ----------------------------------------------------------------------------
+  osrm-foot:
+    image: osrm/osrm-backend
+    command: osrm-routed --algorithm mld /data/berlin-latest.osrm
+    volumes:
+      - osrm-foot-data:/data
+    ports:
+      - "5001:5000"        # host access for debugging; backend uses http://osrm-foot:5000 internally
+    networks:
+      - caddy       # <-- must share a network with `backend` so it can resolve "osrm-foot"
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # OSRM walking-profile data build (one-shot, TWO steps)
+  #
+  # Step 1 (osrm-foot-download) fetches Berlin's .osm.pbf using a small,
+  # actively-maintained Alpine image. Step 2 (osrm-foot-import) preprocesses
+  # it with OSRM's bundled foot.lua profile (extract -> partition ->
+  # customize, the MLD pipeline).
+  #
+  # Why two separate images: osrm/osrm-backend is built on Debian Stretch,
+  # which is EOL — its apt mirrors (deb.debian.org) 404 on `apt-get update`,
+  # so installing wget/curl *inside* that image doesn't work anymore. Alpine's
+  # package index isn't EOL, so downloading there and handing the file off via
+  # the shared volume sidesteps the problem entirely.
+  #
+  # Run once on a fresh machine, in order:
+  #
+  #   docker compose -f docker-compose.dev.yml --profile setup run --rm osrm-foot-download
+  #   docker compose -f docker-compose.dev.yml --profile setup run --rm osrm-foot-import
+  #
+  # A city-sized extract takes a few minutes (much lighter than the tile
+  # server's osm-import). After both finish, `osrm-foot` will serve real
+  # walking routes.
+  # ----------------------------------------------------------------------------
+  osrm-foot-download:
+    image: alpine:3.20
+    profiles: ["setup"]
+    volumes:
+      - osrm-foot-data:/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        if [ -f /data/berlin-latest.osm.pbf ]; then
+          echo "Berlin extract already present, skipping download."
+        else
+          apk add --no-cache curl
+          echo "Downloading Berlin extract..."
+          curl -fSL -o /data/berlin-latest.osm.pbf https://download.geofabrik.de/europe/germany/berlin-latest.osm.pbf
+        fi
+
+  osrm-foot-import:
+    image: osrm/osrm-backend
+    profiles: ["setup"]
+    volumes:
+      - osrm-foot-data:/data
+    entrypoint: ["/bin/bash", "-c"]
+    # IMPORTANT: `command` must be a YAML list with the whole script as ONE
+    # element (via the `- |` block scalar below). A bare `command: |` string
+    # gets word-split by Compose into many separate arguments — `bash -c`
+    # then only treats the first word as the script and turns everything
+    # else into stray positional parameters ($1, $2, ...), so nothing in
+    # the script actually runs. This bit us once already; keep it a list.
+    command:
+      - |
+        set -e
+        if [ ! -f /data/berlin-latest.osm.pbf ]; then
+          echo "ERROR: /data/berlin-latest.osm.pbf not found — run osrm-foot-download first." >&2
+          exit 1
+        fi
+        osrm-extract -p /opt/foot.lua /data/berlin-latest.osm.pbf
+        osrm-partition /data/berlin-latest.osrm
+        osrm-customize /data/berlin-latest.osrm
+        echo "OSRM foot-profile data build complete."
+
+
+
 volumes:
   berlin-data:
     external: true
@@ -158,6 +283,7 @@ volumes:
   langflow-data:       # Langflow config dir
   langflow-postgres:   # Langflow Postgres data
   wg-easy-data:        # persists WireGuard keys & client configs
+  osrm-foot-data:
 
 networks:
   caddy:

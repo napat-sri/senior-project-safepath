@@ -101,7 +101,7 @@ services:
       - .env
     environment:
       #LANGFLOW_LOAD_FLOWS_PATH: /app/flows
-      - LANGFLOW_CONFIG_DIR= /app/langflow
+      - LANGFLOW_CONFIG_DIR=/app/langflow
       - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
       - LANGFLOW_AUTO_LOGIN=True
       - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=True
