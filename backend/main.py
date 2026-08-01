@@ -1039,10 +1039,14 @@ def get_me(user=Depends(require_member)):
 
 # Delete account permanently
 @app.delete("/api/me")
-def delete_me(user=Depends(require_member)):  # noqa: B008
+def delete_me(user=Depends(require_member), db: Session = Depends(get_db)):  # noqa: B008
     """Delete the caller's own Keycloak account (id comes from the verified token)."""
     try:
         keycloak_admin.delete_user(user["sub"])
+        profile = db.get(UserProfile, user["sub"])
+        if profile is not None:
+            db.delete(profile)
+            db.commit()
         return {"deleted": True}
     except keycloak_admin.KeycloakConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
