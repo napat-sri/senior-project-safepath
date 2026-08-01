@@ -105,3 +105,13 @@ After it completes, start the stack as normal and `travelMode: "walking"`
 requests to `/api/routes/safe` will route through `osrm-foot`. If you skip
 this step, walking requests will fail to reach OSRM until it's run — driving
 requests are unaffected either way.
+
+## 📚 Documentation
+
+Setup and reference guides live in [`Docs/`](Docs):
+
+- [Incident Logs & Postgres Database Setup](Docs/incident-logs-setup.md) — create and use a database in the Postgres container (dev & prod)
+- [Authentication Setup](Docs/authentication-setup.md) — Keycloak auth wiring
+- [Langfuse Setup](Docs/langfuse-setup.md) — LLM tracing / monitoring
+- [VPN Setup](Docs/vpn-setup.md) — WireGuard access to production services
+- [Architecture Design](Docs/ArchitectureDesign.md) — overall system design
