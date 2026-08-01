@@ -59,14 +59,18 @@
                     <v-col cols="12" md="6"><v-icon>mdi-clock</v-icon>&nbsp;Date-Time</v-col>
                     <v-col cols="12" md="6">{{ incidentDetail?.date }}, {{ incidentDetail?.time }}</v-col>
                     <v-col cols="12" md="6"><v-icon>mdi-map-marker</v-icon>&nbsp;Location</v-col>
-                    <v-col cols="12" md="6">{{ incidentDetail?.location }}</v-col>
+                    <v-col cols="12" md="6" class="text-wrap" style="overflow-wrap: anywhere;">
+                        {{ incidentDetail?.location }}
+                    </v-col>
                     <v-col cols="12" md="6"><v-icon>mdi-tag</v-icon>&nbsp;Incident Type</v-col>
                     <v-chip :color="incidentTypeColor(incidentDetail?.incidentType)"
                         size="small" variant="flat" label>
                         {{ incidentDetail?.incidentType }}
                     </v-chip>
                     <v-col cols="12" md="6"><v-icon>mdi-text-long</v-icon>&nbsp;Details</v-col>
-                    <v-col cols="12" md="6">{{ incidentDetail?.details }}</v-col>
+                    <v-col cols="12" md="6" class="text-wrap" style="overflow-wrap: anywhere;">
+                        {{ incidentDetail?.details }}
+                    </v-col>
                 </v-row>
             </v-card-subtitle>
         </v-card>
@@ -108,7 +112,7 @@ const incidentHeaders = [
     { title: 'Reporter', key: 'reporterName' },
     { title: 'Date', key: 'date' },
     { title: 'Time', key: 'time' },
-    { title: 'Location', key: 'location' },
+    { title: 'Location', key: 'location', width: '40%' },
     { title: 'Type', key: 'incidentType' },
     { title: 'Action', key: 'action' },
 ];
