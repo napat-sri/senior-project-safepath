@@ -26,8 +26,9 @@ Endpoints:
     Delete /api/admin/users/{user_id}       :delete a Keycloak user.
 
     SafePath routing endpoints:
-    Get  /api/places      :search for locations by name using LocationIQ's Autocomplete API.
-    Post /api/routes/safe :fetch safe routes between two points, scored by real data + AI summary.
+    Get /api/places :search for locations by name using LocationIQ's Autocomplete API.
+    Get /api/routes/safe :fetch safe routes between two points, scored by AI for safety.
+    
 
 """
 
@@ -96,9 +97,11 @@ OSRM_PROFILE_URLS = {"driving": OSRM_DRIVING_URL, "walking": OSRM_WALKING_URL}
 FLOW_ID = os.getenv("VUE_APP_LANGFLOW_ROUTE_AGENT_FLOW_ID")
 LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}" 
 # Authentication Key for Langflow (Required if login is enabled in the Langflow UI)
+LANGFLOW_API_KEY = os.getenv("VUE_APP_LANGFLOW_API_KEY")
 # LocationIQ API Key for geocoding (autocomplete) requests. Required.
 LOCATIONIQ_API_KEY = os.getenv("LOCATIONIQ_API_KEY")
-print(f"[CONFIG] LOCATIONIQ_API_KEY configured: {bool(LOCATIONIQ_API_KEY)}")
+
+
 # ---------------------------------------------------------------------------
 # Route-safety scoring weights.
 #
