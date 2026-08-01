@@ -1052,7 +1052,8 @@ def delete_me(user=Depends(require_member)):  # noqa: B008
         raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
 
 class AvatarRequest(BaseModel):
-    avatar: str  # base64 data URL
+    # Base64 data URL (e.g. "data:image/png;base64,..."). Send empty string to clear.
+    avatar: str = Field("", max_length=500_000)
 
 @app.get("/api/me/avatar")
 def get_my_avatar(user=Depends(require_member), db: Session = Depends(get_db)):
@@ -1061,10 +1062,18 @@ def get_my_avatar(user=Depends(require_member), db: Session = Depends(get_db)):
 
 @app.put("/api/me/avatar")
 def set_my_avatar(payload: AvatarRequest, user=Depends(require_member), db: Session = Depends(get_db)):
+    avatar = payload.avatar.strip()
+    if avatar and not avatar.startswith((
+        "data:image/png;base64,",
+        "data:image/jpeg;base64,",
+        "data:image/webp;base64,",
+    )):
+        raise HTTPException(status_code=422, detail="Avatar must be a base64 data URL (PNG/JPEG/WEBP).")
+
     profile = db.get(UserProfile, user["sub"])
     if profile is None:
         profile = UserProfile(user_id=user["sub"])
         db.add(profile)
-    profile.avatar = payload.avatar
+    profile.avatar = avatar or None
     db.commit()
     return {"saved": True}
