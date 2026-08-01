@@ -260,6 +260,7 @@ volumes:
   langflow-data:       # Langflow config dir
   langflow-postgres:   # Langflow Postgres data
   wg-easy-data:        # persists WireGuard keys & client configs
+  osrm-foot-data:
 
 networks:
   caddy:
