@@ -40,6 +40,7 @@ services:
     networks:
       # Keep on the caddy network so other containers (e.g. langflow's
       # SSRF allow-list "backend.local") can still reach it internally.
+      langflow-net:
       caddy:
         aliases:
           - backend.local
@@ -154,13 +155,15 @@ services:
 
   
   mcp:
-    build: ./backend
+    build:
+      context: /opt/apps/senior-project-safepath/backend
+      dockerfile: Dockerfile
     working_dir: /app/mcp
     command: ["python", "mcp_server.py"]
     volumes:
-      - ./backend:/app
+      - /opt/apps/senior-project-safepath/backend:/app
     networks:
-      - caddy   # <-- must share a network with `backend` so it can resolve "mcp"
+      - caddy  
 
   # ----------------------------------------------------------------------------
   # OSRM walking-profile routing engine (run-only)
