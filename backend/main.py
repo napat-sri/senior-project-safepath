@@ -64,7 +64,7 @@ import keycloak_admin
 from datetime import date
 from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
-from database import IncidentReport, init_db, get_db
+from database import IncidentReport, init_db, get_db, UserProfile
 from auth import require_admin, require_member
 
 load_dotenv()
@@ -388,11 +388,21 @@ class UserWriteRequest(BaseModel):
 
 @app.get("/api/admin/users")
 def admin_list_users(
-    search: str = "", first: int = 0, max: int = 20, _admin=Depends(require_admin)  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
+    search: str = "", first: int = 0, max: int = 20,
+    _admin=Depends(require_admin),          # noqa: B008
+    db: Session = Depends(get_db),          # noqa: B008
 ):
     """One page of Keycloak users, matching `search` against name/username/email."""
     try:
-        return keycloak_admin.fetch_users(search=search, first=first, max=max)
+        result = keycloak_admin.fetch_users(search=search, first=first, max=max)
+        # Attach avatars stored in our Postgres, keyed by Keycloak id (= sub = row["id"]).
+        ids = [row["id"] for row in result["users"]]
+        if ids:
+            rows = db.query(UserProfile).filter(UserProfile.user_id.in_(ids)).all()
+            avatar_map = {p.user_id: p.avatar for p in rows}
+            for row in result["users"]:
+                row["avatar"] = avatar_map.get(row["id"])
+        return result
     except keycloak_admin.KeycloakConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
     except httpx.HTTPStatusError as exc:
@@ -447,7 +457,6 @@ def admin_delete_user(user_id: str, _admin=Depends(require_admin)):  # noqa: B00
         raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
-
 
 '''
 @app.get("/api/places")
@@ -1012,3 +1021,50 @@ def admin_incidents(
     stmt = stmt.order_by(desc(IncidentReport.created_at)).limit(limit)
     rows = db.execute(stmt).scalars().all()
     return {"incidents": [IncidentOut.from_row(r).model_dump() for r in rows]}
+
+
+# Fetch a single user
+@app.get("/api/me")
+def get_me(user=Depends(require_member)):
+    """The caller's own profile — reads their Keycloak id from the verified token."""
+    try:
+        kc_user = keycloak_admin.fetch_user(user["sub"])
+        return {"memberSince": kc_user.get("createdTimestamp")}  # epoch millis
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
+
+# Delete account permanently
+@app.delete("/api/me")
+def delete_me(user=Depends(require_member)):  # noqa: B008
+    """Delete the caller's own Keycloak account (id comes from the verified token)."""
+    try:
+        keycloak_admin.delete_user(user["sub"])
+        return {"deleted": True}
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
+
+class AvatarRequest(BaseModel):
+    avatar: str  # base64 data URL
+
+@app.get("/api/me/avatar")
+def get_my_avatar(user=Depends(require_member), db: Session = Depends(get_db)):
+    profile = db.get(UserProfile, user["sub"])
+    return {"avatar": profile.avatar if profile else None}
+
+@app.put("/api/me/avatar")
+def set_my_avatar(payload: AvatarRequest, user=Depends(require_member), db: Session = Depends(get_db)):
+    profile = db.get(UserProfile, user["sub"])
+    if profile is None:
+        profile = UserProfile(user_id=user["sub"])
+        db.add(profile)
+    profile.avatar = payload.avatar
+    db.commit()
+    return {"saved": True}

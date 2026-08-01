@@ -17,6 +17,12 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
 
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+
+    user_id: Mapped[str] = mapped_column(Text, primary_key=True)  # Keycloak sub
+    avatar: Mapped[str | None] = mapped_column(Text, nullable=True)  # base64 data URL
+
 class IncidentReport(Base):
     __tablename__ = "incident_reports"
 

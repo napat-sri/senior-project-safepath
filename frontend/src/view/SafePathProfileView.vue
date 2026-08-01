@@ -144,8 +144,9 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { userService } from '../services/api.js';
 import SafePathNavDrawer from '../components/SafePathNavDrawer.vue';
 import keycloak from '../services/keycloak';
 
@@ -167,6 +168,22 @@ const user = ref({
     provider: keycloak.tokenParsed?.identity_provider || 'email',
     memberSince: '',
     accountType: 'Standard',
+});
+
+onMounted(async () => {
+  try {
+    const { data } = await userService.me();
+    if (data.memberSince) {
+      user.value.memberSince = new Date(data.memberSince)
+        .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+    const avatarRes = await userService.getAvatar();
+    if (avatarRes.data.avatar) {
+      profilePreview.value = avatarRes.data.avatar;
+    }
+  } catch (err) {
+    console.error('Failed to load profile', err);
+  }
 });
 
 const editableProfile = ref({
@@ -197,16 +214,16 @@ const removeProfileImage = () => {
     profilePreview.value = '';
 };
 
-const saveProfile = () => {
-    user.value.name = editableProfile.value.name;
-
-    console.log('Profile saved:', {
-        name: editableProfile.value.name,
-        profileImage: profilePreview.value
-    });
-
-    closeEditModal();
+const saveProfile = async () => {
+  user.value.name = editableProfile.value.name;
+  try {
+    await userService.updateAvatar(profilePreview.value || '');
+  } catch (err) {
+    console.error('Failed to save avatar', err);
+  }
+  closeEditModal();
 };
+
 
 const openEditModal = () => {
     showEditModal.value = true;
@@ -233,15 +250,21 @@ const confirmDelete = [
     },
 ]
 
-const deleteAccount = () => {
-    if (deleteConfirmText.value !== 'DELETE') {
-        return;
-    }
+const deleteAccount = async () => {
+  if (deleteConfirmText.value !== 'DELETE') {
+    return;
+  }
 
-    console.log('Delete account requested');
-
+  try {
+    await userService.deleteMe();
     closeDeleteModal();
-    router.push('/login');
+    // Clears the session + token, then redirects. Don't use router.push here:
+    // the browser would still hold a valid token for a now-deleted account.
+    keycloak.logout({ redirectUri: window.location.origin });
+  } catch (err) {
+    console.error('Failed to delete account', err);
+    // optionally surface an error message to the user here
+  }
 };
 </script>
 

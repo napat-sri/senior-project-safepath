@@ -46,3 +46,10 @@ export const incidentService = {
   recent: (params = {}) => api.get('/incidents/recent', { params }),
   listAdmin: (params = {}) => api.get('/admin/incidents', { params }),
 };
+
+export const userService = {
+  me: () => api.get('/me'),
+  deleteMe: () => api.delete('/me'),
+  getAvatar: () => api.get('/me/avatar'),
+  updateAvatar: (avatar) => api.put('/me/avatar', { avatar }),
+};
