@@ -8,7 +8,7 @@
                     Report an Incident
                 </v-card-title>
                 <v-card-subtitle class="text-medium-emphasis mb-2">
-                    Share safety incidents in Berlin. Evidence is optional and helps moderation.
+                    Share safety incidents in Berlin.
                 </v-card-subtitle>
             </v-card>
 
@@ -231,7 +231,6 @@ const form = reactive({
     date: '',
     time: '',
     details: '',
-    evidence: []
 });
 
 watch(reportLocation, (value) => {
@@ -246,11 +245,6 @@ const incidentTypes = [
     'Transport issue',
     'Other'
 ];
-
-const handleEvidenceUpload = (files) => {
-    const selected = Array.isArray(files) ? files : [];
-    form.evidence = selected.map((file) => file.name);
-};
 
 const validateForm = () => {
     validationErrors.location = reportLocation.value.trim() ? '' : 'Location is required.';
@@ -281,7 +275,6 @@ const submitReport = async () => {
             date: form.date,
             time: form.time,
             details: form.details.trim(),
-            evidence: [...form.evidence],
         });
 
         // reset the form (same fields as today)
@@ -291,7 +284,6 @@ const submitReport = async () => {
         form.date = '';
         form.time = '';
         form.details = '';
-        form.evidence = [];
         reportLocation.value = '';
         selectedStartPlace.value = null;
 

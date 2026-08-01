@@ -29,7 +29,6 @@ class IncidentReport(Base):
     incident_date: Mapped[date] = mapped_column(Date, nullable=False)
     incident_time: Mapped[str] = mapped_column(Text, nullable=False)   # "HH:MM"
     details: Mapped[str] = mapped_column(Text, nullable=False)
-    evidence: Mapped[list | None] = mapped_column(JSONB, nullable=True)  # list of filenames
     submitted_by: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
