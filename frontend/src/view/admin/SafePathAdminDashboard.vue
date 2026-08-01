@@ -7,8 +7,6 @@
             <v-list-item title="Incidents" prepend-icon="mdi-alert-circle" @click="scrollToSection('incidents')" />
             <v-list-item title="Location Insights" prepend-icon="mdi-map-marker"
                 @click="scrollToSection('locations')" /> -->
-            <v-divider class="my-2" />
-            <v-list-item title="User App" prepend-icon="mdi-map" @click="goToHome" />
         </SafePathNavDrawer>
 
         <v-main>
@@ -45,6 +43,9 @@
                     </v-tabs-window-item>
                     <v-tabs-window-item value="Search Logs">
                         <SafePathAdminSearchLogs />
+                    </v-tabs-window-item>
+                    <v-tabs-window-item value="Incident Logs">
+                        <SafePathAdminIncidentLogs />
                     </v-tabs-window-item>
                     <v-tabs-window-item value="User Management">
                         <SafePathAdminUserManagement />
@@ -109,14 +110,16 @@ import { useRouter } from 'vue-router';
 import SafePathNavDrawer from '../../components/SafePathNavDrawer.vue';
 import SafePathAdminOverview from '../admin/SafePathAdminOverview.vue';
 import SafePathAdminSearchLogs from '../admin/SafePathAdminSearchLogsView.vue';
+import SafePathAdminIncidentLogs from '../admin/SafePathAdminIncidentLogsView.vue';
 import SafePathAdminUserManagement from '../admin/SafePathAdminUserManagement.vue';
 
 const router = useRouter();
 
 const adminMenu = [
-    { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/overview' },
+    { title: 'User App ', icon: 'mdi-map', to: '/home' },
     { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-    { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
+    { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' },
+    { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/overview' },
 ];
 
 const searchLogFilter = ref('');
@@ -129,6 +132,7 @@ const tab = ref('Overview')
 const items = [
     'Overview',
     'Search Logs',
+    'Incident Logs',
     'User Management',
 ];
 

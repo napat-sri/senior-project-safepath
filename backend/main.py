@@ -1,30 +1,70 @@
+# main fixed AI
 """SafePath API.
 
 Endpoints:
-  GET  /             - banner
-  GET  /api/health   - liveness check
-  POST /api/routes   - candidate routes between two points (via OSRM)
+    
+    Static endpoints:
+    Get / :display a welcome message.
+    Get /api/health :check the health of the API.
+    Get /api/langflow/health :check the health of the Langflow service.
+    Get /api/monitor/health :check the health of the Langfuse monitoring service.
+    
+    Langfuse monitoring endpoints (read-only):
+    Get /api/monitor/traces :fetch recent traces from Langfuse.
+    Get /api/monitor/traces/{trace_id} :fetch detailed information for a specific trace.
+    Get /api/monitor/alerts :fetch alerts from Langfuse.
+    Get /api/monitor/stats :fetch aggregated statistics from Langfuse.
+    Get /api/monitor/export :export recent traces from Langfuse in CSV or JSON format.
+    
+    Admin endpoints (read-only, sourced from Langfuse):
+    Get /api/admin/search-logs :fetch user route-search logs for the admin table.
+    
+    Admin endpoints (Keycloak user management, Admin role required):
+    Get    /api/admin/users                 :list/search Keycloak users (paginated).
+    Post   /api/admin/users                 :create a new Keycloak user.
+    Put    /api/admin/users/{user_id}       :update a user's name/email/role.
+    Delete /api/admin/users/{user_id}       :delete a Keycloak user.
+
+    SafePath routing endpoints:
+    Get  /api/places      :search for locations by name using LocationIQ's Autocomplete API.
+    Post /api/routes/safe :fetch safe routes between two points, scored by real data + AI summary.
+
 """
 
-import asyncio
-import httpx
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
-from pydantic import BaseModel
 import csv
 import io
 import json
-import re
+import os
 import time
 import uuid
 from datetime import datetime, timezone
 
-import os
-from dotenv import load_dotenv
-
+import httpx
 import langfuse_monitor
 import langfuse_prompts
+import langfuse_search_logs
+import mcp_client
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
+from openai import AsyncOpenAI
+from pydantic import BaseModel, Field
+from typing import Literal
+
+LITELLM_PROXY_URL = os.getenv("LITELLM_PROXY_URL")# default for local dev
+LITELLM_VIRTUAL_KEY = os.getenv("LITELLM_VIRTUAL_KEY")# default for local dev
+litellm_client = AsyncOpenAI(
+    base_url=LITELLM_PROXY_URL,    
+    api_key=LITELLM_VIRTUAL_KEY,  
+)
+
+import keycloak_admin
+from datetime import date
+from sqlalchemy import select, desc
+from sqlalchemy.orm import Session
+from database import IncidentReport, init_db, get_db
+from auth import require_admin, require_member
 
 load_dotenv()
 
@@ -43,66 +83,84 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Public OSRM demo server. NOTE: it only offers the *driving* profile, which is
-# fine to get routes on the map now. For a pedestrian "safe walking" app we'll
-# later switch to a walking profile (self-hosted OSRM-foot or OpenRouteService).
-OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
-OSRM_FOOT_URL = "https://router.project-osrm.org/route/v1/foot"
+# Driving: public OSRM demo server (car dataset).
+# Walking: self-hosted OSRM with the foot.lua profile (see docker-compose.dev.yml
+# `osrm-foot` / `osrm-foot-import`) — the public demo server's /route/v1/foot/
+# path does NOT have a real foot dataset. Verified: querying the same two
+# points against /driving/ and /foot/ on the public server returns byte-identical
+# distance/duration, i.e. "foot" silently falls back to driving-speed results
+# instead of erroring, which would give wrong walking times/routes if used.
+OSRM_DRIVING_URL = os.getenv("OSRM_DRIVING_URL", "https://router.project-osrm.org/route/v1/driving")
+OSRM_WALKING_URL = os.getenv("OSRM_WALKING_URL", "http://osrm-foot:5000/route/v1/foot")
+OSRM_PROFILE_URLS = {"driving": OSRM_DRIVING_URL, "walking": OSRM_WALKING_URL}
 FLOW_ID = os.getenv("VUE_APP_LANGFLOW_ROUTE_AGENT_FLOW_ID")
 LANGFLOW_URL = f"http://langflow:7860/api/v1/run/{FLOW_ID}" 
-#LANGFLOW_URL = f"https://langflow.safepath.duckdns.org/api/v1/run/{FLOW_ID}"  # public subdomain removed; langflow is private now 
 # Authentication Key for Langflow (Required if login is enabled in the Langflow UI)
-LANGFLOW_API_KEY = os.getenv("VUE_APP_LANGFLOW_API_KEY")
-
+# LocationIQ API Key for geocoding (autocomplete) requests. Required.
+LOCATIONIQ_API_KEY = os.getenv("LOCATIONIQ_API_KEY")
+print(f"[CONFIG] LOCATIONIQ_API_KEY configured: {bool(LOCATIONIQ_API_KEY)}")
+# ---------------------------------------------------------------------------
+# Route-safety scoring weights.
+#
+# safetyScore itself is now computed deterministically in Python from real
+# data (see compute_safety_score below) — crime + accident history from the
+# Kriminalitätsatlas/Unfallatlas and street-lighting density from OpenStreetMap,
+# served by the safepath-mcp service (backend/mcp/mcp_server.py) and fetched
+# via mcp_client.get_routes_safety_context. The LLM is no longer asked to
+# invent numeric scores; it only writes the human-readable name/summary,
+# grounded in the real numbers we hand it.
+# ---------------------------------------------------------------------------
+SAFETY_WEIGHTS = {"accident": 0.35, "crime": 0.35, "lighting": 0.30}
+DEFAULT_SUBSCORE = 50  # neutral fallback when a data source has no coverage for a route
 
 # ---------------------------------------------------------------------------
-# Route-safety prompt fallback.
+# Route-summary prompt fallback.
 #
 # The live prompt is managed in Langfuse under the name
 # `safepath-route-safety` and fetched at request time (see langfuse_prompts).
 # This string is the exact same text and is used only if Langfuse is
-# unreachable, so routing keeps working. Keep the two copies in sync
-# (Docs/langfuse-prompts.md has the canonical version to paste into the UI).
+# unreachable, so routing keeps working. Keep the two copies in sync — this
+# was reworked to consume real scores rather than invent them, so update the
+# Langfuse UI prompt to match if you change this.
 #
 # Variables use Langfuse mustache syntax: {{from_lat}}, {{from_lng}},
 # {{to_lat}}, {{to_lng}}, {{routes_json}}. Single braces are literal JSON.
 # ---------------------------------------------------------------------------
 FALLBACK_ROUTE_PROMPT = """You are SafePath Berlin, a safety-first navigation assistant for students, tourists, and commuters in Berlin.
+
+Your ENTIRE response MUST be ONLY a JSON array — it must start with [ and end with ]. Do NOT include any reasoning, explanation, calculations, markdown, or any text before or after the array.
+
 FROM:
 {{from_lat}}, {{from_lng}}
 TO:
 {{to_lat}}, {{to_lng}}
 
-ROUTES:
+ROUTES (each already has real safetyScore + accident/crime/lighting sub-scores,
+computed from Berlin crime, accident, and street-lighting data — do NOT change
+or re-derive these numbers, just explain them):
 {{routes_json}}
-Rules:
-- accident risk 35%
-- crime level 35%
-- street lighting 30%
 
-Color:
-85+ = #10B981
-70-84 = #F59E0B
-<70 = #EF4444
-Return ONLY valid JSON array.
+For each route, write only "name" and "summary":
+- name: a short human-friendly route name (e.g. "Route 1" or a street-based name).
+- summary: two sentences referencing the ALREADY-GIVEN safetyScore/sub-scores —
+  why this route ranks where it does, and one trade-off vs the other routes.
+
+Rules:
+- Never use placeholders, dashes (---), dots (.), null, or blanks. Every field must have a real value.
+- Return one object per route in the ROUTES input, keeping the same "id".
+- Do NOT include safetyScore, breakdown, or accentColor in your output — those are supplied separately.
+
+Example of the exact format (values illustrative only):
 [
   {
     "id": "route-1",
     "name": "Route 1",
-    "safetyScore": 85,
-    "summary": "2 sentences: why this rank and one trade-off vs the other routes.",
-    "accentColor": "<hex per rules above>",
-    "breakdown": [
-      { "label": "Accident Risk", "score": 80 },
-      { "label": "Crime Level", "score": 90 },
-      { "label": "Street Lighting", "score": 85 }
-    ]
+    "summary": "This route has the highest safety score thanks to well-lit main streets and low crime along the way, though it's slightly longer than the alternative."
   }
 ]
+
+Output ONLY the JSON array. Your first character must be [ and your last character must be ].
 """
-
-
-
 
 class Point(BaseModel):
     lat: float
@@ -118,8 +176,26 @@ class RouteRequest(BaseModel):
     session_id: str | None = None
     startName: str | None = None
     destinationName: str | None = None
+    # "walking" (self-hosted OSRM foot profile) or "driving" (public OSRM
+    # demo server). Defaults to walking — this is a pedestrian safety app.
+    travelMode: Literal["driving", "walking"] = "walking"
 
+class BreakdownItem(BaseModel):
+    label: str
+    score: int = Field(ge=0, le=100)
 
+# The AI only supplies narrative fields now — safetyScore/breakdown/accentColor
+# are computed deterministically from real MCP data (compute_safety_score).
+class AIRoute(BaseModel):
+    id: str
+    name: str | None = None
+    summary: str = "No analysis available."
+
+# DeepSeek JSON mode requires the root to be an OBJECT, not a bare array,
+# so wrap the list in a key.
+class AIRouteList(BaseModel):
+    routes: list[AIRoute]
+    
 @app.get("/")
 def root():
     return {"message": "Welcome to SafePath API"}
@@ -129,16 +205,12 @@ def root():
 def health():
     return {"status": "ok"}
 
-@app.get("/api/test")
-def test():
-    return {"data": [{"id": 1,"name": "Route 1"}, {"id": 2,"name": "Route 2"}, {"id": 3,"name": "Route 3"   }]}
-
 @app.get("/api/langflow/health")
 def langflow_health():
     return {
         "status": "ok",
         "langflow_target": LANGFLOW_URL,
-        "auth_configured": LANGFLOW_API_KEY
+        "auth_configured": bool(LANGFLOW_API_KEY)
     }
 
 
@@ -152,7 +224,7 @@ def monitor_health():
         return langfuse_monitor.ping()
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse unreachable: {exc}")
 
 
@@ -170,7 +242,7 @@ def monitor_traces(minutes: int = 60, limit: int = 50, include_io: bool = False)
         }
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
 
@@ -181,7 +253,7 @@ def monitor_trace_detail(trace_id: str):
         return langfuse_monitor.fetch_trace_detail(trace_id)
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
 
@@ -202,7 +274,7 @@ def monitor_alerts(
         )
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
 
@@ -213,7 +285,7 @@ def monitor_stats(minutes: int = 1440, limit: int = 500):
         return langfuse_monitor.build_stats(minutes=minutes, limit=limit)
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
 @app.get("/api/monitor/export")
@@ -240,7 +312,7 @@ def monitor_export(
         )
     except langfuse_monitor.LangfuseConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
         raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
@@ -278,7 +350,103 @@ def monitor_export(
         },
     )
 
+# ---------------------------------------------------------------------------
+# Admin — user route-search logs (read-only, sourced from Langfuse).
+# Powers SafePathAdminSearchLogsView.vue (replaces its hard-coded mock array).
+# ---------------------------------------------------------------------------
+@app.get("/api/admin/search-logs")
+def admin_search_logs(minutes: int = 1440, limit: int = 100):
+    """Recent user route searches, newest first (default: last 24h).
 
+    Each row: user (masked), start, destination, date, time, safetyScore,
+    status — the exact shape the admin "User Search Logs" table renders.
+    """
+    try:
+        return {
+            "logs": langfuse_search_logs.fetch_search_logs(
+                minutes=minutes, limit=limit
+            )
+        }
+    except langfuse_monitor.LangfuseConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
+        raise HTTPException(status_code=502, detail=f"Langfuse query failed: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Admin — Keycloak user management (read/write).
+# Powers SafePathAdminUserManagement.vue (replaces its hard-coded mock array).
+# All four routes require the caller's token to carry the Admin realm role.
+# ---------------------------------------------------------------------------
+class UserWriteRequest(BaseModel):
+    name: str
+    email: str
+    role: str      # one of keycloak_admin.KNOWN_ROLES: "Admin" | "Member"
+
+@app.get("/api/admin/users")
+def admin_list_users(
+    search: str = "", first: int = 0, max: int = 20, _admin=Depends(require_admin)  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
+):
+    """One page of Keycloak users, matching `search` against name/username/email."""
+    try:
+        return keycloak_admin.fetch_users(search=search, first=first, max=max)
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
+
+
+@app.post("/api/admin/users")
+def admin_create_user(payload: UserWriteRequest, _admin=Depends(require_admin)):  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
+    """Create a Keycloak user (Add User button). Sets a random temp password
+    and forces a password reset on first login — see keycloak_admin.create_user."""
+    try:
+        return keycloak_admin.create_user(
+            name=payload.name, email=payload.email, role=payload.role
+        )
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
+
+
+@app.put("/api/admin/users/{user_id}")
+def admin_update_user(user_id: str, payload: UserWriteRequest, _admin=Depends(require_admin)):  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
+    try:
+        return keycloak_admin.update_user(
+            user_id, name=payload.name, email=payload.email, role=payload.role
+        )
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 404:
+            raise HTTPException(status_code=404, detail="User not found.")
+        raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
+
+
+@app.delete("/api/admin/users/{user_id}")
+def admin_delete_user(user_id: str, _admin=Depends(require_admin)):  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
+    """Permanently delete a Keycloak user (Delete button)."""
+    try:
+        keycloak_admin.delete_user(user_id)
+        return {"deleted": True}
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 404:
+            raise HTTPException(status_code=404, detail="User not found.")
+        raise HTTPException(status_code=502, detail=f"Keycloak error: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
+
+
+'''
 @app.get("/api/places")
 def search_places(query: str):
     """
@@ -290,11 +458,7 @@ def search_places(query: str):
         return {"places": []}
 
     url = "https://nominatim.openstreetmap.org/search"
-    # params = {
-    #     "q": query,
-    #     "format": "json",
-    #     "limit": 5, 
-    # }
+ 
     params = {
         "q": query,
         "format": "json",
@@ -327,48 +491,194 @@ def search_places(query: str):
         })
 
     return {"places": places}
-
 '''
-@app.post("/api/routes")
-def get_routes(req: RouteRequest):
-    """Return candidate routes between start and destination.
 
-    Calls OSRM with alternatives enabled and normalises the response into a
-    small shape the frontend can draw directly. Coordinates are returned as
-    [lat, lng] pairs (OSRM gives [lng, lat], so we swap).
+@app.get("/api/places")
+def search_places(query: str):
     """
-    s, d = req.start, req.destination
-    url = f"{OSRM_URL}/{s.lng},{s.lat};{d.lng},{d.lat}"
-    params = {"overview": "full", "geometries": "geojson", "alternatives": "true"}
+    Search for locations by name using LocationIQ's Autocomplete API
+    (built on Nominatim/OSM data, but keyed instead of IP-based —
+    avoids the 403 blocks from free anonymous demo servers).
+    """
+    if not query or len(query) < 3:
+        return {"places": []}
+
+    url = "https://api.locationiq.com/v1/autocomplete"
+
+    params = {
+        "key": LOCATIONIQ_API_KEY,
+        "q": query,
+        "format": "json",
+        "limit": 5,
+        "countrycodes": "de",
+        "viewbox": "13.0883,52.3383,13.7611,52.6755",
+        "bounded": 1,
+        "normalizeaddress": 1,
+    }
 
     try:
-        resp = httpx.get(url, params=params, timeout=20.0)
+        resp = httpx.get(url, params=params, timeout=10.0)
         resp.raise_for_status()
         data = resp.json()
+    except httpx.HTTPStatusError as exc:
+        # LocationIQ returns 404 with a JSON body when there are simply no results
+        if exc.response.status_code == 404:
+            return {"places": []}
+        raise HTTPException(status_code=502, detail=f"Geocoding service error: {exc}")
     except httpx.HTTPError as exc:
-        raise HTTPException(status_code=502, detail=f"Routing service error: {exc}")
+        raise HTTPException(status_code=502, detail=f"Geocoding service error: {exc}")
 
-    if data.get("code") != "Ok" or not data.get("routes"):
-        raise HTTPException(
-            status_code=404, detail="No route found between those points."
+    places = []
+    for item in data:
+        address = item.get("address") or {}
+
+        name = (
+            address.get("name")
+            or item.get("display_place")
+            or address.get("road")
+            or item.get("display_name")
         )
 
-    routes = []
-    for i, route in enumerate(data["routes"]):
-        coords = [[lat, lng] for lng, lat in route["geometry"]["coordinates"]]
-        routes.append(
-            {
-                "id": f"route-{i + 1}",
-                "geometry": coords,
-                "distance_m": round(route["distance"]),
-                "duration_s": round(route["duration"]),
-            }
+        subtitle_parts = [
+            address.get("suburb") or address.get("city_district"),
+            address.get("city") or address.get("town"),
+        ]
+        subtitle = ", ".join(p for p in subtitle_parts if p)
+
+        places.append({
+            "name": name,
+            "subtitle": subtitle,
+            "display_name": item.get("display_name"),
+            "lat": float(item["lat"]),
+            "lng": float(item["lon"]),
+        })
+
+    return {"places": places}
+
+
+def log_route_search_trace(
+    *,
+    guest_id: str,
+    session_id: str,
+    start_name: str | None,
+    dest_name: str | None,
+    start_coords: str,
+    dest_coords: str,
+    route_suggestions: list[dict],
+    ai_ok: bool,
+    duration_s: float,
+) -> None:
+    """Record one route search as a Langfuse trace ("safepath-route-search").
+
+    Written directly from the backend with the Langfuse SDK, so tracing does
+    NOT depend on Langflow or the LiteLLM proxy forwarding anything. This is
+    the source the admin search-logs endpoint reads back. Best-effort: any
+    failure is logged and swallowed so a user's route request never breaks.
+    """
+    try:
+        client = langfuse_monitor.get_client()
+    except langfuse_monitor.LangfuseConfigError:
+        return  # credentials not configured — skip tracing silently
+
+    try:
+        start_label = start_name or start_coords
+        dest_label = dest_name or dest_coords
+        best_score = max(
+            (r.get("safetyScore", 0) for r in route_suggestions), default=0
         )
+        trace_input = {"start": start_label, "destination": dest_label}
+        trace_metadata = {
+            "startName": start_name or "",
+            "destinationName": dest_name or "",
+            "start_coords": start_coords,
+            "destination_coords": dest_coords,
+        }
+        trace_output = {
+            "status": "Success" if route_suggestions else "Failed",
+            "aiScored": ai_ok,
+            "routeCount": len(route_suggestions),
+            "bestSafetyScore": best_score,
+            "durationSeconds": round(duration_s, 2),
+            "routes": [
+                {
+                    "id": r.get("id"),
+                    "safetyScore": r.get("safetyScore"),
+                    "distance": r.get("distance"),
+                    "duration": r.get("duration"),
+                    "summary": r.get("summary"),
+                    "breakdown": r.get("breakdown", []),
+                }
+                for r in route_suggestions
+            ],
+        }
 
-    return {"routes": routes}
-'''
+        with client.start_as_current_span(
+            name="safepath-route-search", input=trace_input
+        ) as span:
+            span.update_trace(
+                name="safepath-route-search",
+                user_id=guest_id,
+                session_id=session_id,
+                tags=["route-search"],
+                input=trace_input,
+                output=trace_output,
+                metadata=trace_metadata,
+            )
+        # No blocking flush() here: the SDK exports in the background so we
+        # don't stall the async request. Traces flush on interval / shutdown.
+    except Exception as exc:  # noqa: BLE001 -- never let tracing break routing
+        print(f"[LANGFUSE] route-search trace failed: {exc}")
 
 
+def accent_color_for(safety_score: int) -> str:
+    if safety_score >= 85:
+        return "#0B8043"
+    if safety_score >= 70:
+        return "#E8590C"
+    return "#C1121F"
+
+
+def compute_safety_score(ctx: dict | None) -> dict:
+    """Turn one route's MCP safety context into safetyScore + breakdown + accentColor.
+
+    ctx is the per-route dict from mcp_client.get_routes_safety_context (or
+    None/missing if the MCP call failed or that route had no data). Missing
+    sub-scores fall back to DEFAULT_SUBSCORE and are excluded from the
+    weighted average's denominator (so one missing source doesn't drag the
+    score toward 50 more than it should) — if every source is missing, the
+    whole route falls back to a neutral 50.
+    """
+    ctx = ctx or {}
+    subscores = {
+        "accident": ctx.get("avg_accident_safety_score"),
+        "crime": ctx.get("avg_crime_safety_score"),
+        "lighting": ctx.get("avg_lighting_safety_score"),
+    }
+    available = {k: v for k, v in subscores.items() if v is not None}
+
+    if available:
+        total_weight = sum(SAFETY_WEIGHTS[k] for k in available)
+        safety_score = round(
+            sum(v * SAFETY_WEIGHTS[k] for k, v in available.items()) / total_weight
+        )
+    else:
+        safety_score = DEFAULT_SUBSCORE
+
+    # Labels use "X Safety" consistently — all three, like safetyScore itself,
+    # are HIGHER = SAFER. ("Accident Risk" / "Crime Level" previously implied
+    # the opposite direction — higher = more danger — which didn't match the
+    # actual values and confused readers of the breakdown.)
+    breakdown = [
+        {"label": "Accident Safety", "score": subscores["accident"] if subscores["accident"] is not None else DEFAULT_SUBSCORE},
+        {"label": "Crime Safety", "score": subscores["crime"] if subscores["crime"] is not None else DEFAULT_SUBSCORE},
+        {"label": "Lighting Safety", "score": subscores["lighting"] if subscores["lighting"] is not None else DEFAULT_SUBSCORE},
+    ]
+
+    return {
+        "safetyScore": safety_score,
+        "breakdown": breakdown,
+        "accentColor": accent_color_for(safety_score),
+    }
 
 
 @app.post("/api/routes/safe")
@@ -376,11 +686,15 @@ async def get_safe_routes(req: RouteRequest):
     api_start = time.perf_counter()
     """
     1. Fetches candidate routes from OSRM.
-    2. Sends route summaries to Langflow for safety analysis.
-    3. Returns the winning route, reasoning, and map coordinates to the frontend.
+    2. Fetches real crime/accident/lighting data from the MCP server and computes
+       each route's safetyScore deterministically (see compute_safety_score).
+    3. Asks the LLM directly (LiteLLM, not Langflow) for a name/summary per route,
+       grounded in those real scores.
+    4. Returns each route's score, summary, and map coordinates to the frontend.
     """
     s, d = req.start, req.destination
-    osrm_url = f"{OSRM_URL}/{s.lng},{s.lat};{d.lng},{d.lat}"
+    osrm_base_url = OSRM_PROFILE_URLS.get(req.travelMode, OSRM_PROFILE_URLS["walking"])
+    osrm_url = f"{osrm_base_url}/{s.lng},{s.lat};{d.lng},{d.lat}"
     params = {"overview": "full","geometries": "geojson","alternatives": "true"}
 
     # ---------------------------------------------------
@@ -414,7 +728,6 @@ async def get_safe_routes(req: RouteRequest):
         )
 
     routes = []
-    llm_summaries = [] # Send to Langflow
     process_routes_start = time.perf_counter()
     for i, route in enumerate(raw_routes):
         route_id = f"route-{i+1}"
@@ -437,21 +750,44 @@ async def get_safe_routes(req: RouteRequest):
 
         routes.append(backend_route)
 
-        # Only lightweight data to AI
-        llm_summaries.append({
-            "id": route_id,
-            "distance_km": distance_km,
-            "duration_min": duration_min
-        })
-    
     process_routes_end = time.perf_counter()
     print(
-    f"[TIME] Route processing: "
+    f"[TIME] {routes.__len__()} Route processing: "
     f"{process_routes_end - process_routes_start:.2f} sec"
 )
     # ---------------------------------------------------
-    # STEP 2: AI SAFETY ANALYSIS
+    # STEP 2: REAL SAFETY DATA (crime, accident, street lighting) via MCP
     # ---------------------------------------------------
+    # Calls the safepath-mcp service (backend/mcp/mcp_server.py) which serves
+    # real Berlin crime/accident/lighting data — no LLM guessing involved.
+    mcp_start = time.perf_counter()
+    mcp_routes_payload = [
+        {"id": route["id"], "coordinates": route["coordinates"]}
+        for route in routes
+    ]
+    safety_context = await mcp_client.get_routes_safety_context(mcp_routes_payload)
+    print(f"[TIME] MCP safety context: {time.perf_counter() - mcp_start:.2f} sec")
+    if not safety_context:
+        print("[MCP] No safety context returned — using neutral scores for all routes.")
+
+    route_scores = {
+        route["id"]: compute_safety_score(safety_context.get(route["id"]))
+        for route in routes
+    }
+
+    # ---------------------------------------------------
+    # STEP 3: AI NARRATIVE — name + summary only, grounded in the real scores
+    # ---------------------------------------------------
+    llm_summaries = [  # Send to Langflow/LLM: real numbers, not just distance/duration
+        {
+            "id": route["id"],
+            "distance_km": round(route["distance_m"] / 1000, 1),
+            "duration_min": round(route["duration_s"] / 60),
+            "safetyScore": route_scores[route["id"]]["safetyScore"],
+            "breakdown": route_scores[route["id"]]["breakdown"],
+        }
+        for route in routes
+    ]
 
     # Prompt is managed in Langfuse ("safepath-route-safety"). Fetched and
     # compiled at request time; falls back to FALLBACK_ROUTE_PROMPT if
@@ -467,188 +803,209 @@ async def get_safe_routes(req: RouteRequest):
         },
         fallback=FALLBACK_ROUTE_PROMPT,
     )
+    print("Prompt for AI scoring:\n", prompt)
+    print("Start Name:", req.startName, "Destination Name:", req.destinationName)
 
-    langflow_payload = {
-        "input_value": prompt,
-        "output_type": "chat",
-        "input_type": "chat",
-    }
-    # Langflow 1.9.2's run endpoint only forwards `session_id` to Langfuse (it
-    # ignores `user_id`), and Langflow stamps its own account id as the trace
-    # user_id. So we track the visitor via the SESSION ID instead: we embed the
-    # guest id inside a per-flow-namespaced session id (below). `user_id` is sent
-    # too, harmlessly, in case a future Langflow/flow component starts using it.
-    if req.user_id:
-        langflow_payload["user_id"] = req.user_id
-    # Route session_id = "route_<guest id>_<per-request id>". The guest id keeps
-    # the request tied to the visitor (filter Session ID in TEXT mode by it); the
-    # "route_" prefix + per-request suffix make every route call its own isolated
-    # session, so it never shares an Agent-memory bucket with the chat flow
-    # ("chat_...") or with the user's other route requests — which is what
-    # prevents the cross-flow / cross-request hallucination bleed.
+    # guest_id/route_session_id identify this search for Langfuse tracing
+    # (log_route_search_trace below, via the Langfuse SDK directly). This
+    # endpoint does not call Langflow — scoring and narrative are both done
+    # in-process (MCP + LiteLLM) — so no Langflow payload/headers are needed
+    # here. Route session_id = "route_<guest id>_<per-request id>": the guest
+    # id keeps the request tied to the visitor, and the per-request suffix
+    # keeps every route search its own isolated trace.
     guest_id = req.user_id or req.session_id or f"guest_{uuid.uuid4()}"
-    langflow_payload["session_id"] = f"route_{guest_id}_{uuid.uuid4()}"
-    print("UserId:",guest_id)    
-    # Setup headers, injecting API keys securely if available
-    headers = {
-        "Content-Type": "application/json"
-    }
-    if LANGFLOW_API_KEY:
-        headers["x-api-key"] = LANGFLOW_API_KEY
-        print("[LANGFLOW] Auth initialized with API Key.")
-    else:
-        print("[LANGFLOW] WARNING: No API Key found in .env. Requests will fail if Langflow has login enabled.")
+    route_session_id = f"route_{guest_id}_{uuid.uuid4()}"
+    print("UserId:", guest_id)
 
     ai_routes = []
-    async with httpx.AsyncClient() as client:
-        try:
-            langflow_start = time.perf_counter()
-            lf_resp = await client.post(
-                LANGFLOW_URL,
-                json=langflow_payload,
-                headers=headers,
-                timeout=45.0
-            )
-
-            lf_resp.raise_for_status()
-            langflow_end = time.perf_counter()
-            print(
-                f"[TIME] Langflow request: "
-                f"{langflow_end - langflow_start:.2f} sec"
-            )
-            lf_data = lf_resp.json()
-            json_parse_start = time.perf_counter()
-            raw_text = (
-                lf_data["outputs"][0]
-                ["outputs"][0]
-                ["results"]["message"]["text"]
-            )
-
-            # ---------------------------------------------
-            # CLEAN AI RESPONSE
-            # ---------------------------------------------
-
-            raw_text = raw_text.strip()
-            # Remove markdown fences
-            raw_text = re.sub(
-                r"^```(?:json)?|```$",
-                "",
-                raw_text,
-                flags=re.MULTILINE
-            ).strip()
-
-            # Extract JSON array safely
-            match = re.search(r"\[.*\]", raw_text, re.DOTALL)
-            if not match:
-                raise ValueError("No JSON array found")
-
-            json_text = match.group(0)
-            ai_routes = json.loads(json_text)
-            json_parse_end = time.perf_counter()
-            print(
-                f"[TIME] JSON parsing: "
-                f"{json_parse_end - json_parse_start:.2f} sec"
-            )
-            if not isinstance(ai_routes, list):
-                raise ValueError("AI response is not a list")
-
-        except Exception as exc:
-            print("Langflow parsing error:", exc)
-            ai_routes = []
+    langflow_start = time.perf_counter()
+    ai_routes = await score_routes_with_ai(prompt)
+    print(f"[TIME] AI scoring: {time.perf_counter() - langflow_start:.2f} sec")
+    ai_lookup = {ai_route.get("id"): ai_route for ai_route in ai_routes}
 
     # ---------------------------------------------------
-    # STEP 3: MERGE AI + OSRM DATA
+    # STEP 4: BUILD RESPONSE — real scores always; AI only supplies narrative
     # ---------------------------------------------------
-
-    route_lookup = {
-        route["id"]: route
-        for route in routes
-    }
-
+    # Unlike before, this no longer depends on the AI call succeeding: the
+    # safetyScore/breakdown/accentColor below always come from real MCP data.
+    # If the AI is unavailable, routes still get correct scores, just with a
+    # generic summary sentence instead of a tailored one.
     route_suggestions = []
     merge_start = time.perf_counter()
-    if ai_routes:
-        for ai_route in ai_routes:
-            route_id = ai_route.get("id")
-            backend_route = route_lookup.get(route_id)
-            if not backend_route:
-                continue
+    for i, route in enumerate(routes):
+        route_id = route["id"]
+        scores = route_scores[route_id]
+        ai_route = ai_lookup.get(route_id, {})
 
-            route_suggestions.append({
-                "id": route_id,
-                "name": ai_route.get(
-                    "name",
-                    route_id
-                ),
-                "origin": f"{s.lat:.4f}, {s.lng:.4f}",
-                "destination": f"{d.lat:.4f}, {d.lng:.4f}",
-                "routeType": ai_route.get("routeType", "driving"),
-                "safetyScore": ai_route.get(
-                    "safetyScore",
-                    50
-                ),
-
-                "distance": backend_route["distance"],
-                "duration": backend_route["duration"],
-                "summary": ai_route.get(
-                    "summary",
-                    "No analysis available."
-                ),
-                "accentColor": ai_route.get(
-                    "accentColor",
-                    "#F59E0B"
-                ),
-                "coordinates": backend_route["coordinates"],
-                "breakdown": ai_route.get(
-                    "breakdown",
-                    []
-                )
-            })
+        route_suggestions.append({
+            "id": route_id,
+            "name": ai_route.get("name") or f"Route {i + 1}",
+            "origin": f"{s.lat:.4f}, {s.lng:.4f}",
+            "destination": f"{d.lat:.4f}, {d.lng:.4f}",
+            "routeType": req.travelMode,
+            "safetyScore": scores["safetyScore"],
+            "distance": route["distance"],
+            "duration": route["duration"],
+            "summary": ai_route.get("summary") or "Score based on real crime, accident, and street-lighting data for this route.",
+            "accentColor": scores["accentColor"],
+            "coordinates": route["coordinates"],
+            "breakdown": scores["breakdown"],
+        })
     merge_end = time.perf_counter()
 
     print(
         f"[TIME] Merge routes: "
         f"{merge_end - merge_start:.2f} sec"
     )
-    # ---------------------------------------------------
-    # FALLBACK
-    # ---------------------------------------------------
-
-    if not route_suggestions:
-        for i, route in enumerate(routes):
-            route_suggestions.append({
-                "id": route["id"],
-                "name": f"Route {i+1}",
-                "origin": f"{s.lat:.4f}, {s.lng:.4f}",
-                "destination": f"{d.lat:.4f}, {d.lng:.4f}",
-                "safetyScore": 50,
-                "distance": route["distance"],
-                "duration": route["duration"],
-                "routeType": "driving",
-                "summary": "AI analysis unavailable. Showing raw route data.",
-                "accentColor": "#F59E0B",
-                "coordinates": route["coordinates"],
-                "breakdown": [
-                    {
-                        "label": "Accident Risk",
-                        "score": 50
-                    },
-                    {
-                        "label": "Crime Level",
-                        "score": 50
-                    },
-                    {
-                        "label": "Street Lighting",
-                        "score": 50
-                    }
-                ]
-            })
     api_end = time.perf_counter()
 
     print(
         f"[TIME] TOTAL API: "
         f"{api_end - api_start:.2f} sec"
     )
+
+    # Trace this route search in Langfuse (best-effort; never breaks routing).
+    # This is the single source of truth for the admin "User Search Logs".
+    log_route_search_trace(
+        guest_id=guest_id,
+        session_id=route_session_id,
+        start_name=req.startName,
+        dest_name=req.destinationName,
+        start_coords=f"{s.lat:.5f}, {s.lng:.5f}",
+        dest_coords=f"{d.lat:.5f}, {d.lng:.5f}",
+        route_suggestions=route_suggestions,
+        ai_ok=bool(ai_routes),
+        duration_s=api_end - api_start,
+    )
+
     return {
         "route_suggestions": route_suggestions
     }
+
+
+async def score_routes_with_ai(prompt: str) -> list[dict]:
+    messages = [{"role": "user", "content": prompt}]
+    last_err = None
+
+    for _ in range(2):  # initial try + one retry
+        resp = await litellm_client.chat.completions.create(
+            model="deepseek/deepseek-v3.2",
+            messages=messages,
+            response_format={"type": "json_object"},  # forces valid JSON
+            max_tokens=2000,                           # high, so it never truncates
+            temperature=0,                             # deterministic scoring
+        )
+
+        # Read CONTENT ONLY — never reasoning_content. This kills the Chinese leak.
+        content = resp.choices[0].message.content or ""
+
+        # Defensive: if the proxy ever merges reasoning in, drop everything
+        # up to and including the last </think>.
+        if "</think>" in content:
+            content = content.rsplit("</think>", 1)[-1].strip()
+
+        if not content:
+            last_err = "empty content"
+            messages.append({"role": "user",
+                             "content": "You returned empty content. Return only the JSON object."})
+            continue
+
+        try:
+            parsed = AIRouteList.model_validate_json(content)
+            return [r.model_dump() for r in parsed.routes]
+        except Exception as e:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
+            last_err = str(e)
+            messages.append({"role": "assistant", "content": content})
+            messages.append({"role": "user",
+                             "content": f"Your last response was invalid: {e}. "
+                                        "Return ONLY a JSON object matching the schema. "
+                                        "All scores must be integers 0-100."})
+
+    print("AI scoring failed:", last_err)
+    print("Message:", messages)
+    return []  # your existing fallback block then takes over
+
+@app.on_event("startup")
+def _startup() -> None:
+    init_db()
+
+class IncidentCreate(BaseModel):
+    reporterName: str | None = None
+    incidentType: str
+    location: str
+    latitude: float | None = None
+    longitude: float | None = None
+    date: str          # "YYYY-MM-DD"
+    time: str          # "HH:MM"
+    details: str
+
+class IncidentOut(BaseModel):
+    id: int
+    reporterName: str | None
+    incidentType: str
+    location: str
+    latitude: float | None
+    longitude: float | None
+    date: str
+    time: str
+    details: str
+    submittedBy: str | None
+    createdAt: str
+
+    @staticmethod
+    def from_row(r: IncidentReport) -> "IncidentOut":
+        return IncidentOut(
+            id=r.id, reporterName=r.reporter_name, incidentType=r.incident_type,
+            location=r.location, latitude=r.latitude, longitude=r.longitude,
+            date=r.incident_date.isoformat(), time=r.incident_time,
+            details=r.details,
+            submittedBy=r.submitted_by, createdAt=r.created_at.isoformat(),
+        )
+
+# Member/Admin only: submit a report. Always records who submitted it.
+@app.post("/api/incidents", response_model=IncidentOut)
+def create_incident(
+    payload: IncidentCreate,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_member),
+):
+    row = IncidentReport(
+        reporter_name=(payload.reporterName or "Anonymous"),
+        incident_type=payload.incidentType,
+        location=payload.location,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
+        incident_date=date.fromisoformat(payload.date),
+        incident_time=payload.time,
+        details=payload.details,
+        submitted_by=(user.get("email") or user.get("preferred_username") or user.get("sub")),
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return IncidentOut.from_row(row)
+
+# Member/Admin only: recent reports for the form's "Recently Submitted Reports" panel.
+@app.get("/api/incidents/recent")
+def recent_incidents(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    _member=Depends(require_member),
+):
+    rows = db.execute(
+        select(IncidentReport).order_by(desc(IncidentReport.created_at)).limit(limit)
+    ).scalars().all()
+    return {"incidents": [IncidentOut.from_row(r).model_dump() for r in rows]}
+
+# Admin only: full list for the admin table, newest first, optional status filter.
+@app.get("/api/admin/incidents")
+def admin_incidents(
+    status: str | None = None, limit: int = 100,
+    db: Session = Depends(get_db), _admin=Depends(require_admin),
+):
+    stmt = select(IncidentReport)
+    if status and status != "All":
+        stmt = stmt.where(IncidentReport.status == status)
+    stmt = stmt.order_by(desc(IncidentReport.created_at)).limit(limit)
+    rows = db.execute(stmt).scalars().all()
+    return {"incidents": [IncidentOut.from_row(r).model_dump() for r in rows]}

@@ -90,27 +90,46 @@ services:
   # the UI. Export updated flows from the Langflow UI and commit the JSON.
   # ----------------------------------------------------------------------------
   langflow:
-    image: langflowai/langflow:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.langflow
+    image: langflow-langfuse:pinned
     container_name: langflow
     ports:
       - "7860:7860"
+    env_file:
+      - .env
     environment:
       #LANGFLOW_LOAD_FLOWS_PATH: /app/flows
-      LANGFLOW_CONFIG_DIR: /app/langflow
-      LANGFLOW_DATABASE_URL: postgresql://langflow:langflow@postgres:5432/langflow
-      LANGFLOW_AUTO_LOGIN: 'true'
-      LANGFLOW_SKIP_AUTH_AUTO_LOGIN: 'true'
-      LANGFLOW_CORS_ORIGINS: 'http://localhost:8080,http://127.0.0.1:8080'
-      LANGFLOW_CORS_ALLOW_METHODS: 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
-      LANGFLOW_CORS_ALLOW_HEADERS: 'Content-Type,Authorization,x-api-key'
-      LANGFLOW_CORS_ALLOW_CREDENTIALS: 'True' 
-      LANGFLOW_SSRF_ALLOWED_HOSTS: 'backend.local,backend,host.docker.internal'     
+      - LANGFLOW_CONFIG_DIR=/app/langflow
+      - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
+      - LANGFLOW_AUTO_LOGIN=True
+      - LANGFLOW_SKIP_AUTH_AUTO_LOGIN=True
+      - LANGFLOW_CORS_ORIGINS= http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173
+      - LANGFLOW_CORS_ALLOW_HEADERS=["Content-Type","Authorization","x-api-key"]
+      - LANGFLOW_CORS_ALLOW_METHODS=["GET","POST","PUT","PATCH","DELETE","OPTIONS"]
+      - LANGFLOW_CORS_ALLOW_CREDENTIALS=True 
+      - LANGFLOW_SSRF_ALLOWED_HOSTS= backend.local,backend,host.docker.internal    
     volumes:
       #- ./langflow/flows:/app/flows
       - langflow-data:/app/langflow
     restart: unless-stopped
     networks:
       - langflow-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    command: start-dev --import-realm       # built-in H2, HTTP, relaxed hostname
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8090:8080"
+    networks:
+      - langflow-net                         # 8081 is taken by openstreetmap; use 8090
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import:ro   # optional auto-import (D4)
+      - keycloak_data:/opt/keycloak/data
       
   postgres:
     # Pinned to a specific Debian base (trixie) so the postgres:16 tag does not
@@ -122,18 +141,120 @@ services:
       POSTGRES_USER: langflow
       POSTGRES_PASSWORD: langflow
       POSTGRES_DB: langflow
-    # ports:
-      # - "5432:5432"
+    ports:
+      - "5432:5432"
     networks:
       - langflow-net
 
     volumes:
       - langflow-postgres:/var/lib/postgresql/data
- 
+
+  mcp:
+    build: ./backend
+    working_dir: /app/mcp
+    command: ["python", "mcp_server.py"]
+    volumes:
+      - ./backend:/app
+    networks:
+      - langflow-net   # <-- must share a network with `backend` so it can resolve "mcp"
+
+  # ----------------------------------------------------------------------------
+  # OSRM walking-profile routing engine (run-only)
+  #
+  # Serves real pedestrian routes for travelMode="walking". The public OSRM
+  # demo server (used for driving) does NOT actually have a foot dataset —
+  # verified by comparing its /route/v1/driving/ and /route/v1/foot/ responses
+  # for the same two points: identical distance/duration, i.e. "foot" silently
+  # falls back to driving-speed results instead of erroring. Self-hosting with
+  # OSRM's bundled foot.lua profile gives real walking routes/durations.
+  #
+  # NOTE: expects the `osrm-foot-data` volume to already contain a processed
+  # Berlin extract. On a fresh machine you MUST run `osrm-foot-import` first
+  # (see below) before this serves real routes.
+  # ----------------------------------------------------------------------------
+  osrm-foot:
+    image: osrm/osrm-backend
+    command: osrm-routed --algorithm mld /data/berlin-latest.osrm
+    volumes:
+      - osrm-foot-data:/data
+    ports:
+      - "5001:5000"        # host access for debugging; backend uses http://osrm-foot:5000 internally
+    networks:
+      - langflow-net       # <-- must share a network with `backend` so it can resolve "osrm-foot"
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # OSRM walking-profile data build (one-shot, TWO steps)
+  #
+  # Step 1 (osrm-foot-download) fetches Berlin's .osm.pbf using a small,
+  # actively-maintained Alpine image. Step 2 (osrm-foot-import) preprocesses
+  # it with OSRM's bundled foot.lua profile (extract -> partition ->
+  # customize, the MLD pipeline).
+  #
+  # Why two separate images: osrm/osrm-backend is built on Debian Stretch,
+  # which is EOL — its apt mirrors (deb.debian.org) 404 on `apt-get update`,
+  # so installing wget/curl *inside* that image doesn't work anymore. Alpine's
+  # package index isn't EOL, so downloading there and handing the file off via
+  # the shared volume sidesteps the problem entirely.
+  #
+  # Run once on a fresh machine, in order:
+  #
+  #   docker compose -f docker-compose.dev.yml --profile setup run --rm osrm-foot-download
+  #   docker compose -f docker-compose.dev.yml --profile setup run --rm osrm-foot-import
+  #
+  # A city-sized extract takes a few minutes (much lighter than the tile
+  # server's osm-import). After both finish, `osrm-foot` will serve real
+  # walking routes.
+  # ----------------------------------------------------------------------------
+  osrm-foot-download:
+    image: alpine:3.20
+    profiles: ["setup"]
+    volumes:
+      - osrm-foot-data:/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        if [ -f /data/berlin-latest.osm.pbf ]; then
+          echo "Berlin extract already present, skipping download."
+        else
+          apk add --no-cache curl
+          echo "Downloading Berlin extract..."
+          curl -fSL -o /data/berlin-latest.osm.pbf https://download.geofabrik.de/europe/germany/berlin-latest.osm.pbf
+        fi
+
+  osrm-foot-import:
+    image: osrm/osrm-backend
+    profiles: ["setup"]
+    volumes:
+      - osrm-foot-data:/data
+    entrypoint: ["/bin/bash", "-c"]
+    # IMPORTANT: `command` must be a YAML list with the whole script as ONE
+    # element (via the `- |` block scalar below). A bare `command: |` string
+    # gets word-split by Compose into many separate arguments — `bash -c`
+    # then only treats the first word as the script and turns everything
+    # else into stray positional parameters ($1, $2, ...), so nothing in
+    # the script actually runs. This bit us once already; keep it a list.
+    command:
+      - |
+        set -e
+        if [ ! -f /data/berlin-latest.osm.pbf ]; then
+          echo "ERROR: /data/berlin-latest.osm.pbf not found — run osrm-foot-download first." >&2
+          exit 1
+        fi
+        osrm-extract -p /opt/foot.lua /data/berlin-latest.osm.pbf
+        osrm-partition /data/berlin-latest.osrm
+        osrm-customize /data/berlin-latest.osrm
+        echo "OSRM foot-profile data build complete."
+
+
 volumes:
   langflow-data:
   langflow-postgres:
   berlin-data:
+  keycloak_data:
+  osrm-foot-data:
+
 
 
 networks:

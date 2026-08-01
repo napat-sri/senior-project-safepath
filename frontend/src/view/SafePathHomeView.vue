@@ -1,114 +1,140 @@
 <template>
-    <v-layout class="app-shell">
-        <SafePathNavDrawer />
-        <v-main>
-            <v-container fluid>
-                <v-card class="mb-4" rounded="lg">
-                    <v-card-text>
-                        <v-card-title>Find your safest Berlin route</v-card-title>
-                        <v-card-subtitle>
-                            Compare route options, validate Berlin-only locations, and inspect detailed route safety
-                            before you
-                            go.
-                        </v-card-subtitle>
-                    </v-card-text>
-                </v-card>
-                <v-row>
-                    <v-col cols="12" lg="4">
-                        <v-card rounded="lg" elevation="2" class="mb-4">
-                            <v-card-title>Route Search</v-card-title>
-                            <v-card-subtitle>Search safer paths using live route intelligence.</v-card-subtitle>
-                            <v-card-subtitle>Type a district, station, or landmark to see suggestions.</v-card-subtitle>
-                            <v-card-text>
-                                <v-form @submit.prevent="searchRoute">
-                                    <v-text-field v-model="startLocation" label="📍 Start Location"
-                                        placeholder="e.g., Alexanderplatz" variant="outlined" density="comfortable"
-                                        :error-messages="startError ? [startError] : []" @focus="startFocused = true"
-                                        @blur="handleFieldBlur('start')" />
-                                    <v-list v-if="startSuggestions.length && startFocused" density="compact"
-                                        class="mb-3 suggestion-list">
-                                        <v-list-item v-for="suggestion in startSuggestions"
-                                            :key="`start-${suggestion.name}`" :title="suggestion.name"
-                                            @mousedown.prevent="selectSuggestion('start', suggestion)" />
-                                    </v-list>
-                                    <v-text-field v-model="destination" label="🚩 Destination"
-                                        placeholder="e.g., Brandenburg Gate" variant="outlined" density="comfortable"
-                                        :error-messages="destinationError ? [destinationError] : []"
-                                        @focus="destinationFocused = true" @blur="handleFieldBlur('destination')" />
-                                    <v-list v-if="destinationSuggestions.length && destinationFocused" density="compact"
-                                        class="mb-3 suggestion-list">
-                                        <v-list-item v-for="suggestion in destinationSuggestions"
-                                            :key="`destination-${suggestion.name}`" :title="suggestion.name"
-                                            @mousedown.prevent="selectSuggestion('destination', suggestion)" />
-                                    </v-list>
-                                    <v-alert v-if="searchError" type="error" variant="tonal" density="compact"
-                                        class="mb-3">
-                                        {{ searchError }}
-                                    </v-alert>
-                                    <div class="d-flex ga-2">
-                                        <v-btn color="primary" type="submit" :loading="searchLoading">Search Safe
-                                            Route</v-btn>
-                                        <v-btn variant="outlined" @click="searchClear">Clear</v-btn>
-                                    </div>
-                                </v-form>
-                            </v-card-text>
-                        </v-card>
-                        <v-card v-if="showResults" rounded="lg" elevation="2">
-                            <v-card-title class="d-flex justify-space-between align-center">
-                                <span>Suggested Routes</span>
-                                <v-chip size="small" color="primary" variant="tonal">{{ routes.length }} routes</v-chip>
-                            </v-card-title>
-                            <v-card-subtitle>Route options appear below your search and can be opened in
-                                detail.</v-card-subtitle>
-                            <v-card-text>
-                                <v-alert v-if="routes.length === 0" type="info" variant="tonal">No routes
-                                    found.</v-alert>
-                                <v-card v-for="route in routes" :key="route.id" variant="outlined" class="mb-3"
-                                    rounded="lg">
-                                    <v-card-text>
-                                        <div class="d-flex justify-space-between align-start mb-2">
-                                            <div>
-                                                <p class="text-overline text-medium-emphasis">{{ route.routeType }}</p>
-                                                <h4 class="text-h6">{{ route.name }}</h4>
-                                            </div>
-                                            <v-chip :style="scorePillStyle(route.safetyScore)">{{ route.safetyScore
-                                                }}/100</v-chip>
-                                        </div>
-                                        <div
-                                            class="d-flex justify-space-between text-caption text-medium-emphasis mb-2">
-                                            <span>Distance {{ route.distance }}</span>
-                                            <span>Time {{ route.duration }}</span>
-                                        </div>
-                                        <v-progress-linear :model-value="route.safetyScore" height="9" rounded
-                                            :color="route.accentColor || getSafetyTone(route.safetyScore).color"
-                                            class="mb-3" />
-                                        <p class="text-body-2 mb-3">{{ route.summary }}</p>
-                                        <div class="d-flex justify-space-between align-center">
-                                            <v-btn size="small" variant="tonal" color="primary"
-                                                @click="openRouteDetails(route.id)">
-                                                View Details
-                                            </v-btn>
-                                        </div>
-                                    </v-card-text>
-                                </v-card>
-                            </v-card-text>
-                        </v-card>
-                    </v-col>
-                    <v-col cols="12" lg="8">
-                        <v-card rounded="lg" elevation="2">
-                            <v-card-title>Berlin Safety Map</v-card-title>
-                            <v-card-text>
-                                <div id="map-container">
-                                    <div id="home-map"></div>
+    <SafePathNavDrawer />
+    <v-main>
+        <v-container fluid>
+            <v-card class="mb-4" rounded="lg">
+                <v-card-text>
+                    <v-card-title>Find your safest Berlin route</v-card-title>
+                    <v-card-subtitle>
+                        Compare route options, validate Berlin-only locations, and inspect detailed route safety
+                        before you
+                        go.
+                    </v-card-subtitle>
+                </v-card-text>
+            </v-card>
+            <v-row>
+                <v-col cols="12" lg="4">
+                    <v-card rounded="lg" elevation="2" class="mb-4">
+                        <v-card-title>Route Search</v-card-title>
+                        <v-card-subtitle>Search safer paths using live route intelligence.</v-card-subtitle>
+                        <v-card-subtitle>Type a district, station, or landmark to see suggestions.</v-card-subtitle>
+                        <v-card-text>
+                            <v-form @submit.prevent="searchRoute">
+                                <v-text-field v-model="startLocation" label="📍 Start Location"
+                                    placeholder="e.g., Alexanderplatz" variant="outlined" density="comfortable"
+                                    :error-messages="startError ? [startError] : []" @focus="startFocused = true"
+                                    @blur="handleFieldBlur('start')" />
+                                <v-list v-if="startSuggestions.length && startFocused" density="compact"
+                                    class="mb-3 suggestion-list">
+                                    <v-list-item v-for="suggestion in startSuggestions"
+                                        :key="`start-${suggestion.display_name}`" :title="suggestion.display_name"
+                                        @mousedown.prevent="selectSuggestion('start', suggestion)" />
+                                </v-list>
+                                <v-text-field v-model="destination" label="🚩 Destination"
+                                    placeholder="e.g., Brandenburg Gate" variant="outlined" density="comfortable"
+                                    :error-messages="destinationError ? [destinationError] : []"
+                                    @focus="destinationFocused = true" @blur="handleFieldBlur('destination')" />
+                                <v-list v-if="destinationSuggestions.length && destinationFocused" density="compact"
+                                    class="mb-3 suggestion-list">
+                                    <v-list-item v-for="suggestion in destinationSuggestions"
+                                        :key="`destination-${suggestion.display_name}`" :title="suggestion.display_name"
+                                        @mousedown.prevent="selectSuggestion('destination', suggestion)" />
+                                </v-list>
+                                <v-alert v-if="searchError" type="error" variant="tonal" density="compact" class="mb-3">
+                                    {{ searchError }}
+                                </v-alert>
+                                <div class="mb-3">
+                                    <div class="text-caption text-medium-emphasis mb-1">Travel mode</div>
+                                    <v-btn-toggle v-model="travelMode" mandatory color="primary"
+                                        density="comfortable" variant="outlined" divided>
+                                        <v-btn value="walking" prepend-icon="mdi-walk">Walking</v-btn>
+                                        <v-btn value="driving" prepend-icon="mdi-car">Driving</v-btn>
+                                    </v-btn-toggle>
                                 </div>
-                            </v-card-text>
-                        </v-card>
-                    </v-col>
-                </v-row>
-                <div id="chat-container"></div>
-            </v-container>
-        </v-main>
-    </v-layout>
+                                <div class="d-flex ga-2">
+                                    <v-btn color="primary" type="submit" :loading="searchLoading">Search Safe
+                                        Route</v-btn>
+                                    <v-btn variant="outlined" @click="searchClear">Clear</v-btn>
+                                </div>
+                            </v-form>
+                        </v-card-text>
+                    </v-card>
+                    <v-card v-if="showResults && !searchLoading" rounded="lg" elevation="2">
+                        <v-card-title class="d-flex justify-space-between align-center">
+                            <span>Suggested Routes</span>
+                            <v-chip v-if="routes.length == 1" size="small" color="primary" variant="tonal">
+                                {{ routes.length }} route
+                            </v-chip>
+                            <v-chip v-if="routes.length > 1" size="small" color="primary" variant="tonal">
+                                {{ routes.length }} routes
+                            </v-chip>
+                        </v-card-title>
+                        <v-card-subtitle>
+                            Routes appear below and can be opened indetail.
+                        </v-card-subtitle>
+                        <v-card-text>
+                            <v-alert v-if="routes.length === 0" type="info" variant="tonal">No routes
+                                found.</v-alert>
+                            <v-card v-for="route in routes" :key="route.id" variant="outlined" class="mb-3"
+                                rounded="lg">
+                                <v-card-text>
+                                    <div class="d-flex justify-space-between align-start mb-2">
+                                        <div>
+                                            <p class="text-overline text-medium-emphasis">{{ route.routeType }}</p>
+                                            <h4 class="text-h6">{{ route.name }}</h4>
+                                        </div>
+                                        <v-chip :style="scorePillStyle(route.safetyScore)">{{ route.safetyScore
+                                        }}/100</v-chip>
+                                    </div>
+                                    <div class="d-flex justify-space-between text-caption text-medium-emphasis mb-2">
+                                        <span>Distance {{ route.distance }}</span>
+                                        <span>Time {{ route.duration }}</span>
+                                    </div>
+                                    <v-progress-linear :model-value="route.safetyScore" height="9" rounded
+                                        :color="route.accentColor || getSafetyTone(route.safetyScore).color"
+                                        class="mb-3" />
+                                    <p class="text-body-2 mb-3">{{ route.summary }}</p>
+                                    <div class="d-flex justify-space-between align-center">
+                                        <v-btn size="small" variant="tonal" color="primary"
+                                            @click="handleViewDetails(route.id)">
+                                            View Details
+                                        </v-btn>
+                                    </div>
+                                </v-card-text>
+                            </v-card>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+                <v-col cols="12" lg="8">
+                    <v-card rounded="lg" elevation="2">
+                        <v-card-title>Berlin Safety Map</v-card-title>
+                        <v-card-text>
+                            <div id="map-container">
+                                <div id="home-map"></div>
+                            </div>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+            <div id="chat-container"></div>
+
+            <!-- Guests must sign in before opening detailed route safety. -->
+            <v-dialog v-model="dialog" max-width="400" persistent>
+                <v-card prepend-icon="mdi-lock"
+                    title="Login required"
+                    text="Viewing detailed route safety is available to registered users only.">
+                    <v-card-text>
+                        Please log in to continue.
+                    </v-card-text>
+                    <template v-slot:actions>
+                        <v-spacer></v-spacer>
+                        <v-btn @click="dialog = false">Cancel</v-btn>
+                        <v-btn variant="outlined" color="primary" @click="goToLogin">Login</v-btn>
+                    </template>
+                </v-card>
+            </v-dialog>
+        </v-container>
+    </v-main>
 </template>
 <script setup>
 import L from 'leaflet';
@@ -128,6 +154,7 @@ import {
 import { mountLangflowChat } from '../utils/langflowChat';
 import { placeService, routeService } from '../services/api';
 import { getIdentity } from '../utils/identity';
+import keycloak from '../services/keycloak';
 
 //const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png'; //dev
 //const TILE_URL = process.env.VUE_APP_TILE_URL || 'https://osm.safepath.duckdns.org/tile/{z}/{x}/{y}.png'; //prod
@@ -145,11 +172,13 @@ const map = ref(null);
 const routeOverlay = ref(null);
 const startLocation = ref('');
 const destination = ref('');
+const travelMode = ref('walking'); // 'walking' or 'driving' — sent to /api/routes/safe
 const startTouched = ref(false);
 const destinationTouched = ref(false);
 const startFocused = ref(false);
 const destinationFocused = ref(false);
 const showResults = ref(false);
+const dialog = ref(false)
 const searchError = ref('');
 const searchLoading = ref(false);
 const routes = ref([]); // Replace the computed with a ref
@@ -217,14 +246,14 @@ watch(destination, async (value) => {
 function selectSuggestion(type, suggestion) {
     if (type === 'start') {
         skipStartWatch.value = true;
-        startLocation.value = suggestion.name;
+        startLocation.value = suggestion.display_name;
         selectedStartPlace.value = suggestion;
         startSuggestions.value = [];
         startFocused.value = false;
     }
     if (type === 'destination') {
         skipDestinationWatch.value = true;
-        destination.value = suggestion.name;
+        destination.value = suggestion.display_name;
         selectedDestinationPlace.value = suggestion;
         destinationSuggestions.value = [];
         destinationFocused.value = false;
@@ -260,6 +289,7 @@ async function fetchSafeRoute() {
             destination: { lat: destCoords.lat, lng: destCoords.lng },
             startName: startLocation.value,
             destinationName: destination.value,
+            travelMode: travelMode.value,
             // Anonymous guest tracking for Langfuse (until real auth exists).
             ...getIdentity(),
         };
@@ -335,6 +365,18 @@ function initMap() {
 function initChat() {
     mountLangflowChat('chat-container');
 }
+// Gate "View Details" behind auth: guests get the login prompt, members navigate.
+function handleViewDetails(routeId) {
+    if (!keycloak.authenticated) {
+        dialog.value = true;
+        return;
+    }
+    openRouteDetails(routeId);
+}
+function goToLogin() {
+    dialog.value = false;
+    router.push('/login');
+}
 function openRouteDetails(routeId) {
     // Save search state to sessionStorage before navigating
     sessionStorage.setItem('searchState', JSON.stringify({
@@ -357,7 +399,6 @@ function openRouteDetails(routeId) {
 function searchRoute() {
     hasSearched.value = true;
     searchError.value = '';
-    showResults.value = true;
     fetchSafeRoute();
 }
 function searchClear() {
@@ -365,6 +406,7 @@ function searchClear() {
     searchError.value = '';
     startLocation.value = '';
     destination.value = '';
+    travelMode.value = 'walking';
     routes.value = [];
     selectedStartPlace.value = null;
     selectedDestinationPlace.value = null;
@@ -395,22 +437,23 @@ onBeforeUnmount(() => {
 });
 </script>
 <style scoped>
-.app-shell {
-    min-height: 100vh;
-}
 .suggestion-list {
     border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
     border-radius: 12px;
+    cursor: pointer;
 }
+
 #map-container {
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
+
 #home-map {
     width: 100%;
     min-height: 380px;
 }
+
 /*
  * The Langflow widget is injected into #chat-container. By default the div is a
  * full-width block at the bottom of <v-main>, so it overlaps the page and blocks

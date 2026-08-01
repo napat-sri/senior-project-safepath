@@ -1,89 +1,76 @@
 <template>
-    <v-layout class="app-shell">
-        <SafePathNavDrawer />
+    <SafePathNavDrawer />
 
-        <v-main>
-            <v-container fluid class="pa-4 pa-md-6">
-                <v-card class="mb-3" rounded="lg" elevation="2">
-                    <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+    <v-main>
+        <v-container fluid class="pa-3 pa-md-6">
+            <v-row class="align-center justify-center">
+                <v-col cols="9">
+                    <v-card-title>
                         Profile Settings
-                        <v-btn variant="tonal" color="error" @click="logout">Logout</v-btn>
                     </v-card-title>
-                    <v-card-subtitle class="text-medium-emphasis mb-2">Manage account details, image, and
-                        privacy-sensitive actions.
-                    </v-card-subtitle>
-                </v-card>
+                </v-col>
+            </v-row>
 
-                <v-alert variant="outlined" color="warning" icon="$warning" rounded="lg" elevation="2" class="mb-4"
-                    title="Privacy Notice" text="SafePath Berlin uses account information only for login, profile settings, 
-                    route features, and safety preferences.">
-                </v-alert>
+            <v-row class="align-start justify-center">
+                <v-col cols="9">
+                    <v-card rounded="lg" elevation="2" class="mb-2">
+                        <v-card-text class="d-flex align-center flex-wrap ga-4 ml-3">
+                            <v-avatar size="72" variant="tonal">
+                                <v-img v-if="profilePreview" :src="profilePreview" alt="Profile preview" cover />
+                                <span v-else class="text-h6">{{ userInitials }}</span>
+                            </v-avatar>
 
-                <v-row>
-                    <v-col cols="12">
-                        <v-card rounded="lg" elevation="2" class="mb-4">
-                            <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
-                                Account Overview
-                                <div></div>
-                                <v-btn variant="tonal" color="primary" @click="openEditModal()">Edit Profile</v-btn>
-                            </v-card-title>
+                            <v-list>
+                                <v-list-item :title=user.name :subtitle="isAdmin ? 'Admin' : 'Member'" />
+                            </v-list>
+                            <v-spacer />
+                            <v-btn prepend-icon="mdi-account-edit" variant="tonal" color="primary"
+                                @click="openEditModal()">Edit</v-btn>
+                        </v-card-text>
+                    </v-card>
 
-                            <v-card-text class="d-flex align-center flex-wrap ga-4">
-                                <v-avatar size="76" rounded="xl" color="primary" variant="tonal">
-                                    <v-img v-if="profilePreview" :src="profilePreview" alt="Profile preview" cover />
-                                    <span v-else class="text-h6">{{ userInitials }}</span>
-                                </v-avatar>
-
-                                <div>
-                                    <v-card-text class="text-h3">{{ user.name }}</v-card-text>
-                                    <v-card-subtitle class="text-medium-emphasis">{{ user.email }}</v-card-subtitle>
-                                </div>
-
-                                <v-spacer />
-                                <v-chip color="success" variant="tonal">Active</v-chip>
-                            </v-card-text>
-
-                            <v-divider />
-
-                            <v-card-text>
-                                <v-row>
-                                    <v-col cols="12" md="4">
-                                        <v-card variant="outlined" rounded="lg" subtitle="Login Provider"
-                                            prepend-icon="mdi-cog">
-                                            <v-card-text class="bg-surface-light pt-4">
-                                                <strong>{{ user.provider }}</strong>
-                                            </v-card-text>
-                                        </v-card>
-                                    </v-col>
-                                    <v-col cols="12" md="4">
-                                        <v-card variant="outlined" rounded="lg" subtitle="Member Since"
-                                            prepend-icon="mdi-calendar">
-                                            <v-card-text class="bg-surface-light pt-4">
-                                                <strong>{{ user.memberSince }}</strong>
-                                            </v-card-text>
-                                        </v-card>
-                                    </v-col>
-                                    <v-col cols="12" md="4">
-                                        <v-card variant="outlined" rounded="lg" subtitle="Account Type"
-                                            prepend-icon="mdi-account">
-                                            <v-card-text class="bg-surface-light pt-4">
-                                                <strong>{{ user.accountType }}</strong>
-                                            </v-card-text>
-                                        </v-card>
-                                    </v-col>
-                                </v-row>
-                            </v-card-text>
-                            <v-divider />
-                            <v-card-text>
-                                <v-btn variant="outlined" color="error" @click="openDeleteModal">Delete my
-                                    account</v-btn>
-                            </v-card-text>
-                        </v-card>
-                    </v-col>
-                </v-row>
-            </v-container>
-        </v-main>
-    </v-layout>
+                    <v-card rounded="lg" elevation="2" class="mb-2 pa-md-3">
+                        <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-2">
+                            Personal Information
+                        </v-card-title>
+                        <v-divider />
+                        <v-card-text>
+                            <v-row>
+                                <v-col cols="12" md="4">
+                                    <h4>First Name</h4>
+                                    <p class="font-weight-medium">{{ user.firstname }}</p>
+                                </v-col>
+                                <v-col cols="12" md="3">
+                                    <h4>Last Name</h4>
+                                    <p class="font-weight-medium">{{ user.lastname }}</p>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12" md="4">
+                                    <h4>Email address</h4>
+                                    <p class="font-weight-medium">{{ user.email }}</p>
+                                </v-col>
+                                <v-col cols="12" md="3">
+                                    <h4>Login Provider</h4>
+                                    <p class="font-weight-medium">{{ user.provider }}</p>
+                                </v-col>
+                                <v-col cols="12" md="3">
+                                    <h4>Member Since</h4>
+                                    <p class="font-weight-medium">{{ user.memberSince }}</p>
+                                </v-col>
+                            </v-row>
+                        </v-card-text>
+                    </v-card>
+                    <v-card rounded="lg" elevation="2" class="mb-3">
+                        <v-card-text>
+                            <v-btn variant="outlined" color="error" @click="openDeleteModal">Delete my
+                                account</v-btn>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </v-container>
+    </v-main>
 
     <v-dialog v-model="showEditModal" max-width="560">
         <v-card rounded="lg" elevation="2" class="mb-4" color="primary">
@@ -97,7 +84,7 @@
             <v-card-text class="bg-surface-light pt-4">
                 <v-row>
                     <v-col cols="12" md="4" class="d-flex flex-column align-center ga-3">
-                        <v-avatar size="132" rounded="xl" color="primary" variant="tonal">
+                        <v-avatar size="132" rounded="xl" variant="tonal">
                             <v-img v-if="profilePreview" :src="profilePreview" alt="Profile image" cover />
                             <span v-else class="text-h4">{{ userInitials }}</span>
                         </v-avatar>
@@ -160,7 +147,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import SafePathNavDrawer from '../components/SafePathNavDrawer.vue';
-// import keycloak from '../services/keycloak';
+import keycloak from '../services/keycloak';
 
 const router = useRouter();
 
@@ -168,24 +155,19 @@ const showDeleteModal = ref(false);
 const deleteConfirmText = ref('');
 const profilePreview = ref('');
 const showEditModal = ref(false);
+const isAdmin = computed(() => keycloak.authenticated && keycloak.hasRealmRole('Admin'));
 
-// const user = ref({
-//   name: keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'SafePath User',
-//   email: keycloak.tokenParsed?.email || '',
-//   provider: keycloak.tokenParsed?.identity_provider || 'email',
-//   memberSince: '',
-//   accountType: 'Standard',
-// });
+console.log(keycloak.tokenParsed)
 
 const user = ref({
-  name: 'SafePath User',
-  email: 'safepath@hotmail.com',
-  provider: 'email',
-  memberSince: 'June 2026',
-  accountType: 'Standard',
+    name: keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'SafePath User',
+    firstname: keycloak.tokenParsed?.given_name || '',
+    lastname: keycloak.tokenParsed?.family_name || '',
+    email: keycloak.tokenParsed?.email || '',
+    provider: keycloak.tokenParsed?.identity_provider || 'email',
+    memberSince: '',
+    accountType: 'Standard',
 });
-
-// const logout = () => keycloak.logout({ redirectUri: window.location.origin + '/login' });
 
 const editableProfile = ref({
     name: user.value.name,
@@ -263,8 +245,4 @@ const deleteAccount = () => {
 };
 </script>
 
-<style scoped>
-.app-shell {
-    min-height: 100vh;
-}
-</style>
+<style scoped></style>

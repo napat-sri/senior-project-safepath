@@ -27,7 +27,7 @@ from typing import Any
 
 # Reuse the cached client from the monitor module so we only build one
 # Langfuse client per process.
-from langfuse_monitor import get_client, LangfuseConfigError
+from langfuse_monitor import LangfuseConfigError, get_client
 
 # Label to pull. "production" is Langfuse's convention for the live version.
 PROMPT_LABEL = os.getenv("LANGFUSE_PROMPT_LABEL", "production")

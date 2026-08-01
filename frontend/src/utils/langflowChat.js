@@ -5,14 +5,10 @@ const LANGFLOW_SCRIPT_SRC = 'https://cdn.jsdelivr.net/gh/logspace-ai/langflow-em
 const LANGFLOW_WINDOW_TITLE = 'SafePath Bot';
 const LANGFLOW_FLOW_ID = process.env.VUE_APP_LANGFLOW_CHATBOT_FLOW_ID;
 const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY;
-console.log("FLOW_ID: ", LANGFLOW_FLOW_ID);
-console.log("API_KEY: ", LANGFLOW_API_KEY);
-// Langflow is private. The chat widget reaches it through the public frontend
-// gateway, which proxies /langflow/* to langflow:7860 (prefix stripped). This
-// keeps the call same-origin (no mixed-content / CORS issues).
-//const LANGFLOW_HOST_URL = process.env.VUE_APP_LANGFLOW_HOST || 'https://safepath.duckdns.org/langflow';
+//console.log("FLOW_ID: ", LANGFLOW_FLOW_ID);
+//console.log("API_KEY: ", LANGFLOW_API_KEY);
 const LANGFLOW_HOST_URL = process.env.VUE_APP_LANGFLOW_HOST
-console.log("HOST_URL: ", LANGFLOW_HOST_URL)
+//console.log("HOST_URL: ", LANGFLOW_HOST_URL)
 
 function mountChatWidget(containerId) {
   const chatContainer = document.getElementById(containerId);
