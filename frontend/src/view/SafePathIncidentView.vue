@@ -168,8 +168,6 @@ async function fetchSuggestions(query) {
     }
     try {
         const { data } = await placeService.search(query);
-        console.log("query: ", query)
-        console.log("data: ", data)
         const results = data.places || [];
         suggestionCache[normalizedQuery] = results;
         return results;
