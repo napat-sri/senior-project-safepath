@@ -110,7 +110,7 @@
                                 </v-card-text>
                             </v-card>
                             <div class="text-center">
-                                <v-pagination v-model="page" :length="pageCount":total-visible="5"></v-pagination>
+                                <v-pagination v-model="page" :length="pageCount" :total-visible="5"></v-pagination>
                             </div>
                         </v-card-text>
                     </v-card>
