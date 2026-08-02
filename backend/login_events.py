@@ -1,7 +1,7 @@
 """Poll Keycloak login events into the durable safepath.login_events table."""
 from __future__ import annotations
 
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone
 from functools import lru_cache
 from typing import Any
 
