@@ -2,7 +2,7 @@
     <v-layout>
         <v-main>
             <v-container fluid class="pa-4 pa-md-6">
-                <v-card id="search-logs" rounded="lg" elevation="2" class="mb-3">
+                <v-card id="login-logs" rounded="lg" elevation="2" class="mb-3">
                     <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
                         Login Log Explorer
                         <div class="d-flex align-center ga-2">
