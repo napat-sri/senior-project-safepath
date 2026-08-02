@@ -1,92 +1,86 @@
 <template>
-    <v-layout>
-        <v-main>
-            <v-container fluid class="pa-4 pa-md-6">
-                <v-card id="users" rounded="lg" elevation="2">
-                    <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
-                        User Management
-                        <div class="d-flex align-center ga-2">
-                            <v-text-field v-model="userSearch" label="Search by name or email" variant="outlined"
-                                density="compact" prepend-inner-icon="mdi-magnify" hide-details style="width: 300px"
-                                name="admin-user-search" autocomplete="off" clearable />
-                            <v-btn variant="outlined" color="primary" @click="openUserModal()"
-                                prepend-icon="mdi-account-plus">
-                                Add User
-                            </v-btn>
-                            <v-btn icon="mdi-refresh" variant="text" :loading="usersLoading" aria-label="Refresh user"
-                                @click="fetchUsers" />
-                        </div>
-                    </v-card-title>
-                    <v-card-subtitle class="text-medium-emphasis mb-2">
-                        Manage user roles and account status.
-                    </v-card-subtitle>
-                    <v-progress-linear v-if="usersLoading" indeterminate color="primary" />
-                    <v-card-text>
+    <v-container fluid class="pa-4 pa-md-6">
+        <v-card id="users" rounded="lg" elevation="2">
+            <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+                User Management
+                <div class="d-flex align-center ga-2">
+                    <v-text-field v-model="userSearch" label="Search by name or email" variant="outlined"
+                        density="compact" prepend-inner-icon="mdi-magnify" hide-details style="width: 300px"
+                        name="admin-user-search" autocomplete="off" clearable />
+                    <v-btn variant="outlined" color="primary" @click="openUserModal()" prepend-icon="mdi-account-plus">
+                        Add User
+                    </v-btn>
+                    <v-btn icon="mdi-refresh" variant="text" :loading="usersLoading" aria-label="Refresh user"
+                        @click="fetchUsers" />
+                </div>
+            </v-card-title>
+            <v-card-subtitle class="text-medium-emphasis mb-2">
+                Manage user roles and account status.
+            </v-card-subtitle>
+            <v-progress-linear v-if="usersLoading" indeterminate color="primary" />
+            <v-card-text>
 
-                        <v-alert v-if="usersError" type="error" variant="tonal" class="mb-3" closable
-                            @click:close="usersError = null">
-                            {{ usersError }}
-                        </v-alert>
+                <v-alert v-if="usersError" type="error" variant="tonal" class="mb-3" closable
+                    @click:close="usersError = null">
+                    {{ usersError }}
+                </v-alert>
 
-                        <v-data-table>
-                            <thead>
-                                <tr>
-                                    <th>Name/Email</th>
-                                    <th>Role</th>
-                                    <th>Provider</th>
-                                    <th>Created At</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-if="!logsLoading && !users.length">
-                                    <td colspan="6" class="text-center text-medium-emphasis py-6">No users found.</td>
-                                </tr>
-                                <tr v-for="user in users" :key="user.id">
-                                    <td>
-                                        <div class="d-flex align-center ga-2">
-                                            <v-avatar size="36" color="primary" variant="tonal">
-                                                <v-img v-if="user.avatar" :src="user.avatar" alt="Profile picture"
-                                                    cover />
-                                                <span v-else>{{ user.initial }}</span>
-                                            </v-avatar>
-                                            <div>
-                                                <div class="font-weight-medium">{{ user.name }}</div>
-                                                <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>{{ user.role }}</td>
-                                    <td>{{ user.provider }}</td>
-                                    <td>{{ user.createdAt }}</td>
-                                    <td>
-                                        <div class="d-flex ga-2">
-                                            <v-tooltip text="Edit">
-                                                <template v-slot:activator="{ props }">
-                                                    <v-btn size="small" variant="text" color="primary" v-bind="props"
-                                                        @click="openUserModal(user)" icon="mdi-pencil"></v-btn>
-                                                </template>
-                                            </v-tooltip>
-                                            <v-tooltip text="Delete">
-                                                <template v-slot:activator="{ props }">
-                                                    <v-btn size="small" variant="text" color="error" v-bind="props"
-                                                        @click="openDeleteUserModal(user)" icon="mdi-delete"></v-btn>
-                                                    <!-- @click="deleteUser(user.id)" icon="mdi-delete"></v-btn> -->
-                                                </template>
-                                            </v-tooltip>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </v-data-table>
-                        <div class="d-flex justify-end mt-3" v-if="totalUsers > pageSize">
-                            <v-pagination v-model="page" :length="Math.ceil(totalUsers / pageSize)" density="compact" />
-                        </div>
-                    </v-card-text>
-                </v-card>
-            </v-container>
-        </v-main>
-    </v-layout>
+                <v-data-table>
+                    <thead>
+                        <tr>
+                            <th>Name/Email</th>
+                            <th>Role</th>
+                            <th>Provider</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="!logsLoading && !users.length">
+                            <td colspan="6" class="text-center text-medium-emphasis py-6">No users found.</td>
+                        </tr>
+                        <tr v-for="user in users" :key="user.id">
+                            <td>
+                                <div class="d-flex align-center ga-2">
+                                    <v-avatar size="36" color="primary" variant="tonal">
+                                        <v-img v-if="user.avatar" :src="user.avatar" alt="Profile picture" cover />
+                                        <span v-else>{{ user.initial }}</span>
+                                    </v-avatar>
+                                    <div>
+                                        <div class="font-weight-medium">{{ user.name }}</div>
+                                        <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ user.role }}</td>
+                            <td>{{ user.provider }}</td>
+                            <td>{{ user.createdAt }}</td>
+                            <td>
+                                <div class="d-flex ga-2">
+                                    <v-tooltip text="Edit">
+                                        <template v-slot:activator="{ props }">
+                                            <v-btn size="small" variant="text" color="primary" v-bind="props"
+                                                @click="openUserModal(user)" icon="mdi-pencil"></v-btn>
+                                        </template>
+                                    </v-tooltip>
+                                    <v-tooltip text="Delete">
+                                        <template v-slot:activator="{ props }">
+                                            <v-btn size="small" variant="text" color="error" v-bind="props"
+                                                @click="openDeleteUserModal(user)" icon="mdi-delete"></v-btn>
+                                            <!-- @click="deleteUser(user.id)" icon="mdi-delete"></v-btn> -->
+                                        </template>
+                                    </v-tooltip>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </v-data-table>
+                <div class="d-flex justify-end mt-3" v-if="totalUsers > pageSize">
+                    <v-pagination v-model="page" :length="Math.ceil(totalUsers / pageSize)" density="compact" />
+                </div>
+            </v-card-text>
+        </v-card>
+    </v-container>
 
     <v-dialog v-model="showUserModal" max-width="560">
         <v-card rounded="lg" color="info">
