@@ -16,7 +16,7 @@
                     <v-progress-linear v-if="loginsLoading" indeterminate color="primary" />
                     <v-card-text>
                         <v-alert v-if="loginsError" type="error" variant="tonal" density="compact" class="mb-3">
-                            {{ logsError }}
+                            {{ loginsError }}
                         </v-alert>
                         <v-data-table :headers="loginEventHeaders" :items="filteredLoginEvents"
                             :loading="loginsLoading">
