@@ -42,10 +42,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { adminService, incidentService } from '../../services/api.js';
-
-const router = useRouter();
+import { adminService } from '../../services/api.js';
 
 const loginEvents = ref([]);
 const loginsLoading = ref(false);
