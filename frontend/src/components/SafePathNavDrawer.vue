@@ -140,6 +140,8 @@ const username = computed(
   () => keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'Account'
 );
 
+// console.log('API request config:', keycloak.token);
+
 // Home for everyone; member items when logged in; Dashboard only for admins.
 const navItems = computed(() => {
   if (props.items) return props.items;                       // explicit override still works

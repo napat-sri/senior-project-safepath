@@ -50,6 +50,9 @@
                     <v-tabs-window-item value="User Management">
                         <SafePathAdminUserManagement />
                     </v-tabs-window-item>
+                    <v-tabs-window-item value="Login Logs">
+                        <SafePathAdminLoginLogs />
+                    </v-tabs-window-item>
                 </v-tabs-window>
 
                 <!-- <v-card id="incidents" rounded="lg" elevation="2" class="mb-4">
@@ -112,6 +115,7 @@ import SafePathAdminOverview from '../admin/SafePathAdminOverview.vue';
 import SafePathAdminSearchLogs from '../admin/SafePathAdminSearchLogsView.vue';
 import SafePathAdminIncidentLogs from '../admin/SafePathAdminIncidentLogsView.vue';
 import SafePathAdminUserManagement from '../admin/SafePathAdminUserManagement.vue';
+import SafePathAdminLoginLogs from './SafePathAdminLoginLogsView.vue';
 
 const router = useRouter();
 
@@ -134,6 +138,7 @@ const items = [
     'Search Logs',
     'Incident Logs',
     'User Management',
+    'Login Logs',
 ];
 
 const goToHome = () => {

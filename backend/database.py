@@ -1,7 +1,7 @@
 import os
 from datetime import date, datetime
 
-from sqlalchemy import create_engine, BigInteger, Text, Date, Float, DateTime, func
+from sqlalchemy import create_engine, BigInteger, Text, Date, Float, DateTime, func, UniqueConstraint 
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import declarative_base, sessionmaker, Mapped, mapped_column
 
@@ -40,6 +40,26 @@ class IncidentReport(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
+class LoginEvent(Base):
+    __tablename__ = "login_events"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    event_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    type: Mapped[str] = mapped_column(Text, nullable=False)              # "LOGIN" | "LOGIN_ERROR"
+    user_id: Mapped[str | None] = mapped_column(Text, nullable=True)     # Keycloak sub
+    username: Mapped[str | None] = mapped_column(Text, nullable=True)
+    email: Mapped[str | None] = mapped_column(Text, nullable=True)
+    identity_provider: Mapped[str | None] = mapped_column(Text, nullable=True)  # Email/Google/…
+    client_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ip_address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    session_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)       # set on LOGIN_ERROR
+    dedup_key: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (UniqueConstraint("dedup_key", name="uq_login_events_dedup"),)
 
 def init_db() -> None:
     """Create tables if they don't exist (runs on backend startup)."""
