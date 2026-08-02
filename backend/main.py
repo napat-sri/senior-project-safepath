@@ -62,10 +62,16 @@ litellm_client = AsyncOpenAI(
 
 import keycloak_admin
 from datetime import date
-from sqlalchemy import select, desc
+from zoneinfo import ZoneInfo
+from sqlalchemy import select, desc, func
 from sqlalchemy.orm import Session
-from database import IncidentReport, init_db, get_db, UserProfile
+from database import IncidentReport, UserProfile, LoginEvent, init_db, get_db
 from auth import require_admin, require_member
+
+import asyncio
+import login_events
+
+POLL_SECONDS = int(os.getenv("LOGIN_EVENTS_POLL_SECONDS", "300"))  # 5 min default
 
 load_dotenv()
 
@@ -1081,3 +1087,54 @@ def set_my_avatar(payload: AvatarRequest, user=Depends(require_member), db: Sess
     profile.avatar = avatar or None
     db.commit()
     return {"saved": True}
+
+
+async def _login_events_poller():
+    while True:
+        try:
+            n = await asyncio.to_thread(login_events.sync_login_events)
+            if n:
+                print(f"[LOGIN-EVENTS] stored {n} new events")
+        except Exception as exc:
+            print(f"[LOGIN-EVENTS] poll failed: {exc}")   # never crash the loop
+        await asyncio.sleep(POLL_SECONDS)
+
+@app.on_event("startup")
+def _startup() -> None:
+    init_db()
+    asyncio.create_task(_login_events_poller())
+
+
+@app.get("/api/admin/login-events")
+def admin_login_events(
+    limit: int = 100, offset: int = 0,
+    db: Session = Depends(get_db), _admin=Depends(require_admin),
+):
+    stmt = (select(LoginEvent)
+            .order_by(desc(LoginEvent.event_time))
+            .limit(limit).offset(offset))
+    rows = db.execute(stmt).scalars().all()
+    total = db.execute(select(func.count()).select_from(LoginEvent)).scalar()
+    return {
+        "events": [{
+            "id": r.id,
+            "eventTime": r.event_time.astimezone(ZoneInfo("Europe/Berlin")).strftime("%Y-%m-%d %H:%M:%S"),
+            "type": r.type,
+            "user": r.username,
+            "email": r.email,
+            "provider": r.identity_provider,
+            "ip": r.ip_address,
+            "status": "Failed" if r.type == "LOGIN_ERROR" else "Success",
+        } for r in rows],
+        "total": total,
+    }
+
+@app.post("/api/admin/login-events/sync")
+def admin_login_events_sync(_admin=Depends(require_admin)):
+    """Trigger an immediate poll (used by the tab's Refresh button)."""
+    try:
+        return {"inserted": login_events.sync_login_events()}
+    except keycloak_admin.KeycloakConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")

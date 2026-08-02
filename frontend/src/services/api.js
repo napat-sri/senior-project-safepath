@@ -37,6 +37,9 @@ export const adminService = {
   createUser: (payload) => api.post('/admin/users', payload),
   updateUser: (id, payload) => api.put(`/admin/users/${id}`, payload),
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
+
+  loginEvents: (params = {}) => api.get('/admin/login-events', { params }),
+  syncLoginEvents: () => api.post('/admin/login-events/sync'),
 };
 export default api;
 
