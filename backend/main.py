@@ -1104,15 +1104,6 @@ def _startup() -> None:
     init_db()
     asyncio.create_task(_login_events_poller())
 
-class LoginEventOut(BaseModel):
-    id: int
-    eventTime: str
-    type: str
-    user: str | None
-    email: str | None
-    provider: str | None
-    ip: str | None
-    status: str            # "Success" | "Failed"
 
 @app.get("/api/admin/login-events")
 def admin_login_events(
