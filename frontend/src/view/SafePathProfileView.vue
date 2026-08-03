@@ -125,10 +125,6 @@ onMounted(async () => {
             user.value.memberSince = new Date(data.memberSince)
                 .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         }
-        const avatarRes = await userService.getAvatar();
-        if (avatarRes.data.avatar) {
-            profilePreview.value = avatarRes.data.avatar;
-        }
     } catch (err) {
         console.error('Failed to load profile', err);
     }
