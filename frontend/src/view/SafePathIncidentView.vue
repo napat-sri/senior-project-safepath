@@ -32,8 +32,8 @@
 
                                 <v-text-field v-model="reportLocation" label="Location"
                                     placeholder="e.g., Alexanderplatz" variant="outlined" density="comfortable"
-                                    :error-messages="startError ? [startError] : []" @focus="startFocused = true"
-                                    @blur="handleFieldBlur('start')" />
+                                    :error-messages="validationErrors.location ? [validationErrors.location] : []"
+                                    @focus="startFocused = true" @blur="handleFieldBlur('start')" />
                                 <v-list v-if="startSuggestions.length && startFocused" density="compact"
                                     class="mb-3 suggestion-list">
                                     <v-list-item v-for="suggestion in startSuggestions"
@@ -190,7 +190,7 @@ watch(reportLocation, async (value) => {
 
 function selectSuggestion(type, suggestion) {
     if (type === 'start') {
-        console.log(suggestion)
+        // console.log(suggestion)
         skipStartWatch.value = true;
         reportLocation.value = suggestion.display_name;
         selectedStartPlace.value = suggestion;
@@ -249,7 +249,7 @@ const incidentTypes = [
 const validateForm = () => {
     validationErrors.location = reportLocation.value.trim() ? '' : 'Location is required.';
     validationErrors.details = form.details.trim() ? '' : 'Incident details are required.';
-    console.log(form)
+    // console.log(form)
 
     return (
         form.incidentType &&
@@ -278,13 +278,13 @@ const submitReport = async () => {
         });
 
         // reset the form (same fields as today)
-        form.reporterName = '';
-        form.incidentType = '';
+        form.reporterName = null;
+        form.incidentType = null;
         form.location = '';
-        form.date = '';
-        form.time = '';
-        form.details = '';
-        reportLocation.value = '';
+        form.date = null;
+        form.time = null;
+        form.details = null;
+        reportLocation.value = null;
         selectedStartPlace.value = null;
 
         submitMessage.value = 'Incident report submitted successfully.';
