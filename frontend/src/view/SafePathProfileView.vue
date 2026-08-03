@@ -104,7 +104,6 @@ const router = useRouter();
 
 const showDeleteModal = ref(false);
 const deleteConfirmText = ref('');
-const showEditModal = ref(false);
 const isAdmin = computed(() => keycloak.authenticated && keycloak.hasRealmRole('Admin'));
 
 console.log(keycloak.tokenParsed)
