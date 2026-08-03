@@ -19,8 +19,8 @@
       <v-list-item v-if="isAuthenticated" :title="username" :subtitle="isAdmin ? 'Admin' : 'Member'">
         <template #prepend>
           <v-avatar size="40" color="primary" variant="tonal">
-            <v-img v-if="avatar" :src="avatar" alt="Profile picture" cover />
-            <v-icon v-else>mdi-account-circle</v-icon>
+            <v-icon v-if="isAdmin" icon="mdi-account-cog" color="warning"></v-icon>
+            <v-icon v-else icon="mdi-account" color="primary"></v-icon>
           </v-avatar>
         </template>
       </v-list-item>

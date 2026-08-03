@@ -53,6 +53,4 @@ export const incidentService = {
 export const userService = {
   me: () => api.get('/me'),
   deleteMe: () => api.delete('/me'),
-  getAvatar: () => api.get('/me/avatar'),
-  updateAvatar: (avatar) => api.put('/me/avatar', { avatar }),
 };
