@@ -304,4 +304,10 @@ const formatDateTime = (date, time) => {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.suggestion-list {
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-radius: 12px;
+    cursor: pointer;
+}
+</style>

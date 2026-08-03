@@ -5,7 +5,7 @@
                 User Search Logs
                 <div class="d-flex align-center ga-2">
                     <v-text-field v-model="searchLogFilter" label="Filter search logs" density="compact"
-                        variant="outlined" hide-details prepend-inner-icon="mdi-magnify" style="max-width: 250px" />
+                        variant="outlined" hide-details prepend-inner-icon="mdi-magnify" style="width: 300px" />
                     <v-btn icon="mdi-refresh" variant="text" :loading="logsLoading" aria-label="Refresh search logs"
                         @click="loadSearchLogs" />
                 </div>

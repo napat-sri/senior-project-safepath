@@ -67,7 +67,6 @@
                                         <template v-slot:activator="{ props }">
                                             <v-btn size="small" variant="text" color="error" v-bind="props"
                                                 @click="openDeleteUserModal(user)" icon="mdi-delete"></v-btn>
-                                            <!-- @click="deleteUser(user.id)" icon="mdi-delete"></v-btn> -->
                                         </template>
                                     </v-tooltip>
                                 </div>
