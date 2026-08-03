@@ -15,17 +15,14 @@
                 <v-col cols="9">
                     <v-card rounded="lg" elevation="2" class="mb-2">
                         <v-card-text class="d-flex align-center flex-wrap ga-4 ml-3">
-                            <v-avatar size="72" variant="tonal">
-                                <v-img v-if="profilePreview" :src="profilePreview" alt="Profile preview" cover />
-                                <span v-else class="text-h6">{{ userInitials }}</span>
+                            <v-avatar size="60" variant="tonal" color="primary">
+                                <v-icon v-if="isAdmin" icon="mdi-account-cog" color="warning" size="36"></v-icon>
+                                <v-icon v-else icon="mdi-account" color="primary" size="36"></v-icon>
                             </v-avatar>
 
                             <v-list>
                                 <v-list-item :title=user.name :subtitle="isAdmin ? 'Admin' : 'Member'" />
                             </v-list>
-                            <v-spacer />
-                            <v-btn prepend-icon="mdi-account-edit" variant="tonal" color="primary"
-                                @click="openEditModal()">Edit</v-btn>
                         </v-card-text>
                     </v-card>
 
@@ -72,53 +69,6 @@
         </v-container>
     </v-main>
 
-    <v-dialog v-model="showEditModal" max-width="560">
-        <v-card rounded="lg" elevation="2" class="mb-4" color="primary">
-            <template v-slot:title>
-                <span class="font-weight-black">Edit Profile</span>
-            </template>
-            <template v-slot:subtitle>
-                <span class="font-medium-black">Update display name and profile picture for your SafePath
-                    account.</span>
-            </template>
-            <v-card-text class="bg-surface-light pt-4">
-                <v-row>
-                    <v-col cols="12" md="4" class="d-flex flex-column align-center ga-3">
-                        <v-avatar size="132" rounded="xl" variant="tonal">
-                            <v-img v-if="profilePreview" :src="profilePreview" alt="Profile image" cover />
-                            <span v-else class="text-h4">{{ userInitials }}</span>
-                        </v-avatar>
-
-                    </v-col>
-
-                    <v-col cols="12" md="8">
-                        <v-text-field v-model="editableProfile.name" label="Display Name"
-                            placeholder="Enter your display name" variant="outlined" class="mb-3" />
-
-                        <v-text-field v-model="editableProfile.email" label="Email Address" variant="outlined"
-                            class="mb-2" disabled
-                            hint="Email is managed by your sign-in provider and cannot be changed here."
-                            persistent-hint />
-
-                        <v-file-input accept="image/*" label="Change picture" density="comfortable" variant="outlined"
-                            prepend-icon="mdi-camera" @change="handleProfileImageChange" />
-
-                        <v-btn v-if="profilePreview" color="error" variant="text" @click="removeProfileImage">
-                            Remove picture
-                        </v-btn>
-
-                        <v-card-actions>
-                            <v-spacer />
-                            <v-btn variant="text" @click="closeEditModal">Cancel</v-btn>
-                            <v-btn color="primary" @click="saveProfile">Save Profile</v-btn>
-                        </v-card-actions>
-
-                    </v-col>
-                </v-row>
-            </v-card-text>
-        </v-card>
-    </v-dialog>
-
     <v-dialog v-model="showDeleteModal" max-width="500">
         <v-card rounded="lg" color="error">
             <template v-slot:title>
@@ -154,8 +104,6 @@ const router = useRouter();
 
 const showDeleteModal = ref(false);
 const deleteConfirmText = ref('');
-const profilePreview = ref('');
-const showEditModal = ref(false);
 const isAdmin = computed(() => keycloak.authenticated && keycloak.hasRealmRole('Admin'));
 
 console.log(keycloak.tokenParsed)
@@ -167,23 +115,18 @@ const user = ref({
     email: keycloak.tokenParsed?.email || '',
     provider: keycloak.tokenParsed?.identity_provider || 'email',
     memberSince: '',
-    accountType: 'Standard',
 });
 
 onMounted(async () => {
-  try {
-    const { data } = await userService.me();
-    if (data.memberSince) {
-      user.value.memberSince = new Date(data.memberSince)
-        .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    try {
+        const { data } = await userService.me();
+        if (data.memberSince) {
+            user.value.memberSince = new Date(data.memberSince)
+                .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        }
+    } catch (err) {
+        console.error('Failed to load profile', err);
     }
-    const avatarRes = await userService.getAvatar();
-    if (avatarRes.data.avatar) {
-      profilePreview.value = avatarRes.data.avatar;
-    }
-  } catch (err) {
-    console.error('Failed to load profile', err);
-  }
 });
 
 const editableProfile = ref({
@@ -199,31 +142,6 @@ const userInitials = computed(() => {
         .slice(0, 2)
         .toUpperCase();
 });
-
-const handleProfileImageChange = (event) => {
-    const file = Array.isArray(event) ? event[0] : event?.target?.files?.[0];
-
-    if (!file) {
-        return;
-    }
-
-    profilePreview.value = URL.createObjectURL(file);
-};
-
-const removeProfileImage = () => {
-    profilePreview.value = '';
-};
-
-const saveProfile = async () => {
-  user.value.name = editableProfile.value.name;
-  try {
-    await userService.updateAvatar(profilePreview.value || '');
-  } catch (err) {
-    console.error('Failed to save avatar', err);
-  }
-  closeEditModal();
-};
-
 
 const openEditModal = () => {
     showEditModal.value = true;
@@ -251,20 +169,20 @@ const confirmDelete = [
 ]
 
 const deleteAccount = async () => {
-  if (deleteConfirmText.value !== 'DELETE') {
-    return;
-  }
+    if (deleteConfirmText.value !== 'DELETE') {
+        return;
+    }
 
-  try {
-    await userService.deleteMe();
-    closeDeleteModal();
-    // Clears the session + token, then redirects. Don't use router.push here:
-    // the browser would still hold a valid token for a now-deleted account.
-    keycloak.logout({ redirectUri: window.location.origin });
-  } catch (err) {
-    console.error('Failed to delete account', err);
-    // optionally surface an error message to the user here
-  }
+    try {
+        await userService.deleteMe();
+        closeDeleteModal();
+        // Clears the session + token, then redirects. Don't use router.push here:
+        // the browser would still hold a valid token for a now-deleted account.
+        keycloak.logout({ redirectUri: window.location.origin });
+    } catch (err) {
+        console.error('Failed to delete account', err);
+        // optionally surface an error message to the user here
+    }
 };
 </script>
 
