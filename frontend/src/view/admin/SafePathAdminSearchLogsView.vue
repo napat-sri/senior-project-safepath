@@ -18,53 +18,39 @@
                 <v-alert v-if="logsError" type="error" variant="tonal" density="compact" class="mb-3">
                     {{ logsError }}
                 </v-alert>
-                <v-data-table>
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Start</th>
-                            <th>Destination</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Safety Score</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-if="!logsLoading && filteredSearchLogs.length === 0">
-                            <td colspan="7" class="text-center text-medium-emphasis py-6">
-                                {{ logsError ? 'No logs to show.' : 'No route searches yet.' }}
-                            </td>
-                        </tr>
-                        <tr v-for="log in filteredSearchLogs" :key="log.id">
-                            <td>
-                                <div class="d-flex align-center ga-2">
-                                    <v-avatar size="28" color="primary" variant="tonal">{{ log.userInitial
-                                    }}</v-avatar>
-                                    <div>
-                                        <div class="font-weight-medium">{{ log.user }}</div>
-                                        <div class="text-caption text-medium-emphasis">{{ log.email }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>{{ log.start }}</td>
-                            <td>{{ log.destination }}</td>
-                            <td>{{ log.date }}</td>
-                            <td>{{ log.time }}</td>
-                            <td>
-                                <v-chip size="small"
-                                    :color="getSafetyClass(log.safetyScore) === 'safe' ? 'success' : getSafetyClass(log.safetyScore) === 'medium' ? 'warning' : 'error'"
-                                    variant="tonal">
-                                    {{ log.safetyScore }}/100
-                                </v-chip>
-                            </td>
-                            <td>
-                                <v-chip size="small" color="primary" variant="tonal">{{ log.status }}</v-chip>
-                            </td>
-                        </tr>
-                    </tbody>
-                </v-data-table>
-            </v-card-text>
+<v-data-table :headers="searchLogHeaders" :items="filteredSearchLogs" :loading="logsLoading">
+  <!-- User = avatar + name + email -->
+  <template #item.user="{ item }">
+    <div class="d-flex align-center ga-2">
+      <v-avatar size="28" color="primary" variant="tonal">{{ item.userInitial }}</v-avatar>
+      <div>
+        <div class="font-weight-medium">{{ item.user }}</div>
+        <div class="text-caption text-medium-emphasis">{{ item.email }}</div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Safety score chip -->
+  <template #item.safetyScore="{ item }">
+    <v-chip size="small" variant="tonal"
+      :color="getSafetyClass(item.safetyScore) === 'safe' ? 'success'
+             : getSafetyClass(item.safetyScore) === 'medium' ? 'warning' : 'error'">
+      {{ item.safetyScore }}/100
+    </v-chip>
+  </template>
+
+  <!-- Status chip -->
+  <template #item.status="{ item }">
+    <v-chip size="small" color="primary" variant="tonal">{{ item.status }}</v-chip>
+  </template>
+
+  <!-- Empty state -->
+  <template #no-data>
+    <div class="text-center text-medium-emphasis py-6">
+      {{ logsError ? 'No logs to show.' : 'No route searches yet.' }}
+    </div>
+  </template>
+</v-data-table>            </v-card-text>
         </v-card>
     </v-container>
 
@@ -114,6 +100,16 @@ const items = [
     'Search Logs',
     'User Managemant',
 ]
+
+const searchLogHeaders = [
+  { title: 'User', key: 'user' },
+  { title: 'Start', key: 'start' },
+  { title: 'Destination', key: 'destination' },
+  { title: 'Date', key: 'date' },
+  { title: 'Time', key: 'time' },
+  { title: 'Safety Score', key: 'safetyScore' },
+  { title: 'Status', key: 'status', sortable: false },
+];
 
 // Real route-search logs, fetched from the backend (Langfuse-sourced).
 const searchLogs = ref([]);
