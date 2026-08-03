@@ -4,7 +4,7 @@
             <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
                 Login Log Explorer
                 <div class="d-flex align-center ga-2">
-                    <v-text-field v-model="searchLoginEvent" label="Filter Login events" density="compact"
+                    <v-text-field v-model="searchLoginEvent" label="Filter login events" density="compact"
                         variant="outlined" hide-details prepend-inner-icon="mdi-magnify" style="width: 300px"
                         clearable />
                     <v-btn icon="mdi-refresh" variant="text" :loading="loginsLoading" aria-label="Refresh Login events"
@@ -21,10 +21,10 @@
                         {{ item.eventTime }}
                     </template>
                     <template #item.status="{ item }">
-                        <v-chip v-if="item.status == 'Success'" color="success" size="small" variant="flat" label>
+                        <v-chip v-if="item.status == 'Success'" color="success" size="small" variant="tonal" label>
                             {{ item.status }}
                         </v-chip>
-                        <v-chip v-else color="error" size="small" variant="flat" label>
+                        <v-chip v-else color="error" size="small" variant="tonal" label>
                             {{ item.status }}
                         </v-chip>
                     </template>

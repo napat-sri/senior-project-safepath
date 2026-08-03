@@ -109,7 +109,7 @@ const incidentHeaders = [
     { title: 'Time', key: 'time' },
     { title: 'Location', key: 'location', width: '40%' },
     { title: 'Type', key: 'incidentType' },
-    { title: 'Action', key: 'action' },
+    { title: 'Action', key: 'action', sortable: false },
 ];
 
 const loadIncidents = async () => {
