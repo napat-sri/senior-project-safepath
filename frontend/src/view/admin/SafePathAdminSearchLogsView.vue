@@ -1,77 +1,72 @@
 <template>
-    <v-layout>
-        <v-main>
-            <v-container fluid class="pa-4 pa-md-6">
-                <v-card id="search-logs" rounded="lg" elevation="2" class="mb-3">
-                    <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
-                        User Search Logs
-                        <div class="d-flex align-center ga-2">
-                            <v-text-field v-model="searchLogFilter" label="Filter search logs" density="compact"
-                                variant="outlined" hide-details prepend-inner-icon="mdi-magnify"
-                                style="max-width: 250px" />
-                            <v-btn icon="mdi-refresh" variant="text" :loading="logsLoading"
-                                aria-label="Refresh search logs" @click="loadSearchLogs" />
-                        </div>
-                    </v-card-title>
-                    <v-card-subtitle class="text-medium-emphasis mb-2">
-                        Track route searches with safety score and status.
-                    </v-card-subtitle>
-                    <v-progress-linear v-if="logsLoading" indeterminate color="primary" />
-                    <v-card-text>
-                        <v-alert v-if="logsError" type="error" variant="tonal" density="compact" class="mb-3">
-                            {{ logsError }}
-                        </v-alert>
-                        <v-data-table>
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Start</th>
-                                    <th>Destination</th>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Safety Score</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-if="!logsLoading && filteredSearchLogs.length === 0">
-                                    <td colspan="7" class="text-center text-medium-emphasis py-6">
-                                        {{ logsError ? 'No logs to show.' : 'No route searches yet.' }}
-                                    </td>
-                                </tr>
-                                <tr v-for="log in filteredSearchLogs" :key="log.id">
-                                    <td>
-                                        <div class="d-flex align-center ga-2">
-                                            <v-avatar size="28" color="primary" variant="tonal">{{ log.userInitial
-                                                }}</v-avatar>
-                                            <div>
-                                                <div class="font-weight-medium">{{ log.user }}</div>
-                                                <div class="text-caption text-medium-emphasis">{{ log.email }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>{{ log.start }}</td>
-                                    <td>{{ log.destination }}</td>
-                                    <td>{{ log.date }}</td>
-                                    <td>{{ log.time }}</td>
-                                    <td>
-                                        <v-chip size="small"
-                                            :color="getSafetyClass(log.safetyScore) === 'safe' ? 'success' : getSafetyClass(log.safetyScore) === 'medium' ? 'warning' : 'error'"
-                                            variant="tonal">
-                                            {{ log.safetyScore }}/100
-                                        </v-chip>
-                                    </td>
-                                    <td>
-                                        <v-chip size="small" color="primary" variant="tonal">{{ log.status }}</v-chip>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </v-data-table>
-                    </v-card-text>
-                </v-card>
-            </v-container>
-        </v-main>
-    </v-layout>
+    <v-container fluid class="pa-4 pa-md-6">
+        <v-card id="search-logs" rounded="lg" elevation="2" class="mb-3">
+            <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+                User Search Logs
+                <div class="d-flex align-center ga-2">
+                    <v-text-field v-model="searchLogFilter" label="Filter search logs" density="compact"
+                        variant="outlined" hide-details prepend-inner-icon="mdi-magnify" style="width: 300px" />
+                    <v-btn icon="mdi-refresh" variant="text" :loading="logsLoading" aria-label="Refresh search logs"
+                        @click="loadSearchLogs" />
+                </div>
+            </v-card-title>
+            <v-card-subtitle class="text-medium-emphasis mb-2">
+                Track route searches with safety score and status.
+            </v-card-subtitle>
+            <v-progress-linear v-if="logsLoading" indeterminate color="primary" />
+            <v-card-text>
+                <v-alert v-if="logsError" type="error" variant="tonal" density="compact" class="mb-3">
+                    {{ logsError }}
+                </v-alert>
+                <v-data-table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Start</th>
+                            <th>Destination</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Safety Score</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="!logsLoading && filteredSearchLogs.length === 0">
+                            <td colspan="7" class="text-center text-medium-emphasis py-6">
+                                {{ logsError ? 'No logs to show.' : 'No route searches yet.' }}
+                            </td>
+                        </tr>
+                        <tr v-for="log in filteredSearchLogs" :key="log.id">
+                            <td>
+                                <div class="d-flex align-center ga-2">
+                                    <v-avatar size="28" color="primary" variant="tonal">{{ log.userInitial
+                                    }}</v-avatar>
+                                    <div>
+                                        <div class="font-weight-medium">{{ log.user }}</div>
+                                        <div class="text-caption text-medium-emphasis">{{ log.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ log.start }}</td>
+                            <td>{{ log.destination }}</td>
+                            <td>{{ log.date }}</td>
+                            <td>{{ log.time }}</td>
+                            <td>
+                                <v-chip size="small"
+                                    :color="getSafetyClass(log.safetyScore) === 'safe' ? 'success' : getSafetyClass(log.safetyScore) === 'medium' ? 'warning' : 'error'"
+                                    variant="tonal">
+                                    {{ log.safetyScore }}/100
+                                </v-chip>
+                            </td>
+                            <td>
+                                <v-chip size="small" color="primary" variant="tonal">{{ log.status }}</v-chip>
+                            </td>
+                        </tr>
+                    </tbody>
+                </v-data-table>
+            </v-card-text>
+        </v-card>
+    </v-container>
 
     <v-dialog v-model="showUserModal" max-width="560">
         <v-card rounded="lg">
@@ -143,49 +138,6 @@ const loadSearchLogs = async () => {
 };
 
 onMounted(loadSearchLogs);
-
-const users = ref([
-    {
-        id: 1,
-        initial: 'A',
-        name: 'Admin User',
-        email: 'admin@safepath.local',
-        role: 'Admin',
-        provider: 'Email',
-        status: 'Active',
-        lastLogin: 'Today 19:12'
-    },
-    {
-        id: 2,
-        initial: 'M',
-        name: 'Mina Schneider',
-        email: 'm***@gmail.com',
-        role: 'Moderator',
-        provider: 'Google',
-        status: 'Active',
-        lastLogin: 'Today 17:40'
-    },
-    {
-        id: 3,
-        initial: 'S',
-        name: 'SafePath User',
-        email: 's***@example.com',
-        role: 'User',
-        provider: 'Google',
-        status: 'Active',
-        lastLogin: 'Yesterday 21:04'
-    },
-    {
-        id: 4,
-        initial: 'J',
-        name: 'Jonas Meyer',
-        email: 'j***@github.com',
-        role: 'User',
-        provider: 'GitHub',
-        status: 'Suspended',
-        lastLogin: '2026-06-18'
-    }
-]);
 
 const userForm = ref({
     name: '',
@@ -320,15 +272,6 @@ const updateIncidentStatus = (incidentId, status) => {
         incident.status = status;
     }
 };
-
-const refreshDashboard = () => {
-    console.log('Refresh admin dashboard data');
-};
-
-const exportReport = () => {
-    console.log('Export admin report');
-};
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

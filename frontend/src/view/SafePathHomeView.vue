@@ -17,9 +17,18 @@
                     <v-card rounded="lg" elevation="2" class="mb-4">
                         <v-card-title>Route Search</v-card-title>
                         <v-card-subtitle>Search safer paths using live route intelligence.</v-card-subtitle>
-                        <v-card-subtitle>Type a district, station, or landmark to see suggestions.</v-card-subtitle>
+                        <!-- <v-card-subtitle>Type a district, station, or landmark to see suggestions.</v-card-subtitle> -->
+                        <v-divider class="mt-2"></v-divider>
                         <v-card-text>
                             <v-form @submit.prevent="searchRoute">
+                                <div class="mb-6">
+                                    <div class="text-caption text-medium-emphasis mb-1">Travel mode</div>
+                                    <v-btn-toggle v-model="travelMode" mandatory color="teal-lighten-1"
+                                        density="comfortable" variant="outlined" divided>
+                                        <v-btn value="walking" prepend-icon="mdi-walk">Walking</v-btn>
+                                        <v-btn value="driving" prepend-icon="mdi-car">Driving</v-btn>
+                                    </v-btn-toggle>
+                                </div>
                                 <v-text-field v-model="startLocation" label="📍 Start Location"
                                     placeholder="e.g., Alexanderplatz" variant="outlined" density="comfortable"
                                     :error-messages="startError ? [startError] : []" @focus="startFocused = true"
@@ -43,14 +52,6 @@
                                 <v-alert v-if="searchError" type="error" variant="tonal" density="compact" class="mb-3">
                                     {{ searchError }}
                                 </v-alert>
-                                <div class="mb-3">
-                                    <div class="text-caption text-medium-emphasis mb-1">Travel mode</div>
-                                    <v-btn-toggle v-model="travelMode" mandatory color="primary"
-                                        density="comfortable" variant="outlined" divided>
-                                        <v-btn value="walking" prepend-icon="mdi-walk">Walking</v-btn>
-                                        <v-btn value="driving" prepend-icon="mdi-car">Driving</v-btn>
-                                    </v-btn-toggle>
-                                </div>
                                 <div class="d-flex ga-2">
                                     <v-btn color="primary" type="submit" :loading="searchLoading">Search Safe
                                         Route</v-btn>
@@ -93,7 +94,7 @@
                                     <v-progress-linear :model-value="route.safetyScore" height="9" rounded
                                         :color="route.accentColor || getSafetyTone(route.safetyScore).color"
                                         class="mb-3" />
-                                    <p class="text-body-2 mb-3">{{ route.summary }}</p>
+                                    <!-- <p class="text-body-2 mb-3">{{ route.summary }}</p> -->
                                     <div class="d-flex justify-space-between align-center">
                                         <v-btn size="small" variant="tonal" color="primary"
                                             @click="handleViewDetails(route.id)">

@@ -1,101 +1,94 @@
 <template>
-    <v-layout>
-        <v-main>
-            <v-container fluid class="pa-4 pa-md-6">
-                <v-row class="mb-5">
-                    <v-col cols="12" sm="6" lg="4" v-for="item in overviewStats" :key="item.label">
-                        <v-col cols="12" md="6">
-                            <v-card rounded="lg" class="mx-auto" :subtitle=item.label>
-                                <template v-slot:prepend>
-                                    <v-avatar color="primary" size="24">
-                                        <v-icon :icon=item.icon size="16"></v-icon>
-                                    </v-avatar>
-                                </template>
-                                <v-card-text>
-                                    <div class="overview-stat-card__value">{{ item.value }}
-                                        <v-chip class="overview-stat-card__chip" size="small"
-                                            :color="item.trendType === 'positive' ? 'success' : item.trendType === 'error' ? 'error' : ''"
-                                            variant="tonal" rounded="lg" v-if="item.trend != ''">
-                                            {{ item.trend }}
-                                        </v-chip>
+    <v-container fluid class="pa-4 pa-md-6">
+        <v-row class="mb-5">
+            <v-col cols="12" sm="6" lg="4" v-for="item in overviewStats" :key="item.label">
+                <v-col cols="12" md="6">
+                    <v-card rounded="lg" class="mx-auto" :subtitle=item.label>
+                        <template v-slot:prepend>
+                            <v-avatar color="primary" size="24">
+                                <v-icon :icon=item.icon size="16"></v-icon>
+                            </v-avatar>
+                        </template>
+                        <v-card-text>
+                            <div class="overview-stat-card__value">{{ item.value }}
+                                <v-chip class="overview-stat-card__chip" size="small"
+                                    :color="item.trendType === 'positive' ? 'success' : item.trendType === 'error' ? 'error' : ''"
+                                    variant="tonal" rounded="lg" v-if="item.trend != ''">
+                                    {{ item.trend }}
+                                </v-chip>
+                            </div>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-col>
+        </v-row>
+
+        <v-card id="locations" rounded="lg" elevation="2" class="mb-4">
+            <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+                Location Insights
+            </v-card-title>
+            <v-card-subtitle class="text-medium-emphasis mb-2">
+                Most searched and most reported places across Berlin.
+            </v-card-subtitle>
+            <v-card-text>
+                <v-row>
+                    <v-col cols="12" md="6">
+                        <v-card variant="outlined" rounded="lg">
+                            <v-card-title>Most Searched Places</v-card-title>
+                            <v-card-text>
+                                <div v-for="place in mostSearchedPlaces" :key="place.name" class="mb-4">
+                                    <div class="d-flex justify-space-between mb-1">
+                                        <strong>{{ place.name }}</strong>
+                                        <span class="text-caption text-medium-emphasis">{{ place.count }}
+                                            searches</span>
                                     </div>
-                                </v-card-text>
-                            </v-card>
-                        </v-col>
+                                    <p class="text-caption text-medium-emphasis mb-2">{{ place.type }}</p>
+                                    <v-progress-linear :model-value="place.percent" color="primary" height="8"
+                                        rounded />
+                                </div>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-card variant="outlined" rounded="lg">
+                            <v-card-title>Most Incident Report Places</v-card-title>
+                            <v-divider class="mb-2"></v-divider>
+                            <v-chip-group v-model="selectedTypes" selected-class="text-warning" multiple class="mt-2">
+                                <v-chip v-for="item in incidentTypes" :key="item" :value="item" :text="item"></v-chip>
+                            </v-chip-group> <v-card-text>
+                                <div v-for="place in mostReportedPlaces" :key="place.name" class="mb-4">
+                                    <div class="d-flex justify-space-between mb-1">
+                                        <strong>{{ place.name }}</strong>
+                                        <span class="text-caption text-medium-emphasis">{{ place.count }}
+                                            reports</span>
+                                    </div>
+                                    <v-card-subtitle v-if="selectedTypes.length != 1"
+                                        class="text-caption text-medium-emphasis mb-1">
+                                        <b>Most common:</b> {{ place.topIncident }}
+                                    </v-card-subtitle>
+                                    <v-progress-linear :model-value="place.percent" color="error" height="8" rounded />
+                                </div>
+                            </v-card-text>
+                            <div v-if="incidentsLoading" class="text-caption text-medium-emphasis">Loading…
+                            </div>
+                            <div v-else-if="incidentsError" class="text-caption text-error">{{ incidentsError }}
+                            </div>
+                            <div v-else-if="!mostReportedPlaces.length" class="text-caption text-medium-emphasis">
+                                No incident reports yet.
+                            </div>
+                        </v-card>
                     </v-col>
                 </v-row>
-
-                <v-card id="locations" rounded="lg" elevation="2" class="mb-4">
-                    <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
-                        Location Insights
-                    </v-card-title>
-                    <v-card-subtitle class="text-medium-emphasis mb-2">
-                        Most searched and most reported places across Berlin.
-                    </v-card-subtitle>
-                    <v-card-text>
-                        <v-row>
-                            <v-col cols="12" md="6">
-                                <v-card variant="outlined" rounded="lg">
-                                    <v-card-title>Most Searched Places</v-card-title>
-                                    <v-card-text>
-                                        <div v-for="place in mostSearchedPlaces" :key="place.name" class="mb-4">
-                                            <div class="d-flex justify-space-between mb-1">
-                                                <strong>{{ place.name }}</strong>
-                                                <span class="text-caption text-medium-emphasis">{{ place.count }}
-                                                    searches</span>
-                                            </div>
-                                            <p class="text-caption text-medium-emphasis mb-2">{{ place.type }}</p>
-                                            <v-progress-linear :model-value="place.percent" color="primary" height="8"
-                                                rounded />
-                                        </div>
-                                    </v-card-text>
-                                </v-card>
-                            </v-col>
-
-                            <v-col cols="12" md="6">
-                                <v-card variant="outlined" rounded="lg">
-                                    <v-card-title>Most Incident Report Places</v-card-title>
-                                    <v-divider class="mb-2"></v-divider>
-                                    <v-chip-group v-model="selectedTypes" selected-class="text-warning" multiple
-                                        class="mt-2">
-                                        <v-chip v-for="item in incidentTypes" :key="item" :value="item"
-                                            :text="item"></v-chip>
-                                    </v-chip-group> <v-card-text>
-                                        <div v-for="place in mostReportedPlaces" :key="place.name" class="mb-4">
-                                            <div class="d-flex justify-space-between mb-1">
-                                                <strong>{{ place.name }}</strong>
-                                                <span class="text-caption text-medium-emphasis">{{ place.count }}
-                                                    reports</span>
-                                            </div>
-                                            <v-card-subtitle v-if="selectedTypes.length != 1"
-                                                class="text-caption text-medium-emphasis mb-1">
-                                                <b>Most common:</b> {{ place.topIncident }}
-                                            </v-card-subtitle>
-                                            <v-progress-linear :model-value="place.percent" color="error" height="8"
-                                                rounded />
-                                        </div>
-                                    </v-card-text>
-                                    <div v-if="incidentsLoading" class="text-caption text-medium-emphasis">Loading…
-                                    </div>
-                                    <div v-else-if="incidentsError" class="text-caption text-error">{{ incidentsError }}
-                                    </div>
-                                    <div v-else-if="!mostReportedPlaces.length"
-                                        class="text-caption text-medium-emphasis">
-                                        No incident reports yet.
-                                    </div>
-                                </v-card>
-                            </v-col>
-                        </v-row>
-                    </v-card-text>
-                </v-card>
-            </v-container>
-        </v-main>
-    </v-layout>
+            </v-card-text>
+        </v-card>
+    </v-container>
 </template>
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import SafePathNavDrawer from '../../components/SafePathNavDrawer.vue';
 import { incidentService } from '../../services/api.js';
 import { incidentTypeColor } from '../../data/incidentTypes.js';
 
@@ -170,8 +163,8 @@ const mostReportedPlaces = computed(() => {
 const totalIncidents = computed(() => incidents.value.length);
 
 const overviewStats = computed(() => [
-    { label: 'Total Users',   value: '1,248', icon: 'mdi-account-group', trend: '+12',  trendType: 'positive' },
-    { label: 'Route Searches',value: '8,920', icon: 'mdi-magnify',       trend: '+18%', trendType: 'positive' },
+    { label: 'Total Users', value: '1,248', icon: 'mdi-account-group', trend: '+12', trendType: 'positive' },
+    { label: 'Route Searches', value: '8,920', icon: 'mdi-magnify', trend: '+18%', trendType: 'positive' },
     {
         label: 'Incident Reports',
         value: incidentsLoading.value ? '…' : totalIncidents.value.toLocaleString(),
