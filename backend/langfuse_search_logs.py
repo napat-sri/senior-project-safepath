@@ -197,7 +197,7 @@ def _to_log(trace: Any) -> dict[str, Any]:
     
     return {
         "id": getattr(trace, "id", None),
-        "uid": (uid.split("_"))[1],
+        "uid": (str(uid or "").split("_", 1)[1] if "_" in str(uid or "") else str(uid or "")),
         "user_detail": user_detail,
         # "userInitial": (user_label.replace("Guest ", "")[:1] or "G").upper(),
         # "role": (uid.split("_"))[0].capitalize(),
