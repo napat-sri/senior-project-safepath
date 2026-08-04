@@ -31,10 +31,7 @@
                     <!-- Name/Email = avatar + name + email -->
                     <template #item.name="{ item }">
                         <div class="d-flex align-center ga-2">
-                            <v-avatar v-if="item.role == 'Admin'" size="36" color="warning" variant="tonal">
-                                {{ item.initial }}
-                            </v-avatar>
-                            <v-avatar v-else size="36" color="primary" variant="tonal">
+                            <v-avatar size="36" :color="item.role === 'Admin' ? 'warning' : 'primary'" variant="tonal">
                                 {{ item.initial }}
                             </v-avatar>
                             <div>
