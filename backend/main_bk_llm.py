@@ -2,23 +2,23 @@
 """SafePath API.
 
 Endpoints:
-    
+
     Static endpoints:
     Get / :display a welcome message.
     Get /api/health :check the health of the API.
     Get /api/langflow/health :check the health of the Langflow service.
     Get /api/monitor/health :check the health of the Langfuse monitoring service.
-    
+
     Langfuse monitoring endpoints (read-only):
     Get /api/monitor/traces :fetch recent traces from Langfuse.
     Get /api/monitor/traces/{trace_id} :fetch detailed information for a specific trace.
     Get /api/monitor/alerts :fetch alerts from Langfuse.
     Get /api/monitor/stats :fetch aggregated statistics from Langfuse.
     Get /api/monitor/export :export recent traces from Langfuse in CSV or JSON format.
-    
+
     Admin endpoints (read-only, sourced from Langfuse):
     Get /api/admin/search-logs :fetch user route-search logs for the admin table.
-    
+
     Admin endpoints (Keycloak user management, Admin role required):
     Get    /api/admin/users                 :list/search Keycloak users (paginated).
     Post   /api/admin/users                 :create a new Keycloak user.
@@ -28,39 +28,48 @@ Endpoints:
     SafePath routing endpoints:
     Get /api/places :search for locations by name using LocationIQ's Autocomplete API.
     Get /api/routes/safe :fetch safe routes between two points, scored by AI for safety.
-    
+
 
 """
 
-import asyncio
 import csv
 import io
 import json
 import os
-import re
 import time
 import uuid
-from datetime import date, datetime, timezone
-from typing import Literal
-from zoneinfo import ZoneInfo
+from datetime import datetime, timezone
 
 import httpx
-import keycloak_admin
 import langfuse_monitor
 import langfuse_prompts
 import langfuse_search_logs
-import login_events
 import mcp_client
-from auth import require_admin, require_member
-from database import IncidentReport, LoginEvent, UserProfile, get_db, init_db
 from dotenv import load_dotenv
-from fallback_route_prompt import FALLBACK_ROUTE_PROMPT
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
+from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
-from sqlalchemy import desc, func, select
+from typing import Literal
+
+LITELLM_PROXY_URL = os.getenv("LITELLM_PROXY_URL")# default for local dev
+LITELLM_VIRTUAL_KEY = os.getenv("LITELLM_VIRTUAL_KEY")# default for local dev
+litellm_client = AsyncOpenAI(
+    base_url=LITELLM_PROXY_URL,
+    api_key=LITELLM_VIRTUAL_KEY,
+)
+
+import keycloak_admin
+from datetime import date
+from zoneinfo import ZoneInfo
+from sqlalchemy import select, desc, func
 from sqlalchemy.orm import Session
+from database import IncidentReport, UserProfile, LoginEvent, init_db, get_db
+from auth import require_admin, require_member
+
+import asyncio
+import login_events
 
 POLL_SECONDS = int(os.getenv("LOGIN_EVENTS_POLL_SECONDS", "300"))  # 5 min default
 
@@ -98,38 +107,6 @@ LANGFLOW_API_KEY = os.getenv("VUE_APP_LANGFLOW_API_KEY")
 # LocationIQ API Key for geocoding (autocomplete) requests. Required.
 LOCATIONIQ_API_KEY = os.getenv("LOCATIONIQ_API_KEY")
 
-COLOR_SAFE_HEX = os.getenv("ACCENT_COLOR_SAFE_HEX", "#4CAF50")
-COLOR_FAIR_HEX = os.getenv("ACCENT_COLOR_FAIR_HEX", "#FF9800")
-COLOR_DANGER_HEX = os.getenv("ACCENT_COLOR_DANGER_HEX", "#F44336")
-
-COLOR_SAFE_SCORE = int(os.getenv("ACCENT_COLOR_SAFE_SCORE", "80"))
-COLOR_FAIR_SCORE = int(os.getenv("ACCENT_COLOR_FAIR_SCORE", "65"))
-COLOR_DANGER_SCORE = int(os.getenv("ACCENT_COLOR_DANGER_SCORE", "50"))
-
-# ---------------------------------------------------------------------------
-# Shared HTTP client for outbound calls (OSRM, Langflow).
-#
-# get_safe_routes previously opened a fresh `async with httpx.AsyncClient()`
-# for each of these calls, on every request — that pays TCP connection setup
-# (and TLS handshake, for anything over https) from scratch each time instead
-# of reusing a pooled, keep-alive connection. Created once at startup and
-# reused for the life of the process; closed on shutdown. Small compared to
-# the Langflow/MCP costs, but free to fix and adds up under concurrent load.
-# ---------------------------------------------------------------------------
-http_client: httpx.AsyncClient | None = None
-
-
-@app.on_event("startup")
-async def _init_http_client() -> None:
-    global http_client
-    http_client = httpx.AsyncClient()
-
-
-@app.on_event("shutdown")
-async def _close_http_client() -> None:
-    if http_client is not None:
-        await http_client.aclose()
-
 
 # ---------------------------------------------------------------------------
 # Route-safety scoring weights.
@@ -145,7 +122,54 @@ async def _close_http_client() -> None:
 SAFETY_WEIGHTS = {"accident": 0.35, "crime": 0.35, "lighting": 0.30}
 DEFAULT_SUBSCORE = 50  # neutral fallback when a data source has no coverage for a route
 
+# ---------------------------------------------------------------------------
+# Route-summary prompt fallback.
+#
+# The live prompt is managed in Langfuse under the name
+# `safepath-route-safety` and fetched at request time (see langfuse_prompts).
+# This string is the exact same text and is used only if Langfuse is
+# unreachable, so routing keeps working. Keep the two copies in sync — this
+# was reworked to consume real scores rather than invent them, so update the
+# Langfuse UI prompt to match if you change this.
+#
+# Variables use Langfuse mustache syntax: {{from_lat}}, {{from_lng}},
+# {{to_lat}}, {{to_lng}}, {{routes_json}}. Single braces are literal JSON.
+# ---------------------------------------------------------------------------
+FALLBACK_ROUTE_PROMPT = """You are SafePath Berlin, a safety-first navigation assistant for students, tourists, and commuters in Berlin.
 
+Your ENTIRE response MUST be ONLY a JSON array — it must start with [ and end with ]. Do NOT include any reasoning, explanation, calculations, markdown, or any text before or after the array.
+
+FROM:
+{{from_lat}}, {{from_lng}}
+TO:
+{{to_lat}}, {{to_lng}}
+
+ROUTES (each already has real safetyScore + accident/crime/lighting sub-scores,
+computed from Berlin crime, accident, and street-lighting data — do NOT change
+or re-derive these numbers, just explain them):
+{{routes_json}}
+
+For each route, write only "name" and "summary":
+- name: a short human-friendly route name (e.g. "Route 1" or a street-based name).
+- summary: two sentences referencing the ALREADY-GIVEN safetyScore/sub-scores —
+  why this route ranks where it does, and one trade-off vs the other routes.
+
+Rules:
+- Never use placeholders, dashes (---), dots (.), null, or blanks. Every field must have a real value.
+- Return one object per route in the ROUTES input, keeping the same "id".
+- Do NOT include safetyScore, breakdown, or accentColor in your output — those are supplied separately.
+
+Example of the exact format (values illustrative only):
+[
+  {
+    "id": "route-1",
+    "name": "Route 1",
+    "summary": "This route has the highest safety score thanks to well-lit main streets and low crime along the way, though it's slightly longer than the alternative."
+  }
+]
+
+Output ONLY the JSON array. Your first character must be [ and your last character must be ].
+"""
 
 class Point(BaseModel):
     lat: float
@@ -180,7 +204,7 @@ class AIRoute(BaseModel):
 # so wrap the list in a key.
 class AIRouteList(BaseModel):
     routes: list[AIRoute]
-    
+
 @app.get("/")
 def root():
     return {"message": "Welcome to SafePath API"}
@@ -216,7 +240,7 @@ def monitor_health():
 
 
 @app.get("/api/monitor/traces")
-def monitor_traces(minutes: int = 60, limit: int = 50, include_io: bool = False, _admin=Depends(require_admin)):
+def monitor_traces(minutes: int = 60, limit: int = 50, include_io: bool = False):
     """Recent traces (summarised), newest first.
 
     Pass include_io=true to add truncated input/output previews.
@@ -234,7 +258,7 @@ def monitor_traces(minutes: int = 60, limit: int = 50, include_io: bool = False,
 
 
 @app.get("/api/monitor/traces/{trace_id}")
-def monitor_trace_detail(trace_id: str, _admin=Depends(require_admin)):
+def monitor_trace_detail(trace_id: str):
     """Full detail for one trace: complete input/output + all observations."""
     try:
         return langfuse_monitor.fetch_trace_detail(trace_id)
@@ -250,7 +274,6 @@ def monitor_alerts(
     latency_threshold: float = langfuse_monitor.DEFAULT_LATENCY_THRESHOLD_S,
     limit: int = 100,
     check_errors: bool = True,
-    _admin=Depends(require_admin)
 ):
     """High-latency and error/warning alerts from recent traces."""
     try:
@@ -267,7 +290,7 @@ def monitor_alerts(
 
 
 @app.get("/api/monitor/stats")
-def monitor_stats(minutes: int = 1440, limit: int = 500, _admin= Depends(require_admin)):
+def monitor_stats(minutes: int = 1440, limit: int = 500):
     """Aggregate volume / latency / cost / per-user stats (default last 24h)."""
     try:
         return langfuse_monitor.build_stats(minutes=minutes, limit=limit)
@@ -282,7 +305,6 @@ def monitor_export(
     limit: int = 1000,
     format: str = "csv",
     include_io: bool = True,
-    _admin=Depends(require_admin),  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
 ):
     """Download recent traces as a downloadable CSV or JSON file.
 
@@ -344,7 +366,7 @@ def monitor_export(
 # Powers SafePathAdminSearchLogsView.vue (replaces its hard-coded mock array).
 # ---------------------------------------------------------------------------
 @app.get("/api/admin/search-logs")
-def admin_search_logs(minutes: int = 1440, limit: int = 100, _admin=Depends(require_admin)):  # noqa: B008 -- FastAPI's Depends is meant to be used as a default value
+def admin_search_logs(minutes: int = 1440, limit: int = 100):
     """Recent user route searches, newest first (default: last 24h).
 
     Each row: user (masked), start, destination, date, time, safetyScore,
@@ -456,16 +478,16 @@ def search_places(query: str):
         return {"places": []}
 
     url = "https://nominatim.openstreetmap.org/search"
- 
+
     params = {
         "q": query,
         "format": "json",
-        "limit": 5, 
+        "limit": 5,
         "countrycodes": "de",                          # Germany only
         "viewbox":      "13.0883,52.3383,13.7611,52.6755",  # Berlin bounding box
-        "bounded":      1,          
+        "bounded":      1,
     }
-    
+
     # IMPORTANT: Nominatim requires a User-Agent header, otherwise they block the request.
     headers = {
         "User-Agent": "SafePath_SeniorProject/1.0 (Student Project)"
@@ -482,8 +504,8 @@ def search_places(query: str):
     places = []
     for item in data:
         places.append({
-           
-            "name": item.get("display_name"), 
+
+            "name": item.get("display_name"),
             "lat": float(item.get("lat")),
             "lng": float(item.get("lon"))
         })
@@ -629,11 +651,11 @@ def log_route_search_trace(
 
 
 def accent_color_for(safety_score: int) -> str:
-    if safety_score >= COLOR_SAFE_SCORE:
-        return COLOR_SAFE_HEX
-    if safety_score >= COLOR_FAIR_SCORE:
-        return COLOR_FAIR_HEX
-    return COLOR_DANGER_HEX
+    if safety_score >= 85:
+        return "#0B8043"
+    if safety_score >= 70:
+        return "#E8590C"
+    return "#C1121F"
 
 
 def compute_safety_score(ctx: dict | None) -> dict:
@@ -680,17 +702,14 @@ def compute_safety_score(ctx: dict | None) -> dict:
 
 
 @app.post("/api/routes/safe")
-async def get_safe_routes(req: RouteRequest, background_tasks: BackgroundTasks):
+async def get_safe_routes(req: RouteRequest):
     api_start = time.perf_counter()
     """
     1. Fetches candidate routes from OSRM.
     2. Fetches real crime/accident/lighting data from the MCP server and computes
        each route's safetyScore deterministically (see compute_safety_score).
-    3. Asks the self-hosted Langflow "RouteAgent" flow (not the LLM directly) for
-       a name/summary per route, grounded in those real scores. This is the
-       Langflow-routed twin of main_manual_llm.py's get_safe_routes, kept
-       separate so the two AI call paths (direct LiteLLM vs. via Langflow) can
-       be compared for latency/quality.
+    3. Asks the LLM directly (LiteLLM, not Langflow) for a name/summary per route,
+       grounded in those real scores.
     4. Returns each route's score, summary, and map coordinates to the frontend.
     """
     s, d = req.start, req.destination
@@ -706,22 +725,23 @@ async def get_safe_routes(req: RouteRequest, background_tasks: BackgroundTasks):
     # ---------------------------------------------------
     osrm_start = time.perf_counter()
     print(f"[ROUTESAFE] step 1 OSRM request start url={osrm_url}")
-    try:
-        resp = await http_client.get(osrm_url, params=params, timeout=20.0)
-        osrm_end = time.perf_counter()
-        print(
-            f"[TIME] OSRM request: "
-            f"{osrm_end - osrm_start:.2f} sec"
-        )
-        resp.raise_for_status()
-        osrm_data = resp.json()
-        print(f"[ROUTESAFE] step 1 OSRM response parsed routes={len(osrm_data.get('routes', [])) if isinstance(osrm_data, dict) else 'unknown'}")
-    except httpx.HTTPError as exc:
-        print(f"[ROUTESAFE] step 1 OSRM failed: {exc}")
-        raise HTTPException(
-            status_code=502,
-            detail=f"Routing service error: {exc}"
-        )
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(osrm_url,params=params,timeout=20.0)
+            osrm_end = time.perf_counter()
+            print(
+                f"[TIME] OSRM request: "
+                f"{osrm_end - osrm_start:.2f} sec"
+            )
+            resp.raise_for_status()
+            osrm_data = resp.json()
+            print(f"[ROUTESAFE] step 1 OSRM response parsed routes={len(osrm_data.get('routes', [])) if isinstance(osrm_data, dict) else 'unknown'}")
+        except httpx.HTTPError as exc:
+            print(f"[ROUTESAFE] step 1 OSRM failed: {exc}")
+            raise HTTPException(
+                status_code=502,
+                detail=f"Routing service error: {exc}"
+            )
 
     if osrm_data.get("code") != "Ok":
         raise HTTPException(status_code=404,detail="No routes found.")
@@ -808,20 +828,13 @@ async def get_safe_routes(req: RouteRequest, background_tasks: BackgroundTasks):
     ]
     print(f"[ROUTESAFE] step 3 AI summary payload ready count={len(llm_summaries)}")
 
-    # Prompt is managed in Langfuse ("safepath-route-safety"). Even bounded
-    # retries/timeouts on a live fetch here cost several seconds when Langfuse
-    # is slow/unreachable (measured: 16.75s unbounded, 6.89s bounded — still
-    # both attempts failing every time). So the request path makes NO network
-    # call at all: a background thread (started at app startup, see
-    # start_background_refresh) refreshes this prompt on a timer, and we just
-    # read whatever it last published — zero network, effectively instant.
-    # Falls back to FALLBACK_ROUTE_PROMPT if Langfuse has never been reachable.
+    # Prompt is managed in Langfuse ("safepath-route-safety"). Fetched and
+    # compiled at request time; falls back to FALLBACK_ROUTE_PROMPT if
+    # Langfuse is unreachable so routing never breaks.
     prompt_start = time.perf_counter()
-    prompt_obj = langfuse_prompts.get_cached_prompt(
-        langfuse_prompts.ROUTE_SAFETY_PROMPT, fallback=FALLBACK_ROUTE_PROMPT
-    )
-    prompt = langfuse_prompts.compile_prompt(
-        prompt_obj,
+    print("[ROUTESAFE] step 3 prompt compilation start")
+    prompt = langfuse_prompts.get_compiled_prompt(
+        langfuse_prompts.ROUTE_SAFETY_PROMPT,
         {
             "from_lat": s.lat,
             "from_lng": s.lng,
@@ -831,26 +844,25 @@ async def get_safe_routes(req: RouteRequest, background_tasks: BackgroundTasks):
         },
         fallback=FALLBACK_ROUTE_PROMPT,
     )
-    print(f"[ROUTESAFE] step 3 prompt compilation done in {time.perf_counter() - prompt_start:.3f} sec (cached, no network)")
+    print(f"[ROUTESAFE] step 3 prompt compilation done in {time.perf_counter() - prompt_start:.2f} sec")
     #print("[ROUTESAFE] prompt for AI scoring:\n", prompt)
     print("Start Name:", req.startName, "Destination Name:", req.destinationName)
 
-    # guest_id/route_session_id identify this search both for Langfuse tracing
-    # (log_route_search_trace below) and as the Langflow session_id, so this
-    # request's Agent memory stays isolated from other requests/flows. Route
-    # session_id = "route_<guest id>_<per-request id>": the guest id keeps the
-    # request tied to the visitor, and the per-request suffix keeps every
-    # route search its own isolated trace/session.
+    # guest_id/route_session_id identify this search for Langfuse tracing
+    # (log_route_search_trace below, via the Langfuse SDK directly). This
+    # endpoint does not call Langflow — scoring and narrative are both done
+    # in-process (MCP + LiteLLM) — so no Langflow payload/headers are needed
+    # here. Route session_id = "route_<guest id>_<per-request id>": the guest
+    # id keeps the request tied to the visitor, and the per-request suffix
+    # keeps every route search its own isolated trace.
     guest_id = req.user_id or req.session_id or f"guest_{uuid.uuid4()}"
     route_session_id = f"route_{guest_id}_{uuid.uuid4()}"
     print("[ROUTESAFE] userId:", guest_id)
 
     ai_routes = []
     langflow_start = time.perf_counter()
-    print("[ROUTESAFE] step 4 AI scoring start (via Langflow)")
-    ai_routes = await score_routes_with_ai_via_langflow(
-        prompt, user_id=req.user_id, session_id=route_session_id
-    )
+    print("[ROUTESAFE] step 4 AI scoring start")
+    ai_routes = await score_routes_with_ai(prompt)
     print(f"[ROUTESAFE] step 4 AI scoring done in {time.perf_counter() - langflow_start:.2f} sec")
     print(f"[ROUTESAFE] step 4 AI routes received count={len(ai_routes)}")
     ai_lookup = {ai_route.get("id"): ai_route for ai_route in ai_routes}
@@ -901,14 +913,8 @@ async def get_safe_routes(req: RouteRequest, background_tasks: BackgroundTasks):
 
     # Trace this route search in Langfuse (best-effort; never breaks routing).
     # This is the single source of truth for the admin "User Search Logs".
-    # Scheduled as a FastAPI background task rather than called inline: it
-    # used to run before `return`, so it silently added to the response time
-    # the client actually experienced (invisible in the "TOTAL API" print
-    # above, since api_end is captured before this ran). Background tasks
-    # run in a threadpool AFTER the response is sent.
-    print("[ROUTESAFE] step 6 trace logging scheduled as background task")
-    background_tasks.add_task(
-        log_route_search_trace,
+    print("[ROUTESAFE] step 6 trace logging start")
+    log_route_search_trace(
         guest_id=guest_id,
         session_id=route_session_id,
         start_name=req.startName,
@@ -919,128 +925,76 @@ async def get_safe_routes(req: RouteRequest, background_tasks: BackgroundTasks):
         ai_ok=bool(ai_routes),
         duration_s=api_end - api_start,
     )
+    print("[ROUTESAFE] step 6 trace logging done")
 
     return {
         "route_suggestions": route_suggestions
     }
 
 
-def _parse_ai_route_text(raw_text: str) -> list[dict]:
-    """Best-effort extraction of AIRoute-shaped dicts from a raw chat response.
-
-    Langflow's Agent output isn't constrained by an API-level JSON mode (unlike
-    the direct LiteLLM call in main_manual_llm.py, which uses
-    response_format={"type": "json_object"}), so the model may still wrap its
-    answer in markdown fences or return a bare JSON array instead of the
-    {"routes": [...]} object shape. Handle both so a route through Langflow
-    isn't penalized purely on formatting.
-    """
-    if not raw_text:
-        return []
-
-    text = raw_text.strip()
-    # Strip markdown code fences (```json ... ``` or ``` ... ```).
-    text = re.sub(r"^```(?:json)?|```$", "", text, flags=re.MULTILINE).strip()
-
-    # Preferred shape: {"routes": [...]} (matches AIRouteList / the prompt's
-    # documented schema).
-    try:
-        parsed = AIRouteList.model_validate_json(text)
-        return [r.model_dump() for r in parsed.routes]
-    except Exception:
-        pass
-
-    # Fallback shape: a bare JSON array, possibly with prose around it.
-    match = re.search(r"\[.*\]", text, re.DOTALL)
-    if not match:
-        print("[ROUTESAFE][AI][Langflow] no JSON object/array found in response")
-        return []
-
-    try:
-        raw_list = json.loads(match.group(0))
-        if not isinstance(raw_list, list):
-            raise ValueError("AI response is not a list")
-        return [AIRoute.model_validate(item).model_dump() for item in raw_list]
-    except Exception as exc:  # noqa: BLE001 -- best-effort parsing, caller falls back to generic summaries
-        print(f"[ROUTESAFE][AI][Langflow] failed to parse extracted array: {exc}")
-        return []
-
-
-async def score_routes_with_ai_via_langflow(
-    prompt: str, *, user_id: str | None, session_id: str
-) -> list[dict]:
-    """Same job as main_manual_llm.py's score_routes_with_ai (name/summary per
-    route, grounded in the real safetyScore/breakdown already computed) but
-    routed through the self-hosted Langflow "RouteAgent" flow instead of
-    calling the LiteLLM proxy directly. Kept as a separate call path so the
-    two approaches can be compared for latency and output quality.
-    """
+async def score_routes_with_ai(prompt: str) -> list[dict]:
     func_start = time.perf_counter()
-    print("[ROUTESAFE][AI][Langflow] score_routes_with_ai_via_langflow start")
+    print("[ROUTESAFE][AI] score_routes_with_ai start")
+    messages = [{"role": "user", "content": prompt}]
+    last_err = None
 
-    langflow_payload = {
-        "input_value": prompt,
-        "output_type": "chat",
-        "input_type": "chat",
-    }
-    # Langflow's run endpoint only forwards session_id to Langfuse (it ignores
-    # user_id and stamps its own account id as the trace user_id), so the
-    # visitor is tracked via session_id — see route_session_id in
-    # get_safe_routes. user_id is still sent, harmlessly, in case a future
-    # flow component starts using it.
-    if user_id:
-        langflow_payload["user_id"] = user_id
-    langflow_payload["session_id"] = session_id
-
-    headers = {"Content-Type": "application/json"}
-    if LANGFLOW_API_KEY:
-        headers["x-api-key"] = LANGFLOW_API_KEY
-    else:
-        print("[ROUTESAFE][AI][Langflow] WARNING: no LANGFLOW_API_KEY set — "
-              "request will fail if Langflow has login enabled.")
-
-    try:
-        request_start = time.perf_counter()
-        lf_resp = await http_client.post(
-            LANGFLOW_URL,
-            json=langflow_payload,
-            headers=headers,
-            timeout=45.0,
+    for attempt in range(1, 3):  # initial try + one retry
+        attempt_start = time.perf_counter()
+        print(f"[ROUTESAFE][AI] attempt {attempt} start")
+        resp = await litellm_client.chat.completions.create(
+            model="deepseek/deepseek-v3.2",
+            messages=messages,
+            response_format={"type": "json_object"},  # forces valid JSON
+            max_tokens=2000,                           # high, so it never truncates
+            temperature=0,                             # deterministic scoring
+            extra_body={
+                "reasoning": {
+                    "enabled": False
+                }
+            }
         )
-        lf_resp.raise_for_status()
-        print(f"[TIME] Langflow request: {time.perf_counter() - request_start:.2f} sec")
+        print(f"[ROUTESAFE][AI] attempt {attempt} LLM call finished in {time.perf_counter() - attempt_start:.2f} sec")
 
-        lf_data = lf_resp.json()
-        raw_text = (
-            lf_data["outputs"][0]
-            ["outputs"][0]
-            ["results"]["message"]["text"]
-        )
-    except Exception as exc:  # noqa: BLE001 -- best-effort AI step, deterministic scores still apply
-        print(f"[ROUTESAFE][AI][Langflow] request failed: {exc}")
-        print(f"[ROUTESAFE][AI][Langflow] total {time.perf_counter() - func_start:.2f} sec")
-        return []  # the caller's fallback (generic summary) takes over
 
-    routes = _parse_ai_route_text(raw_text)
-    print(f"[ROUTESAFE][AI][Langflow] parsed {len(routes)} routes in {time.perf_counter() - func_start:.2f} sec")
-    return routes
+        # Read CONTENT ONLY — never reasoning_content. This kills the Chinese leak.
+        content = resp.choices[0].message.content or ""
+        print(f"[ROUTESAFE][AI] attempt {attempt} raw content length={len(content)}")
+
+        # Defensive: if the proxy ever merges reasoning in, drop everything
+        # up to and including the last </think>.
+        if "</think>" in content:
+            content = content.rsplit("</think>", 1)[-1].strip()
+            print(f"[ROUTESAFE][AI] attempt {attempt} trimmed reasoning content")
+
+        if not content:
+            last_err = "empty content"
+            print(f"[ROUTESAFE][AI] attempt {attempt} empty content")
+            messages.append({"role": "user",
+                             "content": "You returned empty content. Return only the JSON object."})
+            continue
+
+        try:
+            parsed = AIRouteList.model_validate_json(content)
+            print(f"[ROUTESAFE][AI] attempt {attempt} parsed {len(parsed.routes)} routes in {time.perf_counter() - attempt_start:.2f} sec")
+            print(f"[ROUTESAFE][AI] score_routes_with_ai total {time.perf_counter() - func_start:.2f} sec")
+            return [r.model_dump() for r in parsed.routes]
+        except Exception as e:  # noqa: BLE001 -- intentional catch-all, converted to an HTTP error response
+            last_err = str(e)
+            print(f"[ROUTESAFE][AI] attempt {attempt} parse failed after {time.perf_counter() - attempt_start:.2f} sec: {e}")
+            messages.append({"role": "assistant", "content": content})
+            messages.append({"role": "user",
+                             "content": f"Your last response was invalid: {e}. "
+                                        "Return ONLY a JSON object matching the schema. "
+                                        "All scores must be integers 0-100."})
+
+    print("AI scoring failed:", last_err)
+    print("Message:", messages)
+    print(f"[ROUTESAFE][AI] score_routes_with_ai total {time.perf_counter() - func_start:.2f} sec")
+    return []  # your existing fallback block then takes over
 
 @app.on_event("startup")
 def _startup() -> None:
     init_db()
-
-
-@app.on_event("startup")
-def _warm_prompt_cache_startup() -> None:
-    """Start the background thread that (re)fetches the route-safety prompt
-    from Langfuse on a timer (default every 4 min — see
-    LANGFUSE_PROMPT_REFRESH_SECONDS) and publishes it for get_safe_routes to
-    read with zero network I/O. Bounded retries mean a slow/unreachable
-    Langfuse costs that thread a few seconds per cycle, never the request
-    path, and never app startup (start_background_refresh returns immediately
-    — the first real fetch happens in the background thread).
-    """
-    langfuse_prompts.start_background_refresh(fallback=FALLBACK_ROUTE_PROMPT)
 
 class IncidentCreate(BaseModel):
     reporterName: str | None = None
