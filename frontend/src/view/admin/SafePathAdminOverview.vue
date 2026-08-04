@@ -32,42 +32,61 @@
             </v-card-subtitle>
             <v-card-text>
                 <v-row>
+                    <!-- Most Searched Places -->
                     <v-col cols="12" md="6">
                         <v-card variant="outlined" rounded="lg">
                             <v-card-title>Most Searched Places</v-card-title>
+                            <v-divider class="mb-2"></v-divider>
                             <v-card-text>
-                                <div v-for="place in mostSearchedPlaces" :key="place.name" class="mb-4">
-                                    <div class="d-flex justify-space-between mb-1">
-                                        <strong>{{ place.name }}</strong>
-                                        <span class="text-caption text-medium-emphasis">{{ place.count }}
-                                            searches</span>
-                                    </div>
-                                    <p class="text-caption text-medium-emphasis mb-2">{{ place.type }}</p>
-                                    <v-progress-linear :model-value="place.percent" color="primary" height="8"
-                                        rounded />
+                                <div v-if="searchLogsLoading" class="text-caption text-medium-emphasis">Loading…</div>
+                                <div v-else-if="searchLogsError" class="text-caption text-error">{{ searchLogsError }}
                                 </div>
+                                <div v-else-if="!mostSearchedPlaces.length" class="text-caption text-medium-emphasis">
+                                    No route searches yet.
+                                </div>
+                                <template v-else>
+                                    <div v-for="search in mostSearchedPlaces" :key="search.name" class="mb-6">
+                                        <div class="d-flex justify-space-between mb-4">
+                                            <strong>{{ search.name }}</strong>
+                                            <span class="text-caption text-medium-emphasis">{{ search.count }}
+                                                searches</span>
+                                        </div>
+                                        <v-progress-linear :model-value="search.percent" color="primary" height="8"
+                                            rounded />
+                                    </div>
+                                </template>
                             </v-card-text>
                         </v-card>
                     </v-col>
 
+
+                    <!-- Most Incident Report Places -->
                     <v-col cols="12" md="6">
                         <v-card variant="outlined" rounded="lg">
                             <v-card-title>Most Incident Report Places</v-card-title>
                             <v-divider class="mb-2"></v-divider>
-                            <v-chip-group v-model="selectedTypes" selected-class="text-warning" multiple class="mt-2">
-                                <v-chip v-for="item in incidentTypes" :key="item" :value="item" :text="item"></v-chip>
-                            </v-chip-group> <v-card-text>
-                                <div v-for="place in mostReportedPlaces" :key="place.name" class="mb-4">
+                            <v-slide-group v-model="selectedTypes" class="mt-3" selected-class="bg-warning" multiple
+                                show-arrows>
+                                <v-slide-group-item v-for="item in incidentTypes" :key="item" :value="item" :text="item"
+                                    v-slot="{ isSelected, toggle, selectedClass }">
+                                    <v-btn :color="isSelected ? 'warning' : undefined" rounded
+                                        :class="['ma-1', selectedClass]" @click="toggle">
+                                        {{ item }}
+                                    </v-btn>
+                                </v-slide-group-item>
+                            </v-slide-group>
+                            <v-card-text>
+                                <div v-for="report in mostReportedPlaces" :key="report.name" class="mb-4">
                                     <div class="d-flex justify-space-between mb-1">
-                                        <strong>{{ place.name }}</strong>
-                                        <span class="text-caption text-medium-emphasis">{{ place.count }}
+                                        <strong>{{ report.name }}</strong>
+                                        <span class="text-caption text-medium-emphasis">{{ report.count }}
                                             reports</span>
                                     </div>
                                     <v-card-subtitle v-if="selectedTypes.length != 1"
                                         class="text-caption text-medium-emphasis mb-1">
-                                        <b>Most common:</b> {{ place.topIncident }}
+                                        <b>Most common:</b> {{ report.topIncident }}
                                     </v-card-subtitle>
-                                    <v-progress-linear :model-value="place.percent" color="error" height="8" rounded />
+                                    <v-progress-linear :model-value="report.percent" color="error" height="8" rounded />
                                 </div>
                             </v-card-text>
                             <div v-if="incidentsLoading" class="text-caption text-medium-emphasis">Loading…
@@ -89,13 +108,44 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import SafePathNavDrawer from '../../components/SafePathNavDrawer.vue';
-import { incidentService } from '../../services/api.js';
+import { incidentService, adminService } from '../../services/api.js';
 import { incidentTypeColor } from '../../data/incidentTypes.js';
 
 const router = useRouter();
 
 const tab = ref('Overview')
 
+// --- users ---
+const users = ref([]);
+const usersLoading = ref(false);
+const usersError = ref('');
+
+const loadUsers = async () => {
+    usersLoading.value = true;
+    usersError.value = '';
+    try {
+        // high limit so the total-count stat isn't capped at the backend default (100)
+        const { data } = await adminService.listUsers({ limit: 10000 });
+        users.value = data.users || [];
+    } catch (err) {
+        usersError.value = err.response?.data?.detail || 'Could not load users.';
+        users.value = [];
+    } finally {
+        usersLoading.value = false;
+    }
+};
+
+// --- shared helpers ---
+// First segment of the display name, e.g. "Zoologischer Garten".
+const placeKey = (location) => (location || '').split(',')[0].trim();
+// A usable place name = not empty, not "Unknown", not a raw "lat, lng" coordinate.
+const isRealPlace = (name) => !!name && name !== 'Unknown' && !/^-?\d+(\.\d+)?$/.test(name);
+
+// --- incidents ---
+const incidents = ref([]);
+const incidentsLoading = ref(false);
+const incidentsError = ref('');
+const selectedTypes = ref([]);          // bound to the chip group; [] = all types
 const incidentTypes = [
     'Harassment',
     'Theft',
@@ -105,19 +155,12 @@ const incidentTypes = [
     'Other'
 ];
 
-const incidents = ref([]);              // raw rows from the API
-const incidentsLoading = ref(false);
-const incidentsError = ref('');
-const selectedTypes = ref([]);          // bound to the chip group; [] = all types
-
-// First segment of the display name, e.g. "Zoologischer Garten".
-const placeKey = (location) => (location || '').split(',')[0].trim();
-
 const loadIncidents = async () => {
     incidentsLoading.value = true;
     incidentsError.value = '';
     try {
-        const { data } = await incidentService.listAdmin({ limit: 10000 });   // no status param
+        // high limit so the total-count stat isn't capped at the backend default (100)
+        const { data } = await incidentService.listAdmin({ limit: 10000 });
         incidents.value = data.incidents || [];
     } catch (err) {
         incidentsError.value = err.response?.data?.detail || 'Could not load incident reports.';
@@ -126,7 +169,6 @@ const loadIncidents = async () => {
         incidentsLoading.value = false;
     }
 };
-onMounted(loadIncidents);
 
 const mostReportedPlaces = computed(() => {
     const types = selectedTypes.value;
@@ -160,11 +202,75 @@ const mostReportedPlaces = computed(() => {
     }));
 });
 
+// --- route-search logs ---
+const searchLogs = ref([]);
+const searchLogsLoading = ref(false);
+const searchLogsError = ref('');
+
+const loadSearchLogs = async () => {
+    searchLogsLoading.value = true;
+    searchLogsError.value = '';
+    try {
+        // last 30 days, generous limit
+        const { data } = await adminService.searchLogs({ minutes: 1440, limit: 100 });
+        searchLogs.value = data.logs || [];
+        console.log(data)
+    } catch (err) {
+        searchLogsError.value = err.response?.data?.detail || 'Could not load search logs.';
+        searchLogs.value = [];
+    } finally {
+        searchLogsLoading.value = false;
+    }
+};
+
+onMounted(() => {
+    loadUsers();
+    loadIncidents();
+    loadSearchLogs();
+});
+
+const mostSearchedPlaces = computed(() => {
+    const byPlace = new Map();   // name -> count
+    for (const log of searchLogs.value) {
+        for (const raw of [log.start, log.destination]) {
+            const name = placeKey(raw);
+            if (!isRealPlace(name)) continue;   // skip Unknown / coordinate fallbacks
+            byPlace.set(name, (byPlace.get(name) || 0) + 1);
+        }
+    }
+    const places = [...byPlace.entries()]
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6);
+
+    const max = places.length ? places[0].count : 0;
+    return places.map((p) => ({
+        name: p.name,
+        count: p.count,
+        percent: max ? Math.round((p.count / max) * 100) : 0,
+    }));
+});
+
+// --- Overview stats ---
+const totalUsers = computed(() => users.value.length);
 const totalIncidents = computed(() => incidents.value.length);
+const totalSearches = computed(() => searchLogs.value.length);
 
 const overviewStats = computed(() => [
-    { label: 'Total Users', value: '1,248', icon: 'mdi-account-group', trend: '+12', trendType: 'positive' },
-    { label: 'Route Searches', value: '8,920', icon: 'mdi-magnify', trend: '+18%', trendType: 'positive' },
+    {
+        label: 'Total Users',
+        value: usersLoading.value ? '…' : totalUsers.value.toLocaleString(),
+        icon: 'mdi-account-group',
+        trend: '',
+        trendType: ''
+    },
+    {
+        label: 'Route Searches',
+        value: searchLogsLoading.value ? '…' : totalSearches.value.toLocaleString(),
+        icon: 'mdi-magnify',
+        trend: '',
+        trendType: '',
+    },
     {
         label: 'Incident Reports',
         value: incidentsLoading.value ? '…' : totalIncidents.value.toLocaleString(),
@@ -173,82 +279,9 @@ const overviewStats = computed(() => [
         trendType: '',
     },
 ]);
-
-const mostSearchedPlaces = ref([
-    {
-        name: 'Alexanderplatz',
-        type: 'Start + destination searches',
-        count: 842,
-        percent: 100
-    },
-    {
-        name: 'Berlin Hbf',
-        type: 'Destination searches',
-        count: 731,
-        percent: 86
-    },
-    {
-        name: 'Brandenburg Gate',
-        type: 'Destination searches',
-        count: 622,
-        percent: 74
-    },
-    {
-        name: 'Potsdamer Platz',
-        type: 'Start searches',
-        count: 490,
-        percent: 58
-    }
-]);
-
-const goToHome = () => {
-    router.push('/home');
-};
-
-const refreshDashboard = () => {
-    console.log('Refresh admin dashboard data');
-};
-
-const exportReport = () => {
-    console.log('Export admin report');
-};
 </script>
 
 <style scoped>
-.overview-stat-card {
-    height: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
-    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
-    overflow: hidden;
-}
-
-.overview-stat-card__content {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 22px;
-}
-
-.overview-stat-card__avatar {
-    flex: 0 0 auto;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
-}
-
-.overview-stat-card__copy {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.overview-stat-card__label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: rgba(15, 23, 42, 0.66);
-    letter-spacing: 0.01em;
-}
-
 .overview-stat-card__value {
     font-size: xx-large;
     line-height: 1.05;
