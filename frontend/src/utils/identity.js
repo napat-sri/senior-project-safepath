@@ -6,6 +6,8 @@
 // When real auth lands, replace getUserId() so it returns the authenticated
 // user's id (e.g. "member_<id>") and keep everything else as-is.
 
+import keycloak from '../services/keycloak';
+
 const GUEST_KEY = 'safepath_guest_id';
 const SESSION_KEY = 'safepath_session_id';
 
@@ -47,8 +49,15 @@ export function getSessionId() {
 // authenticated user id once auth exists.
 export function getUserId() {
   // TODO(auth): return `member_${authedUser.id}` when the user is logged in.
-  return getGuestId();
+  if (keycloak.authenticated && keycloak.tokenParsed) {
+    // console.log('Authenticated user id:', keycloak.tokenParsed.sub);
+    return `member_${keycloak.tokenParsed.sub}`;
+  }
+  else {
+    return getGuestId();
+  }
 }
+
 
 export function getIdentity() {
   return { user_id: getUserId(), session_id: getSessionId() };

@@ -63,15 +63,15 @@ const props = defineProps({
 
 const avatar = ref('');
 
-onMounted(async () => {
-  if (!keycloak.authenticated) return;
-  try {
-    const { data } = await userService.getAvatar();
-    if (data.avatar) avatar.value = data.avatar;
-  } catch (err) {
-    console.error('Failed to load avatar', err);
-  }
-});
+// onMounted(async () => {
+//   if (!keycloak.authenticated) return;
+//   try {
+//     const { data } = await userService.getAvatar();
+//     if (data.avatar) avatar.value = data.avatar;
+//   } catch (err) {
+//     console.error('Failed to load avatar', err);
+//   }
+// });
 
 const drawer = ref(false);
 
