@@ -2,6 +2,8 @@ import json
 import math
 from pathlib import Path
 
+import numpy as np
+
 DATA_DIR = Path(__file__).resolve().parent / "data"
 LAMPS_PATH = DATA_DIR / "berlin_street_lamps.json"
 
@@ -19,26 +21,51 @@ LAMPS_PATH = DATA_DIR / "berlin_street_lamps.json"
 LAMPS_PER_KM2_LOW = 0
 LAMPS_PER_KM2_HIGH = 380
 
-_lamps = None  # loaded once, lazily
+_lamps = None  # (lats: np.ndarray, lngs: np.ndarray), loaded once, lazily
 
 
 def _load_lamps():
+    """Loads into numpy arrays rather than a list of (lat, lng) tuples.
+
+    Perf note: lighting_density() used to do a pure-Python loop computing a
+    haversine distance to every one of ~101.8k loaded lamps, for every route
+    sample point — see accident_lookup.py's load_berlin_accidents() for the
+    matching change and the measured before/after numbers (both lookups
+    combined: ~2.0s -> ~0.1s for a realistic request, on real data).
+    """
     global _lamps
     if _lamps is not None:
         return _lamps
     with open(LAMPS_PATH, encoding="utf-8") as f:
         data = json.load(f)
-    _lamps = [(el["lat"], el["lon"]) for el in data["elements"] if "lat" in el and "lon" in el]
+    elements = [el for el in data["elements"] if "lat" in el and "lon" in el]
+    lats = np.array([el["lat"] for el in elements], dtype=np.float64)
+    lngs = np.array([el["lon"] for el in elements], dtype=np.float64)
+    _lamps = (lats, lngs)
     return _lamps
 
 
 def haversine_m(lat1, lng1, lat2, lng2):
+    """Scalar point-to-point distance (meters). Still used by
+    mcp_server._sample_polyline for route-polyline sampling — NOT for the
+    lighting lookup below, which uses the vectorized version instead."""
     r = 6_371_000.0
     p1, p2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
     dlmb = math.radians(lng2 - lng1)
     a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2) ** 2
     return 2 * r * math.asin(math.sqrt(a))
+
+
+def _haversine_m_vec(lat1, lng1, lats2, lngs2):
+    """Vectorized distance (meters) from one point to a numpy array of points."""
+    r = 6_371_000.0
+    p1 = np.radians(lat1)
+    p2 = np.radians(lats2)
+    dphi = np.radians(lats2 - lat1)
+    dlmb = np.radians(lngs2 - lng1)
+    a = np.sin(dphi / 2) ** 2 + np.cos(p1) * np.cos(p2) * np.sin(dlmb / 2) ** 2
+    return 2 * r * np.arcsin(np.sqrt(a))
 
 
 def normalize_score(value, lo, hi):
@@ -48,8 +75,9 @@ def normalize_score(value, lo, hi):
 
 
 def lighting_density(lat, lng, radius_m=150):
-    lamps = _load_lamps()
-    lamp_count = sum(1 for lat2, lng2 in lamps if haversine_m(lat, lng, lat2, lng2) <= radius_m)
+    lats, lngs = _load_lamps()
+    dists = _haversine_m_vec(lat, lng, lats, lngs)
+    lamp_count = int((dists <= radius_m).sum())
 
     area_km2 = (math.pi * radius_m ** 2) / 1_000_000
     density = lamp_count / area_km2

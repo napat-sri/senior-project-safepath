@@ -1,6 +1,6 @@
 # SafePath — VPN & Network Architecture
 
-_Last updated: 2026-07-05_
+_Last updated: 2026-08-04_
 
 ## Goal
 
@@ -19,6 +19,7 @@ reached over the VPN either by IP or by a friendly, VPN-guarded **subdomain**.
 | Portainer   | —                            | `https://portainer.safepath.duckdns.org` | `portainer:9000` |
 | Postgres    | —                            | VPN by IP only (raw TCP, not HTTP)       | `postgres:5432` |
 | wg-easy     | UDP `51820` (tunnel)         | admin UI `http://safepath.duckdns.org:51821`           | —               |
+| Langfuse    | `https://langfuse.safepath.duckdns.org` (public, external) | — | *not part of this compose stack — see below* |
 
 ## Request flow
 
@@ -67,9 +68,31 @@ forwards normal queries upstream but overrides the app domain:
 ```
 
 **Caution:** this override hijacks the hostname for *all* protocols, not just
-web. While connected to the VPN, `ssh safepath.duckdns.org` also resolves to
-`172.28.0.10` — so **SSH by the server's public IP** (or disconnect the VPN
+web, and for **every** subdomain of `safepath.duckdns.org` — including ones
+that aren't actually routed by this project's Caddy at all (see **Langfuse**
+below). While connected to the VPN, `ssh safepath.duckdns.org` also resolves
+to `172.28.0.10` — so **SSH by the server's public IP** (or disconnect the VPN
 first). Don't lock yourself out.
+
+## Langfuse (external — not part of this compose stack)
+
+Langfuse (prompt management for `safepath-route-safety`, plus tracing/
+observability — see `backend/langfuse_prompts.py` and `langfuse_monitor.py`)
+is **not** one of the services this repo's `docker-compose*.yml` files
+deploy. It's hosted separately, and just happens to sit under the same
+`*.safepath.duckdns.org` wildcard for convenience. Its real public IP
+(verified via a public DNS-over-HTTPS resolver, bypassing any local
+overrides) is `84.247.178.45` — a normal internet-reachable host, nothing
+VPN-gated about it by design.
+
+Auth: `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` in `.env`. The effective
+host comes from `LANGFUSE_BASE_URL` (`https://langfuse.safepath.duckdns.org`)
+— the Langfuse SDK checks that env var before the `LANGFUSE_HOST` fallback
+`backend/langfuse_monitor.py` passes in code, so `LANGFUSE_HOST`'s default
+(`http://langfuse-web:3000`) is effectively dead code; harmless, just don't
+rely on it.
+
+
 
 ## Internal vs. public URLs (rule of thumb)
 
