@@ -65,10 +65,10 @@
                         <v-card variant="outlined" rounded="lg">
                             <v-card-title>Most Incident Report Places</v-card-title>
                             <v-divider class="mb-2"></v-divider>
-                            <v-slide-group v-model="selectedTypes" class="mt-3" selected-class="bg-warning"
-                                multiple show-arrows>
-                                <v-slide-group-item v-for="item in incidentTypes" :key="item" :value="item"
-                                    :text="item" v-slot="{ isSelected, toggle, selectedClass }">
+                            <v-slide-group v-model="selectedTypes" class="mt-3" selected-class="bg-warning" multiple
+                                show-arrows>
+                                <v-slide-group-item v-for="item in incidentTypes" :key="item" :value="item" :text="item"
+                                    v-slot="{ isSelected, toggle, selectedClass }">
                                     <v-btn :color="isSelected ? 'warning' : undefined" rounded
                                         :class="['ma-1', selectedClass]" @click="toggle">
                                         {{ item }}
@@ -115,14 +115,25 @@ const router = useRouter();
 
 const tab = ref('Overview')
 
-const incidentTypes = [
-    'Harassment',
-    'Theft',
-    'Unsafe area',
-    'Suspicious activity',
-    'Transport issue',
-    'Other'
-];
+// --- users ---
+const users = ref([]);
+const usersLoading = ref(false);
+const usersError = ref('');
+
+const loadUsers = async () => {
+    usersLoading.value = true;
+    usersError.value = '';
+    try {
+        // high limit so the total-count stat isn't capped at the backend default (100)
+        const { data } = await adminService.listUsers({ limit: 10000 });
+        users.value = data.users || [];
+    } catch (err) {
+        usersError.value = err.response?.data?.detail || 'Could not load users.';
+        users.value = [];
+    } finally {
+        usersLoading.value = false;
+    }
+};
 
 // --- shared helpers ---
 // First segment of the display name, e.g. "Zoologischer Garten".
@@ -135,6 +146,14 @@ const incidents = ref([]);
 const incidentsLoading = ref(false);
 const incidentsError = ref('');
 const selectedTypes = ref([]);          // bound to the chip group; [] = all types
+const incidentTypes = [
+    'Harassment',
+    'Theft',
+    'Unsafe area',
+    'Suspicious activity',
+    'Transport issue',
+    'Other'
+];
 
 const loadIncidents = async () => {
     incidentsLoading.value = true;
@@ -205,6 +224,7 @@ const loadSearchLogs = async () => {
 };
 
 onMounted(() => {
+    loadUsers();
     loadIncidents();
     loadSearchLogs();
 });
@@ -231,11 +251,19 @@ const mostSearchedPlaces = computed(() => {
     }));
 });
 
+// --- Overview stats ---
+const totalUsers = computed(() => users.value.length);
 const totalIncidents = computed(() => incidents.value.length);
 const totalSearches = computed(() => searchLogs.value.length);
 
 const overviewStats = computed(() => [
-    { label: 'Total Users', value: '1,248', icon: 'mdi-account-group', trend: '+12', trendType: 'positive' },
+    {
+        label: 'Total Users',
+        value: usersLoading.value ? '…' : totalUsers.value.toLocaleString(),
+        icon: 'mdi-account-group',
+        trend: '',
+        trendType: ''
+    },
     {
         label: 'Route Searches',
         value: searchLogsLoading.value ? '…' : totalSearches.value.toLocaleString(),
