@@ -22,10 +22,13 @@
   <!-- User = avatar + name + email -->
   <template #item.user="{ item }">
     <div class="d-flex align-center ga-2">
-      <v-avatar size="28" color="primary" variant="tonal">{{ item.userInitial }}</v-avatar>
-      <div>
-        <div class="font-weight-medium">{{ item.user }}</div>
-        <div class="text-caption text-medium-emphasis">{{ item.email }}</div>
+      <v-avatar size="28" color="primary" variant="tonal">{{ item.user_detail.userInitial }}</v-avatar>
+      <div v-if="item.user_detail.role == 'Guest'">
+        <div class="font-weight-medium">{{ item.user_detail.role }}</div>
+      </div>
+      <div v-else>
+        <div class="font-weight-medium">{{ item.user_detail.user }}</div>
+        <div class="text-caption text-medium-emphasis">{{ item.user_detail.email }}</div>
       </div>
     </div>
   </template>
@@ -102,11 +105,10 @@ const items = [
 ]
 
 const searchLogHeaders = [
+  { title: 'Date/Time', key: 'timestamp' },
   { title: 'User', key: 'user' },
   { title: 'Start', key: 'start' },
   { title: 'Destination', key: 'destination' },
-  { title: 'Date', key: 'date' },
-  { title: 'Time', key: 'time' },
   { title: 'Safety Score', key: 'safetyScore' },
   { title: 'Status', key: 'status', sortable: false },
 ];

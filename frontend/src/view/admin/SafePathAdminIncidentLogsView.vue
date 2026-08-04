@@ -104,9 +104,9 @@ const incidentsLoading = ref(false);
 const incidentsError = ref('');
 
 const incidentHeaders = [
-    { title: 'Reporter', key: 'reporterName' },
     { title: 'Date', key: 'date' },
     { title: 'Time', key: 'time' },
+    { title: 'Reporter', key: 'reporterName' },
     { title: 'Location', key: 'location', width: '40%' },
     { title: 'Type', key: 'incidentType' },
     { title: 'Action', key: 'action', sortable: false },

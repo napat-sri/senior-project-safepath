@@ -31,9 +31,8 @@
                     <!-- Name/Email = avatar + name + email -->
                     <template #item.name="{ item }">
                         <div class="d-flex align-center ga-2">
-                            <v-avatar size="36" color="primary" variant="tonal">
-                                <v-img v-if="item.avatar" :src="item.avatar" alt="Profile picture" cover />
-                                <span v-else>{{ item.initial }}</span>
+                            <v-avatar size="36" :color="item.role === 'Admin' ? 'warning' : 'primary'" variant="tonal">
+                                {{ item.initial }}
                             </v-avatar>
                             <div>
                                 <div class="font-weight-medium">{{ item.name }}</div>
@@ -175,6 +174,7 @@ const fetchUsers = async () => {
         });
         users.value = data.users;
         totalUsers.value = data.total;
+        console.log(data)
     } catch (err) {
         usersError.value = err.response?.data?.detail || 'Failed to load users.';
     } finally {
