@@ -52,7 +52,7 @@ import langfuse_search_logs
 import login_events
 import mcp_client
 from auth import require_admin, require_member
-from database import IncidentReport, LoginEvent, UserProfile, get_db, init_db
+from database import IncidentReport, LoginEvent, get_db, init_db
 from dotenv import load_dotenv
 from fallback_route_prompt import FALLBACK_ROUTE_PROMPT
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
