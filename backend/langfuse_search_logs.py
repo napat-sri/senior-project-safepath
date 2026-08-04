@@ -246,7 +246,10 @@ def _resolve_user(uid):
             display = name or email or "Member"
             return {"user": display, "email": email or "", "role": "Member",
                     "userInitial": (display[:1] or "M").upper()}
-        # lookup failed → fall through to masked
+        # lookup failed → still treat as a member (avoid mislabeling as Guest)
+        display = "Member"
+        return {"user": display, "email": "", "role": "Member",
+                "userInitial": (display[:1] or "M").upper()}
     label, masked = _mask_user(raw)          # existing helper
     return {"user": label, "email": masked, "role": "Guest",
             "userInitial": ("G").upper()}
