@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar color="primary">
+  <v-app-bar color="primary" scroll-behavior="elevate">
     <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
 
     <v-avatar rounded="lg" size="44">
@@ -12,25 +12,15 @@
       <v-switch v-model="isLight" inset hide-details density="compact" color="black" class="me-2"
         true-icon="mdi-white-balance-sunny" false-icon="mdi-weather-night"></v-switch>
     </template>
-
-    <!-- <template v-if="$vuetify.display.mdAndUp">
-          <v-btn icon="mdi-magnify" variant="text"></v-btn>
-
-          <v-btn icon="mdi-filter" variant="text"></v-btn>
-        </template>
-
-<v-btn icon="mdi-dots-vertical" variant="text"></v-btn> -->
   </v-app-bar>
-
-  <!-- <v-navigation-drawer v-model="drawer" :rail="rail" permanent class="pt-4" :width="width" rail-width="88"> -->
 
   <v-navigation-drawer v-model="drawer" temporary class="pt-4">
     <v-list>
       <v-list-item v-if="isAuthenticated" :title="username" :subtitle="isAdmin ? 'Admin' : 'Member'">
         <template #prepend>
           <v-avatar size="40" color="primary" variant="tonal">
-            <v-img v-if="avatar" :src="avatar" alt="Profile picture" cover />
-            <v-icon v-else>mdi-account-circle</v-icon>
+            <v-icon v-if="isAdmin" icon="mdi-account-cog" color="warning"></v-icon>
+            <v-icon v-else icon="mdi-account" color="primary"></v-icon>
           </v-avatar>
         </template>
       </v-list-item>
@@ -45,7 +35,7 @@
       <slot />
     </v-list>
 
-    <template #append>
+    <template v-slot:append>
       <div class="pa-2">
         <v-btn v-if="isAuthenticated" block color="error" variant="tonal" prepend-icon="mdi-logout"
           @click="logout">Logout</v-btn>
@@ -54,20 +44,6 @@
     </template>
   </v-navigation-drawer>
 </template>
-<!-- <v-navigation-drawer v-model="drawer" temporary class="pt-4">
-    <v-list>
-      <v-list-item prepend-avatar="https://randomuser.me/api/portraits/men/85.jpg" title="John Leider">
-      </v-list-item>
-    </v-list>
-
-    <v-divider></v-divider>
-    <v-list density="comfortable">
-      <v-list-item v-for="item in items" :key="item.title" :title="item.title" :prepend-icon="item.icon"
-        :to="item.to" />
-      <slot />
-    </v-list>
-  </v-navigation-drawer>
-</template> -->
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
@@ -87,39 +63,17 @@ const props = defineProps({
 
 const avatar = ref('');
 
-onMounted(async () => {
-  if (!keycloak.authenticated) return;
-  try {
-    const { data } = await userService.getAvatar();
-    if (data.avatar) avatar.value = data.avatar;
-  } catch (err) {
-    console.error('Failed to load avatar', err);
-  }
-});
-
-const drawer = ref(false);
-
-// // The single source of truth for the main app navigation.
-// // Change a label, icon, or route here and every view that uses the
-// // default menu updates. Pass a custom `items` array (e.g. the admin
-// // view) to override it.
-// defineProps({
-//   items: {
-//     type: Array,
-//     default: () => [
-//       { title: 'Home', icon: 'mdi-home', to: '/home' },
-//       { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-//       { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' },
-//       { title: 'Dashboard', icon: 'mdi-chart-box', to: '/overview' }
-//     ]
-//   },
-//   width: {
-//     type: [Number, String],
-//     default: 280
+// onMounted(async () => {
+//   if (!keycloak.authenticated) return;
+//   try {
+//     const { data } = await userService.getAvatar();
+//     if (data.avatar) avatar.value = data.avatar;
+//   } catch (err) {
+//     console.error('Failed to load avatar', err);
 //   }
 // });
 
-// const drawer = ref(false)
+const drawer = ref(false);
 
 // Light/dark toggle. The switch is "on" for light mode (sun icon); the choice
 // is applied globally via Vuetify and remembered across reloads.

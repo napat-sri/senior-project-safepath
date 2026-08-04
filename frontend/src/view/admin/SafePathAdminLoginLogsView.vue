@@ -1,43 +1,37 @@
 <template>
-    <v-layout>
-        <v-main>
-            <v-container fluid class="pa-4 pa-md-6">
-                <v-card id="login-logs" rounded="lg" elevation="2" class="mb-3">
-                    <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
-                        Login Log Explorer
-                        <div class="d-flex align-center ga-2">
-                            <v-text-field v-model="searchLoginEvent" label="Filter Login events" density="compact"
-                                variant="outlined" hide-details prepend-inner-icon="mdi-magnify" style="width: 300px"
-                                clearable />
-                            <v-btn icon="mdi-refresh" variant="text" :loading="loginsLoading"
-                                aria-label="Refresh Login events" @click="refreshLoginLogs" />
-                        </div>
-                    </v-card-title>
-                    <v-progress-linear v-if="loginsLoading" indeterminate color="primary" />
-                    <v-card-text>
-                        <v-alert v-if="loginsError" type="error" variant="tonal" density="compact" class="mb-3">
-                            {{ loginsError }}
-                        </v-alert>
-                        <v-data-table :headers="loginEventHeaders" :items="filteredLoginEvents"
-                            :loading="loginsLoading">
-                            <template #item.eventTime="{ item }">
-                                {{ item.eventTime }}
-                            </template>
-                            <template #item.status="{ item }">
-                                <v-chip v-if="item.status == 'Success'" color="success" size="small" variant="flat"
-                                    label>
-                                    {{ item.status }}
-                                </v-chip>
-                                <v-chip v-else color="error" size="small" variant="flat" label>
-                                    {{ item.status }}
-                                </v-chip>
-                            </template>
-                        </v-data-table>
-                    </v-card-text>
-                </v-card>
-            </v-container>
-        </v-main>
-    </v-layout>
+    <v-container fluid class="pa-4 pa-md-6">
+        <v-card id="login-logs" rounded="lg" elevation="2" class="mb-3">
+            <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+                Login Log Explorer
+                <div class="d-flex align-center ga-2">
+                    <v-text-field v-model="searchLoginEvent" label="Filter login events" density="compact"
+                        variant="outlined" hide-details prepend-inner-icon="mdi-magnify" style="width: 300px"
+                        clearable />
+                    <v-btn icon="mdi-refresh" variant="text" :loading="loginsLoading" aria-label="Refresh Login events"
+                        @click="refreshLoginLogs" />
+                </div>
+            </v-card-title>
+            <v-progress-linear v-if="loginsLoading" indeterminate color="primary" />
+            <v-card-text>
+                <v-alert v-if="loginsError" type="error" variant="tonal" density="compact" class="mb-3">
+                    {{ loginsError }}
+                </v-alert>
+                <v-data-table :headers="loginEventHeaders" :items="filteredLoginEvents" :loading="loginsLoading">
+                    <template #item.eventTime="{ item }">
+                        {{ item.eventTime }}
+                    </template>
+                    <template #item.status="{ item }">
+                        <v-chip v-if="item.status == 'Success'" color="success" size="small" variant="tonal" label>
+                            {{ item.status }}
+                        </v-chip>
+                        <v-chip v-else color="error" size="small" variant="tonal" label>
+                            {{ item.status }}
+                        </v-chip>
+                    </template>
+                </v-data-table>
+            </v-card-text>
+        </v-card>
+    </v-container>
 </template>
 
 <script setup>

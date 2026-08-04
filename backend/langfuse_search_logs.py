@@ -34,6 +34,10 @@ from typing import Any
 # Reuse the single cached client + window helper + trace-url builder.
 from langfuse_monitor import _trace_url, _window_start, get_client
 
+# Tracking member's name and email
+from functools import lru_cache
+import keycloak_admin
+
 # Traces the route flow stamps with this tag are definitely route searches.
 ROUTE_TAG = "route-search"
 
@@ -186,17 +190,21 @@ def _to_log(trace: Any) -> dict[str, Any]:
     """Map one Langfuse trace to a search-log row."""
     date, time_ = _split_datetime(getattr(trace, "timestamp", None))
     uid = getattr(trace, "user_id", None) or getattr(trace, "session_id", None)
-    user_label, masked_email = _mask_user(uid)
+    # user_label, masked_email = _mask_user(uid)
     start, destination = _extract_names(trace)
     score = _extract_safety_score(getattr(trace, "output", None))
+    user_detail = _resolve_user(uid)
     
     return {
         "id": getattr(trace, "id", None),
-        "user": user_label,
-        "userInitial": (user_label.replace("Guest ", "")[:1] or "G").upper(),
-        "email": masked_email,
+        "uid": (str(uid or "").split("_", 1)[1] if "_" in str(uid or "") else str(uid or "")),
+        "user_detail": user_detail,
+        # "userInitial": (user_label.replace("Guest ", "")[:1] or "G").upper(),
+        # "role": (uid.split("_"))[0].capitalize(),
+        # "email": masked_email,
         "start": start,
         "destination": destination,
+        "timestamp": date + " " + time_,
         "date": date,
         "time": time_,
         "safetyScore": score if score is not None else 0,
@@ -217,3 +225,31 @@ def fetch_search_logs(minutes: int = 1440, limit: int = 100, name: str | None = 
     )
     traces = getattr(result, "data", []) or []
     return [_to_log(t) for t in traces if _is_route_trace(t)]
+
+
+@lru_cache(maxsize=2048)
+def _lookup_keycloak_user(sub: str) -> tuple[str | None, str | None]:
+    """(display_name, email) for a Keycloak user id; (None, None) on any failure."""
+    try:
+        u = keycloak_admin._kc_request("GET", f"/users/{sub}").json()
+        name = f"{u.get('firstName','')} {u.get('lastName','')}".strip() or u.get("username")
+        return name, u.get("email")
+    except Exception:
+        return None, None
+
+def _resolve_user(uid):
+    raw = str(uid or "anonymous")
+    if raw.startswith("member_"):
+        sub = raw[len("member_"):]
+        name, email = _lookup_keycloak_user(sub)
+        if name or email:
+            display = name or email or "Member"
+            return {"user": display, "email": email or "", "role": "Member",
+                    "userInitial": (display[:1] or "M").upper()}
+        # lookup failed → still treat as a member (avoid mislabeling as Guest)
+        display = "Member"
+        return {"user": display, "email": "", "role": "Member",
+                "userInitial": (display[:1] or "M").upper()}
+    label, masked = _mask_user(raw)          # existing helper
+    return {"user": label, "email": masked, "role": "Guest",
+            "userInitial": ("G").upper()}

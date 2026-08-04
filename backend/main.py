@@ -62,6 +62,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
+
 POLL_SECONDS = int(os.getenv("LOGIN_EVENTS_POLL_SECONDS", "300"))  # 5 min default
 
 load_dotenv()
@@ -381,13 +382,6 @@ def admin_list_users(
     """One page of Keycloak users, matching `search` against name/username/email."""
     try:
         result = keycloak_admin.fetch_users(search=search, first=first, max=max)
-        # Attach avatars stored in our Postgres, keyed by Keycloak id (= sub = row["id"]).
-        ids = [row["id"] for row in result["users"]]
-        if ids:
-            rows = db.query(UserProfile).filter(UserProfile.user_id.in_(ids)).all()
-            avatar_map = {p.user_id: p.avatar for p in rows}
-            for row in result["users"]:
-                row["avatar"] = avatar_map.get(row["id"])
         return result
     except keycloak_admin.KeycloakConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
@@ -1144,10 +1138,6 @@ def delete_me(user=Depends(require_member), db: Session = Depends(get_db)):  # n
     """Delete the caller's own Keycloak account (id comes from the verified token)."""
     try:
         keycloak_admin.delete_user(user["sub"])
-        profile = db.get(UserProfile, user["sub"])
-        if profile is not None:
-            db.delete(profile)
-            db.commit()
         return {"deleted": True}
     except keycloak_admin.KeycloakConfigError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
@@ -1156,32 +1146,6 @@ def delete_me(user=Depends(require_member), db: Session = Depends(get_db)):  # n
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=f"Keycloak unreachable: {exc}")
 
-class AvatarRequest(BaseModel):
-    # Base64 data URL (e.g. "data:image/png;base64,..."). Send empty string to clear.
-    avatar: str = Field("", max_length=500_000)
-
-@app.get("/api/me/avatar")
-def get_my_avatar(user=Depends(require_member), db: Session = Depends(get_db)):
-    profile = db.get(UserProfile, user["sub"])
-    return {"avatar": profile.avatar if profile else None}
-
-@app.put("/api/me/avatar")
-def set_my_avatar(payload: AvatarRequest, user=Depends(require_member), db: Session = Depends(get_db)):
-    avatar = payload.avatar.strip()
-    if avatar and not avatar.startswith((
-        "data:image/png;base64,",
-        "data:image/jpeg;base64,",
-        "data:image/webp;base64,",
-    )):
-        raise HTTPException(status_code=422, detail="Avatar must be a base64 data URL (PNG/JPEG/WEBP).")
-
-    profile = db.get(UserProfile, user["sub"])
-    if profile is None:
-        profile = UserProfile(user_id=user["sub"])
-        db.add(profile)
-    profile.avatar = avatar or None
-    db.commit()
-    return {"saved": True}
 
 
 async def _login_events_poller():
