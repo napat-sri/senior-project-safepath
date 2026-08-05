@@ -1,46 +1,42 @@
 <template>
-    <v-layout>
-        <v-main>
-            <v-container fluid class="pa-4 pa-md-6">
-                <v-card id="search-logs" rounded="lg" elevation="2" class="mb-3">
-                    <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
-                        Incident Report Logs
-                        <div class="d-flex align-center ga-2">
-                            <v-text-field v-model="searchIncidentFilter" label="Filter incident logs" density="compact"
-                                variant="outlined" hide-details prepend-inner-icon="mdi-magnify" style="width: 300px"
-                                clearable />
-                            <v-btn icon="mdi-refresh" variant="text" :loading="incidentsLoading"
-                                aria-label="Refresh incident logs" @click="loadIncidents" />
-                        </div>
-                    </v-card-title>
-                    <v-card-subtitle class="text-medium-emphasis mb-2">
-                        Track route searches with safety score and status.
-                    </v-card-subtitle>
-                    <v-progress-linear v-if="logsLoading" indeterminate color="primary" />
-                    <v-card-text>
-                        <v-alert v-if="logsError" type="error" variant="tonal" density="compact" class="mb-3">
-                            {{ logsError }}
-                        </v-alert>
-                        <v-data-table :headers="incidentHeaders" :items="filteredIncidents" :loading="incidentsLoading">
-                            <template #item.incidentType="{ item }">
-                                <v-chip :color="incidentTypeColor(item.incidentType)" size="small" variant="flat" label>
-                                    {{ item.incidentType }}
-                                </v-chip>
+    <v-container fluid class="pa-4 pa-md-6">
+        <v-card id="search-logs" rounded="lg" elevation="2" class="mb-3">
+            <v-card-title class="d-flex justify-space-between align-center flex-wrap ga-3">
+                Incident Report Logs
+                <div class="d-flex align-center ga-2">
+                    <v-text-field v-model="searchIncidentFilter" label="Filter incident logs" density="compact"
+                        variant="outlined" hide-details prepend-inner-icon="mdi-magnify" style="width: 300px"
+                        clearable />
+                    <v-btn icon="mdi-refresh" variant="text" :loading="incidentsLoading"
+                        aria-label="Refresh incident logs" @click="loadIncidents" />
+                </div>
+            </v-card-title>
+            <v-card-subtitle class="text-medium-emphasis mb-2">
+                Track route searches with safety score and status.
+            </v-card-subtitle>
+            <v-progress-linear v-if="logsLoading" indeterminate color="primary" />
+            <v-card-text>
+                <v-alert v-if="logsError" type="error" variant="tonal" density="compact" class="mb-3">
+                    {{ logsError }}
+                </v-alert>
+                <v-data-table :headers="incidentHeaders" :items="filteredIncidents" :loading="incidentsLoading">
+                    <template #item.incidentType="{ item }">
+                        <v-chip :color="incidentTypeColor(item.incidentType)" size="small" variant="flat" label>
+                            {{ item.incidentType }}
+                        </v-chip>
+                    </template>
+                    <template v-slot:item.action="{ item }">
+                        <v-tooltip text="View details">
+                            <template v-slot:activator="{ props }">
+                                <v-btn color="primary" icon="mdi-eye" size="small" variant="text" v-bind="props"
+                                    @click="openIncidentModal(item)"></v-btn>
                             </template>
-                            <template v-slot:item.action="{ item }">
-                                <v-tooltip text="View details">
-                                    <template v-slot:activator="{ props }">
-                                        <v-btn color="primary" icon="mdi-eye" size="small" variant="text"
-                                            v-bind="props" @click="openIncidentModal(item)"></v-btn>
-                                    </template>
-                                </v-tooltip>
-                            </template>
-                        </v-data-table>
-                    </v-card-text>
-                </v-card>
-            </v-container>
-        </v-main>
-    </v-layout>
+                        </v-tooltip>
+                    </template>
+                </v-data-table>
+            </v-card-text>
+        </v-card>
+    </v-container>
 
     <v-dialog v-model="showIncidentModal" max-width="500">
         <v-card rounded="lg">
@@ -59,14 +55,17 @@
                     <v-col cols="12" md="6"><v-icon>mdi-clock</v-icon>&nbsp;Date-Time</v-col>
                     <v-col cols="12" md="6">{{ incidentDetail?.date }}, {{ incidentDetail?.time }}</v-col>
                     <v-col cols="12" md="6"><v-icon>mdi-map-marker</v-icon>&nbsp;Location</v-col>
-                    <v-col cols="12" md="6">{{ incidentDetail?.location }}</v-col>
+                    <v-col cols="12" md="6" class="text-wrap" style="overflow-wrap: anywhere;">
+                        {{ incidentDetail?.location }}
+                    </v-col>
                     <v-col cols="12" md="6"><v-icon>mdi-tag</v-icon>&nbsp;Incident Type</v-col>
-                    <v-chip :color="incidentTypeColor(incidentDetail?.incidentType)"
-                        size="small" variant="flat" label>
+                    <v-chip :color="incidentTypeColor(incidentDetail?.incidentType)" size="small" variant="flat" label>
                         {{ incidentDetail?.incidentType }}
                     </v-chip>
                     <v-col cols="12" md="6"><v-icon>mdi-text-long</v-icon>&nbsp;Details</v-col>
-                    <v-col cols="12" md="6">{{ incidentDetail?.details }}</v-col>
+                    <v-col cols="12" md="6" class="text-wrap" style="overflow-wrap: anywhere;">
+                        {{ incidentDetail?.details }}
+                    </v-col>
                 </v-row>
             </v-card-subtitle>
         </v-card>
@@ -105,12 +104,12 @@ const incidentsLoading = ref(false);
 const incidentsError = ref('');
 
 const incidentHeaders = [
-    { title: 'Reporter', key: 'reporterName' },
     { title: 'Date', key: 'date' },
     { title: 'Time', key: 'time' },
-    { title: 'Location', key: 'location' },
+    { title: 'Reporter', key: 'reporterName' },
+    { title: 'Location', key: 'location', width: '40%' },
     { title: 'Type', key: 'incidentType' },
-    { title: 'Action', key: 'action' },
+    { title: 'Action', key: 'action', sortable: false },
 ];
 
 const loadIncidents = async () => {

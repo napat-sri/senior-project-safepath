@@ -160,5 +160,8 @@ def _sample_polyline(coordinates, every_m):
 
 
 if __name__ == "__main__":
-    print(f"Loaded {len(_crime_table)} crime regions, {len(_accidents)} accidents.")
+    # _accidents is a dict of numpy arrays (lats/lngs/severities) since the
+    # accident_risk() vectorization — len() on it would give the wrong number
+    # (3, the dict's key count) rather than the accident count.
+    print(f"Loaded {len(_crime_table)} crime regions, {len(_accidents['lats'])} accidents.")
     mcp.run(transport="sse")

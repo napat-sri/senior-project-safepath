@@ -8,7 +8,7 @@
                     Report an Incident
                 </v-card-title>
                 <v-card-subtitle class="text-medium-emphasis mb-2">
-                    Share safety incidents in Berlin. Evidence is optional and helps moderation.
+                    Share safety incidents in Berlin.
                 </v-card-subtitle>
             </v-card>
 
@@ -32,8 +32,8 @@
 
                                 <v-text-field v-model="reportLocation" label="Location"
                                     placeholder="e.g., Alexanderplatz" variant="outlined" density="comfortable"
-                                    :error-messages="startError ? [startError] : []" @focus="startFocused = true"
-                                    @blur="handleFieldBlur('start')" />
+                                    :error-messages="validationErrors.location ? [validationErrors.location] : []"
+                                    @focus="startFocused = true" @blur="handleFieldBlur('start')" />
                                 <v-list v-if="startSuggestions.length && startFocused" density="compact"
                                     class="mb-3 suggestion-list">
                                     <v-list-item v-for="suggestion in startSuggestions"
@@ -190,7 +190,7 @@ watch(reportLocation, async (value) => {
 
 function selectSuggestion(type, suggestion) {
     if (type === 'start') {
-        console.log(suggestion)
+        // console.log(suggestion)
         skipStartWatch.value = true;
         reportLocation.value = suggestion.display_name;
         selectedStartPlace.value = suggestion;
@@ -231,7 +231,6 @@ const form = reactive({
     date: '',
     time: '',
     details: '',
-    evidence: []
 });
 
 watch(reportLocation, (value) => {
@@ -247,15 +246,10 @@ const incidentTypes = [
     'Other'
 ];
 
-const handleEvidenceUpload = (files) => {
-    const selected = Array.isArray(files) ? files : [];
-    form.evidence = selected.map((file) => file.name);
-};
-
 const validateForm = () => {
     validationErrors.location = reportLocation.value.trim() ? '' : 'Location is required.';
     validationErrors.details = form.details.trim() ? '' : 'Incident details are required.';
-    console.log(form)
+    // console.log(form)
 
     return (
         form.incidentType &&
@@ -281,18 +275,16 @@ const submitReport = async () => {
             date: form.date,
             time: form.time,
             details: form.details.trim(),
-            evidence: [...form.evidence],
         });
 
         // reset the form (same fields as today)
-        form.reporterName = '';
-        form.incidentType = '';
+        form.reporterName = null;
+        form.incidentType = null;
         form.location = '';
-        form.date = '';
-        form.time = '';
-        form.details = '';
-        form.evidence = [];
-        reportLocation.value = '';
+        form.date = null;
+        form.time = null;
+        form.details = null;
+        reportLocation.value = null;
         selectedStartPlace.value = null;
 
         submitMessage.value = 'Incident report submitted successfully.';
@@ -312,4 +304,10 @@ const formatDateTime = (date, time) => {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.suggestion-list {
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-radius: 12px;
+    cursor: pointer;
+}
+</style>

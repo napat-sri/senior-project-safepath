@@ -146,6 +146,10 @@ def _to_row(user: dict[str, Any]) -> dict[str, Any]:
         "createdAt": _created_at(user),
     }
 
+def fetch_user(user_id: str) -> dict[str, Any]:
+    """Raw Keycloak representation of one user (used by the /api/me route)."""
+    return _kc_request("GET", f"/users/{user_id}").json()
+
 
 """Public functions used by the FastAPI routes"""
 def fetch_users(search: str = "", first: int = 0, max: int = 20) -> dict[str, Any]:

@@ -21,3 +21,9 @@ shapely
 openpyxl
 pyproj
 cachetools
+# Was already an installed transitive dep of shapely/pyproj; pinned explicitly
+# now that accident_lookup.py/lighting_lookup.py use it directly to vectorize
+# the per-route-sample-point distance lookups (was a brute-force Python loop
+# over ~61.7k accidents + ~101.8k lamps per point — see the get_safe_routes
+# latency investigation for the before/after numbers).
+numpy
