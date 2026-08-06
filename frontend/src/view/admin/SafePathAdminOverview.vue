@@ -211,8 +211,8 @@ const loadSearchLogs = async () => {
     searchLogsLoading.value = true;
     searchLogsError.value = '';
     try {
-        // last 30 days, generous limit
-        const { data } = await adminService.searchLogs({ minutes: 1440, limit: 100 });
+        // last 7 days, generous limit
+        const { data } = await adminService.searchLogs({ minutes: 10080, limit: 100 });
         searchLogs.value = data.logs || [];
         console.log(data)
     } catch (err) {
