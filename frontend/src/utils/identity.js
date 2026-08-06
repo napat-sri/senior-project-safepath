@@ -50,12 +50,16 @@ export function getSessionId() {
 export function getUserId() {
   // TODO(auth): return `member_${authedUser.id}` when the user is logged in.
   if (keycloak.authenticated && keycloak.tokenParsed) {
-    // console.log('Authenticated user id:', keycloak.tokenParsed.sub);
-    return `member_${keycloak.tokenParsed.sub}`;
-  }
+    if(keycloak.hasRealmRole('Admin')) {
+      {
+        return `admin_${keycloak.tokenParsed.sub}`;
+      }   
+    return  `member_${keycloak.tokenParsed.sub}`;
+    }
   else {
     return getGuestId();
   }
+}
 }
 
 
