@@ -5,19 +5,19 @@
                 <v-card elevation="10" rounded="xl" class="overflow-hidden">
                     <v-row no-gutters>
                         <v-col cols="12" md="6" class="brand-panel pa-4 pa-md-6">
-                            <v-card rounded="xl" height="475" :image="brandenburg">
+                            <v-card rounded="xl" height="475" :image="brandenburg" class="brand-hero">
                                 <v-sheet color="transparent" class="d-flex align-center ga-4 mt-2 ml-4">
                                     <v-avatar size="36" rounded="lg">
                                         <v-img :src="safepathLogo" alt="SafePath Berlin logo" cover />
                                     </v-avatar>
-                                    <h3 class="text-h4 text-high-emphasis">SafePath Berlin</h3>
+                                    <h3 class="text-h4 brand-panel-title">SafePath Berlin</h3>
                                 </v-sheet>
 
                                 <v-spacer class="mx-4 mb-16 pb-16"></v-spacer>
                                 <v-spacer class="mx-4 mb-16 pb-16"></v-spacer>
                                 <v-spacer class="mx-4 mb-4 pb-4"></v-spacer>
 
-                                <v-card class="mx-2" variant="tonal">
+                                <v-card class="mx-2 feature-card" variant="tonal" theme="dark">
                                     <v-list bg-color="transparent" density="comfortable" class="pa-0">
                                         <v-list-item>
                                             <template #prepend>
@@ -130,5 +130,27 @@ const goToRegister = () => keycloak.register({ redirectUri: window.location.orig
 
 .v-theme--safepathDark .brand-panel {
     background: linear-gradient(160deg, #16252b, #0c1a1f);
+}
+
+.brand-panel-title {
+    color: #ffffff;
+}
+
+/* Or a gradient scrim instead of a filter: */
+.brand-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.brand-hero {
+    position: relative;
+}
+
+.feature-card {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 </style>
