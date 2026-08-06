@@ -4,8 +4,6 @@ const LANGFLOW_SCRIPT_ID = "langflow-embedded-chat-script";
 const LANGFLOW_SCRIPT_SRC =
   "https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js";
 const LANGFLOW_WINDOW_TITLE = "SafePath Bot";
-const LANGFLOW_WELCOME_MESSAGE =
-  "Hi! I'm SafePath Bot. Ask me about safe routes in Berlin.";
 const LANGFLOW_FLOW_ID = process.env.VUE_APP_LANGFLOW_CHATBOT_FLOW_ID;
 const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY;
 //console.log("FLOW_ID: ", LANGFLOW_FLOW_ID);
@@ -13,35 +11,7 @@ const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY;
 const LANGFLOW_HOST_URL = process.env.VUE_APP_LANGFLOW_HOST;
 //console.log("HOST_URL: ", LANGFLOW_HOST_URL)
 
-function injectWelcomeBubbleStyle() {
-  if (document.getElementById("langflow-welcome-style")) return;
-  const style = document.createElement("style");
-  style.id = "langflow-welcome-style";
-  // Escape any embedded quotes/newlines for CSS content.
-  const text = LANGFLOW_WELCOME_MESSAGE.replace(/\\/g, "\\\\").replace(
-    /"/g,
-    '\\"',
-  );
-  style.textContent = `
-    .cl-messages_container::before {
-      content: "${text}";
-      align-self: flex-start;
-      max-width: 78%;
-      margin: 12px 8px 4px 8px;
-      padding: 8px 12px;
-      background-color: #ffffff;
-      color: #0f172a;
-      border-radius: 8px 8px 8px 2px;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.12);
-      font-size: 0.9rem;
-      line-height: 1.35;
-      white-space: pre-wrap;
-    }`;
-  document.head.appendChild(style);
-}
-
 function mountChatWidget(containerId) {
-  injectWelcomeBubbleStyle();
   const chatContainer = document.getElementById(containerId);
 
   if (chatContainer) {
