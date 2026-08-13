@@ -106,6 +106,14 @@ const navItems = computed(() => {
       { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
     );
   }
+  const isLight = computed({
+  get: () => theme.name.value === 'safepathLight',
+  set: (value) => {
+    const next = value ? 'safepathLight' : 'safepathDark';
+    theme.change(next);                              // ← switches the app-wide theme
+    localStorage.setItem('safepath-theme', next);    // ← remembers the choice
+  }
+});
   if (isAdmin.value) {
     list.push({ title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/overview' });
   }
