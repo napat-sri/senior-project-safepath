@@ -30,7 +30,7 @@ services:
       caddy.2_handle.reverse_proxy: openstreetmap:80
       caddy.3_handle_path: /langflow/*
       caddy.3_handle_path.reverse_proxy: langflow:7860
-      caddy.3_handle_path.reverse_proxy.header_up: X-API-Key {env.LANGFLOW_API_KEY}
+      caddy.3_handle_path.reverse_proxy.header_up: "X-API-Key {env.LANGFLOW_API_KEY}"
       caddy.4_handle: /*
       caddy.4_handle.reverse_proxy: "{{upstreams 8080}}"
 
