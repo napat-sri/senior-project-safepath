@@ -48,18 +48,16 @@ export function getSessionId() {
 // Single place to resolve the current identity. Swap the guest branch for the
 // authenticated user id once auth exists.
 export function getUserId() {
-  // TODO(auth): return `member_${authedUser.id}` when the user is logged in.
   if (keycloak.authenticated && keycloak.tokenParsed) {
-    if(keycloak.hasRealmRole('Admin')) {
+    if(keycloak.hasRealmRole('Admin')) 
       {
         return `admin_${keycloak.tokenParsed.sub}`;
       }   
-    return  `member_${keycloak.tokenParsed.sub}`;
+      return  `member_${keycloak.tokenParsed.sub}`;     
     }
   else {
-    return getGuestId();
+        return getGuestId();
   }
-}
 }
 
 
