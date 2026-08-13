@@ -3,6 +3,9 @@ import axios from 'axios';
 // keycloak
 import keycloak from './keycloak'; 
 
+// error handling
+import { showError } from './errorStore';
+
 const apiBaseUrl =  process.env.VUE_APP_API_URL
 const api = axios.create({
   baseURL: apiBaseUrl,
@@ -20,6 +23,46 @@ api.interceptors.request.use(async (config) => {
   }
   return config;
 });
+
+// Map common status codes to short titles.
+const STATUS_TITLES = {
+  400: 'Bad Request',
+  401: 'Unauthorized',
+  403: 'Forbidden',
+  404: 'Not Found',
+  408: 'Request Timeout',
+  409: 'Conflict',
+  422: 'Invalid Data',
+  500: 'Server Error',
+  502: 'Bad Gateway',
+  503: 'Service Unavailable',
+  504: 'Gateway Timeout',
+};
+
+api.interceptors.response.use(
+  (response) => response, // success passes through untouched
+  (error) => {
+    const status = error.response?.status;
+    // FastAPI returns { detail: "..." } — fall back to axios message.
+    const detail =
+      error.response?.data?.detail ||
+      error.response?.data?.message ||
+      error.message ||
+      'Unknown error';
+
+    // Don't dialog 401 — the request interceptor already sends the user to
+    // keycloak.login(); showing an error on top would be noise.
+    if (status !== 401) {
+      showError({
+        status,
+        title: STATUS_TITLES[status] || 'Request Failed',
+        message: detail,
+      });
+    }
+
+    return Promise.reject(error); // still reject so callers can react if they want
+  }
+);
 
 export const placeService = {
   search: (query) => api.get('/places', { params: { query } }),
