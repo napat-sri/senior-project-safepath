@@ -5,7 +5,7 @@ const LANGFLOW_SCRIPT_SRC =
   "https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js";
 const LANGFLOW_WINDOW_TITLE = "SafePath Bot";
 const LANGFLOW_FLOW_ID = process.env.VUE_APP_LANGFLOW_CHATBOT_FLOW_ID;
-const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY;
+//const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY;
 //console.log("FLOW_ID: ", LANGFLOW_FLOW_ID);
 //console.log("API_KEY: ", LANGFLOW_API_KEY);
 const LANGFLOW_HOST_URL = process.env.VUE_APP_LANGFLOW_HOST;
@@ -13,7 +13,6 @@ const LANGFLOW_HOST_URL = process.env.VUE_APP_LANGFLOW_HOST;
 
 function mountChatWidget(containerId) {
   const chatContainer = document.getElementById(containerId);
-
   if (chatContainer) {
     // Chat session_id = "chat_" + guest id. The guest id identifies the visitor
     // (filter Session ID in TEXT mode by it to see all their activity), while the
@@ -26,7 +25,7 @@ function mountChatWidget(containerId) {
     <langflow-chat
   window_title="SafePath Bot"
   flow_id="${LANGFLOW_FLOW_ID}" host_url="${LANGFLOW_HOST_URL}"
-  api_key="${LANGFLOW_API_KEY}" session_id="${sessionId}"
+  session_id="${sessionId}"
   chat_position="top-left" width="400" height="550"
 
   online="true"
