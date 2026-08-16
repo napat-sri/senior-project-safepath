@@ -187,11 +187,17 @@ const selectedRoute = computed(() => (routes.value && routes.value.length > 0 ? 
 const hasSearched = ref(false);
 const startError = computed(() => {
     if (!hasSearched.value) return '';
-    return validateBerlinLocation(startLocation.value);
+    const message = validateBerlinLocation(startLocation.value);
+    if (message) return message;
+    if (!selectedStartPlace.value) return 'Please pick a start location from the suggestions.';
+    return '';
 });
 const destinationError = computed(() => {
     if (!hasSearched.value) return '';
-    return validateBerlinLocation(destination.value);
+    const message = validateBerlinLocation(destination.value);
+    if (message) return message;
+    if (!selectedDestinationPlace.value) return 'Please pick a destination location from the suggestions.';
+    return '';
 });
 const suggestionCache = {};
 async function fetchSuggestions(query) {
@@ -220,6 +226,11 @@ watch(startLocation, async (value) => {
         skipStartWatch.value = false;
         return;
     }
+    // User edited the field manually — the previous pick is no longer valid.
+    if (selectedStartPlace.value && value !== selectedStartPlace.value.display_name) {
+        selectedStartPlace.value = null;
+        invalidateResults();
+    }
     clearTimeout(startDebounceTimer);
     startDebounceTimer = setTimeout(async () => {
         const results = await fetchSuggestions(value);
@@ -237,9 +248,15 @@ watch(destination, async (value) => {
         skipDestinationWatch.value = false;
         return;
     }
-    clearTimeout(destinationDebounceTimer);
-    destinationDebounceTimer = setTimeout(async () => {
-        destinationSuggestions.value = (await fetchSuggestions(value)).filter(
+    // User edited the field manually — the previous pick is no longer valid.
+    if (selectedDestinationPlace.value && value !== selectedDestinationPlace.value.display_name) {
+        selectedDestinationPlace.value = null;
+        invalidateResults();
+    }
+    clearTimeout(startDebounceTimer);
+    startDebounceTimer = setTimeout(async () => {
+        const results = await fetchSuggestions(value);
+        destinationSuggestions.value = results.filter(
             (item) => item.name !== startLocation.value
         );
     }, 500);
@@ -400,6 +417,13 @@ function openRouteDetails(routeId) {
 function searchRoute() {
     hasSearched.value = true;
     searchError.value = '';
+
+    // Both fields must hold a place the user actually picked from suggestions.
+    if (!selectedStartPlace.value || !selectedDestinationPlace.value) {
+        searchError.value = 'Please choose both a start location and a destination from the suggestions.';
+        return;
+    }
+
     fetchSafeRoute();
 }
 function searchClear() {
@@ -413,6 +437,11 @@ function searchClear() {
     selectedDestinationPlace.value = null;
     routeOverlay.value?.clearLayers();
     showResults.value = false;
+}
+function invalidateResults() {
+    showResults.value = false;
+    routes.value = [];
+    routeOverlay.value?.clearLayers();
 }
 const searchResult = ref(null);
 onMounted(() => {
