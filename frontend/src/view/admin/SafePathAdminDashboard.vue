@@ -1,11 +1,5 @@
 <template>
     <SafePathNavDrawer subtitle="Admin" :width="300" :items="adminMenu">
-        <!-- <v-divider class="my-2" />
-            <v-list-item title="Users" prepend-icon="mdi-account-group" @click="scrollToSection('users')" />
-            <v-list-item title="Search Logs" prepend-icon="mdi-magnify" @click="scrollToSection('search-logs')" />
-            <v-list-item title="Incidents" prepend-icon="mdi-alert-circle" @click="scrollToSection('incidents')" />
-            <v-list-item title="Location Insights" prepend-icon="mdi-map-marker"
-                @click="scrollToSection('locations')" /> -->
     </SafePathNavDrawer>
 
     <v-main>
@@ -80,7 +74,4 @@ const items = [
 </script>
 
 <style scoped>
-.app-shell {
-    min-height: 100vh;
-}
 </style>

@@ -87,8 +87,6 @@ import safepathLogo from '../assets/Berlin.png';
 import brandenburg from '../assets/Photographing+Brandenburg+Gate_019.webp';
 import keycloak from '../services/keycloak';
 
-const email = ref('');
-const password = ref('');
 const router = useRouter();
 
 const primaryProviders = [
@@ -138,11 +136,11 @@ const goToRegister = () => keycloak.register({ redirectUri: window.location.orig
 
 /* Or a gradient scrim instead of a filter: */
 .brand-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
 }
 
 .brand-hero {
@@ -150,7 +148,7 @@ const goToRegister = () => keycloak.register({ redirectUri: window.location.orig
 }
 
 .feature-card {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
 }
 </style>

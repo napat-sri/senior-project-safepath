@@ -3,9 +3,6 @@ import axios from 'axios';
 // keycloak
 import keycloak from './keycloak'; 
 
-// error handling
-import { showError } from './errorStore';
-
 const apiBaseUrl =  process.env.VUE_APP_API_URL
 const api = axios.create({
   baseURL: apiBaseUrl,
@@ -23,6 +20,10 @@ api.interceptors.request.use(async (config) => {
   }
   return config;
 });
+
+
+// error handling
+import { showError } from './errorStore';
 
 // Map common status codes to short titles.
 const STATUS_TITLES = {
