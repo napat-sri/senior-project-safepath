@@ -7,9 +7,9 @@
                     <v-text-field v-model="userSearch" label="Search by name or email" variant="outlined"
                         density="compact" prepend-inner-icon="mdi-magnify" hide-details style="width: 300px"
                         name="admin-user-search" autocomplete="off" clearable />
-                    <v-btn variant="outlined" color="primary" @click="openUserModal()" prepend-icon="mdi-account-plus">
+                    <!-- <v-btn variant="outlined" color="primary" @click="openUserModal()" prepend-icon="mdi-account-plus">
                         Add User
-                    </v-btn>
+                    </v-btn> -->
                     <v-btn icon="mdi-refresh" variant="text" :loading="usersLoading" aria-label="Refresh user"
                         @click="fetchUsers" />
                 </div>
