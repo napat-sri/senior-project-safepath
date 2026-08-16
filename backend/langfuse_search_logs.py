@@ -250,6 +250,17 @@ def _resolve_user(uid):
         display = "Member"
         return {"user": display, "email": "", "role": "Member",
                 "userInitial": (display[:1] or "M").upper()}
+    elif raw.startswith("admin_"):
+        sub = raw[len("admin_"):]
+        name, email = _lookup_keycloak_user(sub)
+        if name or email:
+            display = name or email or "Admin"
+            return {"user": display, "email": email or "", "role": "Admin",
+                    "userInitial": (display[:1] or "A").upper()}
+        # lookup failed → still treat as a member (avoid mislabeling as Guest)
+        display = "Admin"
+        return {"user": display, "email": "", "role": "Admin",
+                "userInitial": (display[:1] or "A").upper()}
     label, masked = _mask_user(raw)          # existing helper
     return {"user": label, "email": masked, "role": "Guest",
             "userInitial": ("G").upper()}

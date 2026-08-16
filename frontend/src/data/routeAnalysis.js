@@ -1,25 +1,4 @@
-const berlinGeocodingEntries = [
-  // { label: 'Alexanderplatz', aliases: ['alexanderplatz', 'alexander platz', 'alexanderplatz berlin'] },
-  // { label: 'Brandenburg Gate', aliases: ['brandenburg gate', 'brandenburger tor'] },
-  // { label: 'Potsdamer Platz', aliases: ['potsdamer platz'] },
-  // { label: 'Berlin Central Station', aliases: ['berlin central station', 'hauptbahnhof', 'berlin hauptbahnhof'] },
-  // { label: 'Museum Island', aliases: ['museum island', 'museumsinsel'] },
-  // { label: 'Friedrichstrasse', aliases: ['friedrichstrasse', 'friedrichstraße'] },
-  // { label: 'Tiergarten', aliases: ['tiergarten'] },
-  // { label: 'Kreuzberg', aliases: ['kreuzberg'] },
-  // { label: 'Prenzlauer Berg', aliases: ['prenzlauer berg'] },
-  // { label: 'Charlottenburg', aliases: ['charlottenburg'] },
-  // { label: 'Wilmersdorf', aliases: ['wilmersdorf'] },
-  // { label: 'Neukolln', aliases: ['neukolln', 'neukoelln', 'neukölln'] },
-  // { label: 'Schöneberg', aliases: ['schoneberg', 'schöneberg'] },
-  // { label: 'Moabit', aliases: ['moabit'] },
-  // { label: 'Gorlitzer Park', aliases: ['gorlitzer park', 'görlitzer park'] },
-  // { label: 'Humboldt Forum', aliases: ['humboldt forum'] },
-  // { label: 'East Side Gallery', aliases: ['east side gallery'] },
-  // { label: 'Gendarmenmarkt', aliases: ['gendarmenmarkt'] },
-  // { label: 'Kurfürstendamm', aliases: ['kurfurstendamm', 'kurfuerstendamm', 'kudamm'] },
-  // { label: 'Berlin City Center', aliases: ['berlin', 'berlin city center', 'mitte'] }
-];
+const berlinGeocodingEntries = [];
 
 let routeSuggestions = [];
 var safetyScores = {

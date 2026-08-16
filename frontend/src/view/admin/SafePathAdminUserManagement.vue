@@ -7,9 +7,6 @@
                     <v-text-field v-model="userSearch" label="Search by name or email" variant="outlined"
                         density="compact" prepend-inner-icon="mdi-magnify" hide-details style="width: 300px"
                         name="admin-user-search" autocomplete="off" clearable />
-                    <v-btn variant="outlined" color="primary" @click="openUserModal()" prepend-icon="mdi-account-plus">
-                        Add User
-                    </v-btn>
                     <v-btn icon="mdi-refresh" variant="text" :loading="usersLoading" aria-label="Refresh user"
                         @click="fetchUsers" />
                 </div>
@@ -43,18 +40,18 @@
 
                     <!-- Row actions -->
                     <template #item.actions="{ item }">
-                            <v-tooltip text="Edit">
-                                <template #activator="{ props }">
-                                    <v-btn size="small" variant="text" color="primary" v-bind="props"
-                                        @click="openUserModal(item)" icon="mdi-pencil" />
-                                </template>
-                            </v-tooltip>
-                            <v-tooltip text="Delete">
-                                <template #activator="{ props }">
-                                    <v-btn size="small" variant="text" color="error" v-bind="props"
-                                        @click="openDeleteUserModal(item)" icon="mdi-delete" />
-                                </template>
-                            </v-tooltip>
+                        <v-tooltip text="Edit">
+                            <template #activator="{ props }">
+                                <v-btn size="small" variant="text" color="primary" v-bind="props"
+                                    @click="openUserModal(item)" icon="mdi-pencil" />
+                            </template>
+                        </v-tooltip>
+                        <v-tooltip text="Delete">
+                            <template #activator="{ props }">
+                                <v-btn size="small" variant="text" color="error" v-bind="props"
+                                    @click="openDeleteUserModal(item)" icon="mdi-delete" />
+                            </template>
+                        </v-tooltip>
                     </template>
 
                     <template #no-data>
@@ -65,6 +62,7 @@
         </v-card>
     </v-container>
 
+    <!-- Update User -->
     <v-dialog v-model="showUserModal" max-width="560">
         <v-card rounded="lg" color="info">
             <template v-slot:title>
@@ -84,6 +82,7 @@
         </v-card>
     </v-dialog>
 
+    <!-- Delete User -->
     <v-dialog v-model="showDeleteUserModal" max-width="500">
         <v-card rounded="lg" color="error">
             <template v-slot:title>
@@ -113,19 +112,11 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { adminService } from '../../services/api.js';
-import SafePathNavDrawer from '../../components/SafePathNavDrawer.vue';
-import SafePathAdminSearchLogs from '../admin/SafePathAdminSearchLogsView.vue'
 
 const router = useRouter();
-
-const adminMenu = [
-    { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/overview' },
-    { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-    { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
-];
 
 const userHeaders = [
     { title: 'Name/Email', key: 'name' },
@@ -135,8 +126,6 @@ const userHeaders = [
     { title: 'Actions', key: 'actions', sortable: false },
 ];
 
-const searchLogFilter = ref('');
-const incidentStatusFilter = ref('All');
 const showUserModal = ref(false);
 const selectedUser = ref(null);
 const showDeleteUserModal = ref(false);
@@ -150,8 +139,6 @@ const snackbar = ref({
 const notify = (text, color = 'success') => {
     snackbar.value = { show: true, text, color };
 };
-
-const tab = ref('Overview')
 
 const users = ref([]);
 const usersLoading = ref(false);

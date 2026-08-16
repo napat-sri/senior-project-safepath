@@ -1,5 +1,6 @@
 <template>
     <SafePathNavDrawer />
+
     <v-main>
         <v-container fluid>
             <v-card class="mb-4" rounded="lg">
@@ -7,8 +8,7 @@
                     <v-card-title>Find your safest Berlin route</v-card-title>
                     <v-card-subtitle>
                         Compare route options, validate Berlin-only locations, and inspect detailed route safety
-                        before you
-                        go.
+                        before you go.
                     </v-card-subtitle>
                 </v-card-text>
             </v-card>
@@ -17,7 +17,6 @@
                     <v-card rounded="lg" elevation="2" class="mb-4">
                         <v-card-title>Route Search</v-card-title>
                         <v-card-subtitle>Search safer paths using live route intelligence.</v-card-subtitle>
-                        <!-- <v-card-subtitle>Type a district, station, or landmark to see suggestions.</v-card-subtitle> -->
                         <v-divider class="mt-2"></v-divider>
                         <v-card-text>
                             <v-form @submit.prevent="searchRoute">
@@ -60,6 +59,8 @@
                             </v-form>
                         </v-card-text>
                     </v-card>
+
+                    <!-- Suggested Routes -->
                     <v-card v-if="showResults && !searchLoading" rounded="lg" elevation="2">
                         <v-card-title class="d-flex justify-space-between align-center">
                             <span>Suggested Routes</span>
@@ -85,7 +86,7 @@
                                             <h4 class="text-h6">{{ route.name }}</h4>
                                         </div>
                                         <v-chip :style="scorePillStyle(route.safetyScore)">{{ route.safetyScore
-                                        }}/100</v-chip>
+                                            }}/100</v-chip>
                                     </div>
                                     <div class="d-flex justify-space-between text-caption text-medium-emphasis mb-2">
                                         <span>Distance {{ route.distance }}</span>
@@ -106,6 +107,8 @@
                         </v-card-text>
                     </v-card>
                 </v-col>
+
+                <!-- Berlin Map -->
                 <v-col cols="12" lg="8">
                     <v-card rounded="lg" elevation="2">
                         <v-card-title>Berlin Safety Map</v-card-title>
@@ -117,12 +120,12 @@
                     </v-card>
                 </v-col>
             </v-row>
+            <!-- AI Chatbot -->
             <div id="chat-container"></div>
 
             <!-- Guests must sign in before opening detailed route safety. -->
             <v-dialog v-model="dialog" max-width="400" persistent>
-                <v-card prepend-icon="mdi-lock"
-                    title="Login required"
+                <v-card prepend-icon="mdi-lock" title="Login required"
                     text="Viewing detailed route safety is available to registered users only.">
                     <v-card-text>
                         Please log in to continue.
@@ -157,8 +160,6 @@ import { placeService, routeService } from '../services/api';
 import { getIdentity } from '../utils/identity';
 import keycloak from '../services/keycloak';
 
-//const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png'; //dev
-//const TILE_URL = process.env.VUE_APP_TILE_URL || 'https://osm.safepath.duckdns.org/tile/{z}/{x}/{y}.png'; //prod
 const TILE_URL = process.env.VUE_APP_TILE_URL
 
 const DefaultIcon = L.icon({
@@ -171,6 +172,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 const router = useRouter();
 const map = ref(null);
 const routeOverlay = ref(null);
+
 const startLocation = ref('');
 const destination = ref('');
 const travelMode = ref('walking'); // 'walking' or 'driving' — sent to /api/routes/safe
@@ -184,15 +186,23 @@ const searchError = ref('');
 const searchLoading = ref(false);
 const routes = ref([]); // Replace the computed with a ref
 const selectedRoute = computed(() => (routes.value && routes.value.length > 0 ? routes.value[0] : null));
+
 const hasSearched = ref(false);
 const startError = computed(() => {
     if (!hasSearched.value) return '';
-    return validateBerlinLocation(startLocation.value);
+    const message = validateBerlinLocation(startLocation.value);
+    if (message) return message;
+    if (!selectedStartPlace.value) return 'Please pick a start location from the suggestions.';
+    return '';
 });
 const destinationError = computed(() => {
     if (!hasSearched.value) return '';
-    return validateBerlinLocation(destination.value);
+    const message = validateBerlinLocation(destination.value);
+    if (message) return message;
+    if (!selectedDestinationPlace.value) return 'Please pick a destination location from the suggestions.';
+    return '';
 });
+
 const suggestionCache = {};
 async function fetchSuggestions(query) {
     if (!query || query.trim().length < 3) return [];
@@ -211,6 +221,7 @@ async function fetchSuggestions(query) {
         return [];
     }
 }
+
 const startSuggestions = ref([]);
 const selectedStartPlace = ref(null);
 const skipStartWatch = ref(false);
@@ -220,6 +231,11 @@ watch(startLocation, async (value) => {
         skipStartWatch.value = false;
         return;
     }
+    // User edited the field manually — the previous pick is no longer valid.
+    if (selectedStartPlace.value && value !== selectedStartPlace.value.display_name) {
+        selectedStartPlace.value = null;
+        invalidateResults();
+    }
     clearTimeout(startDebounceTimer);
     startDebounceTimer = setTimeout(async () => {
         const results = await fetchSuggestions(value);
@@ -228,6 +244,7 @@ watch(startLocation, async (value) => {
         );
     }, 500);
 });
+
 const destinationSuggestions = ref([]);
 const selectedDestinationPlace = ref(null);
 const skipDestinationWatch = ref(false);
@@ -237,13 +254,20 @@ watch(destination, async (value) => {
         skipDestinationWatch.value = false;
         return;
     }
-    clearTimeout(destinationDebounceTimer);
-    destinationDebounceTimer = setTimeout(async () => {
-        destinationSuggestions.value = (await fetchSuggestions(value)).filter(
+    // User edited the field manually — the previous pick is no longer valid.
+    if (selectedDestinationPlace.value && value !== selectedDestinationPlace.value.display_name) {
+        selectedDestinationPlace.value = null;
+        invalidateResults();
+    }
+    clearTimeout(startDebounceTimer);
+    startDebounceTimer = setTimeout(async () => {
+        const results = await fetchSuggestions(value);
+        destinationSuggestions.value = results.filter(
             (item) => item.name !== startLocation.value
         );
     }, 500);
 });
+
 function selectSuggestion(type, suggestion) {
     if (type === 'start') {
         skipStartWatch.value = true;
@@ -260,6 +284,7 @@ function selectSuggestion(type, suggestion) {
         destinationFocused.value = false;
     }
 }
+
 function scorePillStyle(score) {
     const tone = getSafetyTone(score);
     return {
@@ -400,6 +425,13 @@ function openRouteDetails(routeId) {
 function searchRoute() {
     hasSearched.value = true;
     searchError.value = '';
+
+    // Both fields must hold a place the user actually picked from suggestions.
+    if (!selectedStartPlace.value || !selectedDestinationPlace.value) {
+        searchError.value = 'Please choose both a start location and a destination from the suggestions.';
+        return;
+    }
+
     fetchSafeRoute();
 }
 function searchClear() {
@@ -413,6 +445,11 @@ function searchClear() {
     selectedDestinationPlace.value = null;
     routeOverlay.value?.clearLayers();
     showResults.value = false;
+}
+function invalidateResults() {
+    showResults.value = false;
+    routes.value = [];
+    routeOverlay.value?.clearLayers();
 }
 const searchResult = ref(null);
 onMounted(() => {

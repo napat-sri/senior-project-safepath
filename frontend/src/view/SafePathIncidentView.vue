@@ -76,6 +76,7 @@
                     </v-card>
                 </v-col>
 
+                <!-- Recently Submitted Reports -->
                 <v-col cols="12" lg="5">
                     <v-card rounded="lg" elevation="2">
                         <v-card-title class="d-flex justify-space-between align-center">
@@ -88,8 +89,8 @@
                             <v-alert v-if="!reports.length" type="info" variant="tonal">No reports submitted
                                 yet.</v-alert>
 
-                            <v-card v-for="report in paginatedReports" :key="report.id" variant="outlined"
-                                class="mb-2" rounded="lg">
+                            <v-card v-for="report in paginatedReports" :key="report.id" variant="outlined" class="mb-2"
+                                rounded="lg">
                                 <v-card-text>
                                     <div class="d-flex justify-space-between align-start">
                                         <div>
@@ -156,8 +157,8 @@ const itemsPerPage = 2
 const pageCount = computed(() => Math.ceil(reports.value.length / itemsPerPage))
 
 const paginatedReports = computed(() => {
-  const start = (page.value - 1) * itemsPerPage
-  return reports.value.slice(start, start + itemsPerPage)
+    const start = (page.value - 1) * itemsPerPage
+    return reports.value.slice(start, start + itemsPerPage)
 });
 const suggestionCache = {};
 async function fetchSuggestions(query) {

@@ -41,8 +41,6 @@ import { adminService } from '../../services/api.js';
 const loginEvents = ref([]);
 const loginsLoading = ref(false);
 const loginsError = ref('');
-const page = ref(1);
-const pageSize = 100;
 const total = ref(0);
 
 const loginEventHeaders = [
@@ -60,7 +58,7 @@ const loadLoginLogs = async () => {
         const { data } = await adminService.loginEvents();
         loginEvents.value = data.events;
         total.value = data.total;
-        console.log(data)
+        // console.log(data)
     } catch (err) {
         loginsError.value = err.response?.data?.detail || 'Could not load login history.';
     } finally { loginsLoading.value = false; }

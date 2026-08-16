@@ -69,6 +69,7 @@
         </v-container>
     </v-main>
 
+    <!-- Delete Account-->
     <v-dialog v-model="showDeleteModal" max-width="500">
         <v-card rounded="lg" color="error">
             <template v-slot:title>
@@ -105,8 +106,7 @@ const router = useRouter();
 const showDeleteModal = ref(false);
 const deleteConfirmText = ref('');
 const isAdmin = computed(() => keycloak.authenticated && keycloak.hasRealmRole('Admin'));
-
-console.log(keycloak.tokenParsed)
+// console.log(keycloak.tokenParsed)
 
 const user = ref({
     name: keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'SafePath User',
@@ -142,14 +142,6 @@ const userInitials = computed(() => {
         .slice(0, 2)
         .toUpperCase();
 });
-
-const openEditModal = () => {
-    showEditModal.value = true;
-};
-
-const closeEditModal = () => {
-    showEditModal.value = false;
-};
 
 const openDeleteModal = () => {
     deleteConfirmText.value = '';

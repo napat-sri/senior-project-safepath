@@ -5,7 +5,6 @@ import SafePathHomeView from '../view/SafePathHomeView.vue';
 import SafePathIncidentView from '../view/SafePathIncidentView.vue';
 import SafePathLoginView from '../view/SafePathLoginView.vue';
 import SafePathProfileView from '../view/SafePathProfileView.vue';
-import SafePathRegisterView from '../view/SafePathRegisterView.vue';
 import SafePathRouteDetailsView from '../view/SafePathRouteDetailsView.vue';
 
 // keycloak
@@ -19,10 +18,6 @@ const routes = [
   {
     path: '/login',
     component: SafePathLoginView
-  },
-  {
-    path: '/register',
-    component: SafePathRegisterView
   },
   {
     path: '/home',
@@ -79,4 +74,3 @@ router.beforeEach((to) => {
 });
 
 export default router;
-
