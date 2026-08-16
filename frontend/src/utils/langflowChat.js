@@ -5,10 +5,8 @@ const LANGFLOW_SCRIPT_SRC =
   "https://cdn.jsdelivr.net/gh/logspace-ai/langflow-embedded-chat@v1.0.7/dist/build/static/js/bundle.min.js";
 const LANGFLOW_WINDOW_TITLE = "SafePath Bot";
 const LANGFLOW_FLOW_ID = process.env.VUE_APP_LANGFLOW_CHATBOT_FLOW_ID;
-//const LANGFLOW_API_KEY = process.env.VUE_APP_LANGFLOW_API_KEY;
-//console.log("FLOW_ID: ", LANGFLOW_FLOW_ID);
-//console.log("API_KEY: ", LANGFLOW_API_KEY);
 const LANGFLOW_HOST_URL = process.env.VUE_APP_LANGFLOW_HOST;
+//console.log("FLOW_ID: ", LANGFLOW_FLOW_ID);
 //console.log("HOST_URL: ", LANGFLOW_HOST_URL)
 
 function mountChatWidget(containerId) {
@@ -21,10 +19,12 @@ function mountChatWidget(containerId) {
     // what makes the chatbot hallucinate route JSON. getUserId() returns the
     // guest id today; once auth lands it returns the member id — no change here.
     const sessionId = `chat_${getUserId()}`;
+
     chatContainer.innerHTML = `
     <langflow-chat
   window_title="SafePath Bot"
-  flow_id="${LANGFLOW_FLOW_ID}" host_url="${LANGFLOW_HOST_URL}"
+  flow_id="${LANGFLOW_FLOW_ID}"
+  host_url="${LANGFLOW_HOST_URL}"
   session_id="${sessionId}"
   chat_position="top-left" width="400" height="550"
 

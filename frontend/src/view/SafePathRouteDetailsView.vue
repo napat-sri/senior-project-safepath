@@ -1,5 +1,6 @@
 <template>
     <SafePathNavDrawer />
+
     <v-main>
         <v-container fluid class="pa-4 pa-md-6">
             <v-card class="mb-5" rounded="lg" elevation="2">
@@ -24,8 +25,9 @@
                                     {{ selectedRoute.name }}
                                 </v-chip>
                             </div>
-                            <v-card-text class="text-body-large text-medium-emphasis mb-2">{{ selectedRoute.summary
-                            }}</v-card-text>
+                            <v-card-text class="text-body-large text-medium-emphasis mb-2">
+                                {{ selectedRoute.summary}}
+                            </v-card-text>
                         </v-card-text>
                     </v-card>
                 </v-col>
@@ -101,8 +103,7 @@
                                     <span class="font-weight-medium">{{ item.label }}</span>
                                     <span>{{ item.score }}/100</span>
                                 </div>
-                                <v-progress-linear :model-value="item.score"
-                                    :color="getSafetyTone(item.score).color"
+                                <v-progress-linear :model-value="item.score" :color="getSafetyTone(item.score).color"
                                     height="8" rounded />
                             </div>
                         </v-card-text>
@@ -144,8 +145,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { getRouteById, getSafetyTone } from '../data/routeAnalysis';
 import SafePathNavDrawer from '../components/SafePathNavDrawer.vue';
 import { mountLangflowChat } from '../utils/langflowChat';
-//const TILE_URL = process.env.VUE_APP_TILE_URL || 'http://localhost:8081/tile/{z}/{x}/{y}.png'; //dev
-//const TILE_URL = process.env.VUE_APP_TILE_URL || 'https://osm.safepath.duckdns.org/tile/{z}/{x}/{y}.png'; //prod
 const TILE_URL = process.env.VUE_APP_TILE_URL
 const DefaultIcon = L.icon({
     iconUrl: icon,
@@ -168,7 +167,6 @@ function scoreBadgeStyle(score) {
     const tone = getSafetyTone(score);
     return {
         color: tone.color,
-        // backgroundColor: tone.soft
     };
 }
 function goHome() {

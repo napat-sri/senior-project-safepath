@@ -104,10 +104,5 @@ keycloak
         window.history.replaceState(window.history.state, '', clean || '/');
       }
     });
-
-    // // Keep the access token fresh; if refresh fails, prompt re-login.
-    // setInterval(() => {
-    //   keycloak.updateToken(60).catch(() => keycloak.login());
-    // }, 60000);
   })
   .catch((err) => console.error('Keycloak init failed', err));
