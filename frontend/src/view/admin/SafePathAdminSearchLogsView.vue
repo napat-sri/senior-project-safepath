@@ -22,13 +22,21 @@
   <!-- User = avatar + name + email -->
   <template #item.user="{ item }">
     <div class="d-flex align-center ga-2">
-      <v-avatar size="28" color="primary" variant="tonal">{{ item.user_detail.userInitial }}</v-avatar>
-      <div v-if="item.user_detail.role == 'Guest'">
-        <div class="font-weight-medium">{{ item.user_detail.role }}</div>
-      </div>
-      <div v-else>
+      <v-avatar v-if="item.user_detail.role == 'Admin'" size="28" color="warning" variant="tonal">
+        {{ item.user_detail.userInitial }}</v-avatar>
+      <v-avatar v-else-if="item.user_detail.role == 'Member'" size="28" color="primary" variant="tonal">
+        {{ item.user_detail.userInitial }}</v-avatar>
+      <v-avatar v-else size="28" color="success" variant="tonal">{{ item.user_detail.userInitial }}</v-avatar>
+      <div v-if="item.user_detail.role == 'Admin'">
         <div class="font-weight-medium">{{ item.user_detail.user }}</div>
         <div class="text-caption text-medium-emphasis">{{ item.user_detail.email }}</div>
+      </div>
+      <div v-else-if="item.user_detail.role == 'Member'">
+        <div class="font-weight-medium">{{ item.user_detail.user }}</div>
+        <div class="text-caption text-medium-emphasis">{{ item.user_detail.email }}</div>
+      </div>
+      <div v-else>
+        <div class="font-weight-medium">{{ item.user_detail.role }}</div>
       </div>
     </div>
   </template>
@@ -123,8 +131,9 @@ const loadSearchLogs = async () => {
     logsError.value = '';
 
     try {
-        const { data } = await adminService.searchLogs();
+        const { data } = await adminService.searchLogs({ minutes: 10080, limit: 100 });
         searchLogs.value = data.logs ?? [];
+        console.log(data)
     } catch (err) {
         logsError.value =
             err.response?.data?.detail ||
