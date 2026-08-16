@@ -38,6 +38,7 @@
         </v-card>
     </v-container>
 
+    <!-- Incident detail dialog -->
     <v-dialog v-model="showIncidentModal" max-width="500">
         <v-card rounded="lg">
             <v-card-title class="d-flex justify-space-between align-center">
@@ -75,30 +76,14 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import SafePathNavDrawer from '../../components/SafePathNavDrawer.vue';
-import { adminService, incidentService } from '../../services/api.js';
+import { incidentService } from '../../services/api.js';
 import { incidentTypeColor } from '../../data/incidentTypes.js';
 
 const router = useRouter();
 
-const adminMenu = [
-    { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/overview' },
-    { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-    { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
-];
-
 const searchIncidentFilter = ref('');
 const showIncidentModal = ref(false);
 const incidentDetail = ref(null);
-
-const tab = ref('Overview')
-
-const items = [
-    'Overview',
-    'Search Logs',
-    'User Managemant',
-]
-
 const incidentReports = ref([]);
 const incidentsLoading = ref(false);
 const incidentsError = ref('');

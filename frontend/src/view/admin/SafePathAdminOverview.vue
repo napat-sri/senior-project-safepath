@@ -11,9 +11,9 @@
                         </template>
                         <v-card-text>
                             <div class="overview-stat-card__value">{{ item.value }}
-                                <v-chip class="overview-stat-card__chip" size="small"
-                                    :color="item.trendType === 'positive' ? 'success' : item.trendType === 'error' ? 'error' : ''"
-                                    variant="tonal" rounded="lg" v-if="item.trend != ''">
+                                <v-chip class="overview-stat-card__chip" size="small" :color="item.trendType === 'positive' ? 'success' :
+                                    item.trendType === 'error' ? 'error' : ''" variant="tonal" rounded="lg"
+                                    v-if="item.trend != ''">
                                     {{ item.trend }}
                                 </v-chip>
                             </div>
@@ -107,13 +107,9 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import SafePathNavDrawer from '../../components/SafePathNavDrawer.vue';
 import { incidentService, adminService } from '../../services/api.js';
-import { incidentTypeColor } from '../../data/incidentTypes.js';
 
 const router = useRouter();
-
-const tab = ref('Overview')
 
 // --- users ---
 const users = ref([]);
@@ -214,7 +210,7 @@ const loadSearchLogs = async () => {
         // last 7 days, generous limit
         const { data } = await adminService.searchLogs({ minutes: 10080, limit: 100 });
         searchLogs.value = data.logs || [];
-        console.log(data)
+        // console.log(data)
     } catch (err) {
         searchLogsError.value = err.response?.data?.detail || 'Could not load search logs.';
         searchLogs.value = [];
@@ -291,7 +287,6 @@ const overviewStats = computed(() => [
 }
 
 .overview-stat-card__chip {
-    /* align-self: flex-start; */
     font-weight: 600;
     margin-left: 10px;
 }

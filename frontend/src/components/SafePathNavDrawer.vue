@@ -54,26 +54,14 @@ import safePathLogo from '../assets/Berlin.png';
 import keycloak from '../services/keycloak';
 
 const router = useRouter();
+const avatar = ref('');
+const drawer = ref(false);
 
 // Optional explicit override; when null, the menu is derived from the user's role.
 const props = defineProps({
   items: { type: Array, default: null },
   width: { type: [Number, String], default: 280 },
 });
-
-const avatar = ref('');
-
-// onMounted(async () => {
-//   if (!keycloak.authenticated) return;
-//   try {
-//     const { data } = await userService.getAvatar();
-//     if (data.avatar) avatar.value = data.avatar;
-//   } catch (err) {
-//     console.error('Failed to load avatar', err);
-//   }
-// });
-
-const drawer = ref(false);
 
 // Light/dark toggle. The switch is "on" for light mode (sun icon); the choice
 // is applied globally via Vuetify and remembered across reloads.
@@ -93,7 +81,6 @@ const isAdmin = computed(() => keycloak.authenticated && keycloak.hasRealmRole('
 const username = computed(
   () => keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'Account'
 );
-
 // console.log('API request config:', keycloak.token);
 
 // Home for everyone; member items when logged in; Dashboard only for admins.
@@ -120,7 +107,6 @@ const navItems = computed(() => {
   return list;
 });
 
-// const login = () => keycloak.login({ redirectUri: window.location.origin + '/home' });
 const login = () => router.push('/login');
 const logout = () => keycloak.logout({ redirectUri: window.location.origin + '/home' });
 

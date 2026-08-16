@@ -18,99 +18,71 @@
                 <v-alert v-if="logsError" type="error" variant="tonal" density="compact" class="mb-3">
                     {{ logsError }}
                 </v-alert>
-<v-data-table :headers="searchLogHeaders" :items="filteredSearchLogs" :loading="logsLoading">
-  <!-- User = avatar + name + email -->
-  <template #item.user="{ item }">
-    <div class="d-flex align-center ga-2">
-      <v-avatar size="28" color="primary" variant="tonal">{{ item.user_detail.userInitial }}</v-avatar>
-      <div v-if="item.user_detail.role == 'Guest'">
-        <div class="font-weight-medium">{{ item.user_detail.role }}</div>
-      </div>
-      <div v-else>
-        <div class="font-weight-medium">{{ item.user_detail.user }}</div>
-        <div class="text-caption text-medium-emphasis">{{ item.user_detail.email }}</div>
-      </div>
-    </div>
-  </template>
+                <v-data-table :headers="searchLogHeaders" :items="filteredSearchLogs" :loading="logsLoading">
+                    <!-- User = avatar + name + email -->
+                    <template #item.user="{ item }">
+                        <div class="d-flex align-center ga-2">
+                            <v-avatar v-if="item.user_detail.role == 'Admin'" size="28" color="warning" variant="tonal">
+                                {{ item.user_detail.userInitial }}</v-avatar>
+                            <v-avatar v-else-if="item.user_detail.role == 'Member'" size="28" color="primary"
+                                variant="tonal">
+                                {{ item.user_detail.userInitial }}</v-avatar>
+                            <v-avatar v-else size="28" color="success" variant="tonal">{{ item.user_detail.userInitial
+                                }}</v-avatar>
+                            <div v-if="item.user_detail.role == 'Admin'">
+                                <div class="font-weight-medium">{{ item.user_detail.user }}</div>
+                                <div class="text-caption text-medium-emphasis">{{ item.user_detail.email }}</div>
+                            </div>
+                            <div v-else-if="item.user_detail.role == 'Member'">
+                                <div class="font-weight-medium">{{ item.user_detail.user }}</div>
+                                <div class="text-caption text-medium-emphasis">{{ item.user_detail.email }}</div>
+                            </div>
+                            <div v-else>
+                                <div class="font-weight-medium">{{ item.user_detail.role }}</div>
+                            </div>
+                        </div>
+                    </template>
 
-  <!-- Safety score chip -->
-  <template #item.safetyScore="{ item }">
-    <v-chip size="small" variant="tonal"
-      :color="getSafetyClass(item.safetyScore) === 'safe' ? 'success'
-             : getSafetyClass(item.safetyScore) === 'medium' ? 'warning' : 'error'">
-      {{ item.safetyScore }}/100
-    </v-chip>
-  </template>
+                    <!-- Safety score chip -->
+                    <template #item.safetyScore="{ item }">
+                        <v-chip size="small" variant="tonal" :color="getSafetyClass(item.safetyScore) === 'safe' ? 'success'
+                            : getSafetyClass(item.safetyScore) === 'medium' ? 'warning' : 'error'">
+                            {{ item.safetyScore }}/100
+                        </v-chip>
+                    </template>
 
-  <!-- Status chip -->
-  <template #item.status="{ item }">
-    <v-chip size="small" color="primary" variant="tonal">{{ item.status }}</v-chip>
-  </template>
+                    <!-- Status chip -->
+                    <template #item.status="{ item }">
+                        <v-chip size="small" color="primary" variant="tonal">{{ item.status }}</v-chip>
+                    </template>
 
-  <!-- Empty state -->
-  <template #no-data>
-    <div class="text-center text-medium-emphasis py-6">
-      {{ logsError ? 'No logs to show.' : 'No route searches yet.' }}
-    </div>
-  </template>
-</v-data-table>            </v-card-text>
+                    <!-- Empty state -->
+                    <template #no-data>
+                        <div class="text-center text-medium-emphasis py-6">
+                            {{ logsError ? 'No logs to show.' : 'No route searches yet.' }}
+                        </div>
+                    </template>
+                </v-data-table>
+            </v-card-text>
         </v-card>
     </v-container>
-
-    <v-dialog v-model="showUserModal" max-width="560">
-        <v-card rounded="lg">
-            <v-card-title>{{ selectedUser ? 'Update user access' : 'Add new user' }}</v-card-title>
-            <v-card-text>
-                <v-text-field v-model="userForm.name" label="Name" variant="outlined" class="mb-3" />
-                <v-text-field v-model="userForm.email" label="Email" variant="outlined" class="mb-3" />
-                <v-select v-model="userForm.role" :items="['Admin', 'Moderator', 'User']" label="Role"
-                    variant="outlined" class="mb-3" />
-                <v-select v-model="userForm.status" :items="['Active', 'Suspended', 'Pending']" label="Status"
-                    variant="outlined" />
-            </v-card-text>
-            <v-card-actions>
-                <v-spacer />
-                <v-btn variant="text" @click="closeUserModal">Cancel</v-btn>
-                <v-btn color="primary" @click="saveUser">Save User</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import SafePathNavDrawer from '../../components/SafePathNavDrawer.vue';
 import { adminService } from '../../services/api';
 
 const router = useRouter();
 
-const adminMenu = [
-    { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/overview' },
-    { title: 'Profile', icon: 'mdi-account', to: '/profile' },
-    { title: 'Report Incident', icon: 'mdi-alert', to: '/incident' }
-];
-
 const searchLogFilter = ref('');
-const incidentStatusFilter = ref('All');
-const showUserModal = ref(false);
-const selectedUser = ref(null);
-
-const tab = ref('Overview')
-
-const items = [
-    'Overview',
-    'Search Logs',
-    'User Managemant',
-]
-
 const searchLogHeaders = [
-  { title: 'Date/Time', key: 'timestamp' },
-  { title: 'User', key: 'user' },
-  { title: 'Start', key: 'start' },
-  { title: 'Destination', key: 'destination' },
-  { title: 'Safety Score', key: 'safetyScore' },
-  { title: 'Status', key: 'status', sortable: false },
+    { title: 'Date/Time', key: 'timestamp' },
+    { title: 'User', key: 'user' },
+    { title: 'Start', key: 'start' },
+    { title: 'Destination', key: 'destination' },
+    { title: 'Safety Score', key: 'safetyScore' },
+    { title: 'Status', key: 'status', sortable: false },
 ];
 
 // Real route-search logs, fetched from the backend (Langfuse-sourced).
@@ -123,8 +95,9 @@ const loadSearchLogs = async () => {
     logsError.value = '';
 
     try {
-        const { data } = await adminService.searchLogs();
+        const { data } = await adminService.searchLogs({ minutes: 10080, limit: 100 });
         searchLogs.value = data.logs ?? [];
+        console.log(data)
     } catch (err) {
         logsError.value =
             err.response?.data?.detail ||
@@ -136,13 +109,6 @@ const loadSearchLogs = async () => {
 };
 
 onMounted(loadSearchLogs);
-
-const userForm = ref({
-    name: '',
-    email: '',
-    role: 'User',
-    status: 'Active'
-});
 
 const filteredSearchLogs = computed(() => {
     const query = searchLogFilter.value.trim().toLowerCase();
@@ -167,25 +133,6 @@ const filteredSearchLogs = computed(() => {
     });
 });
 
-const filteredIncidents = computed(() => {
-    if (incidentStatusFilter.value === 'All') {
-        return incidentReports.value;
-    }
-
-    return incidentReports.value.filter((incident) => incident.status === incidentStatusFilter.value);
-});
-
-const goToHome = () => {
-    router.push('/home');
-};
-
-const scrollToSection = (sectionId) => {
-    document.getElementById(sectionId)?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-    });
-};
-
 const getSafetyClass = (score) => {
     if (score >= 80) {
         return 'safe';
@@ -196,79 +143,6 @@ const getSafetyClass = (score) => {
     }
 
     return 'risk';
-};
-
-const openUserModal = (user = null) => {
-    selectedUser.value = user;
-
-    if (user) {
-        userForm.value = {
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            status: user.status
-        };
-    } else {
-        userForm.value = {
-            name: '',
-            email: '',
-            role: 'User',
-            status: 'Active'
-        };
-    }
-
-    showUserModal.value = true;
-};
-
-const closeUserModal = () => {
-    showUserModal.value = false;
-    selectedUser.value = null;
-};
-
-const saveUser = () => {
-    if (selectedUser.value) {
-        const index = users.value.findIndex((user) => user.id === selectedUser.value.id);
-
-        if (index !== -1) {
-            users.value[index] = {
-                ...users.value[index],
-                name: userForm.value.name,
-                email: userForm.value.email,
-                role: userForm.value.role,
-                status: userForm.value.status,
-                initial: userForm.value.name.charAt(0).toUpperCase() || 'U'
-            };
-        }
-    } else {
-        users.value.unshift({
-            id: Date.now(),
-            initial: userForm.value.name.charAt(0).toUpperCase() || 'U',
-            name: userForm.value.name || 'New User',
-            email: userForm.value.email || 'new-user@example.com',
-            role: userForm.value.role,
-            provider: 'Email',
-            status: userForm.value.status,
-            lastLogin: 'Never'
-        });
-    }
-
-    closeUserModal();
-};
-
-const deactivateUser = (userId) => {
-    const user = users.value.find((item) => item.id === userId);
-
-    if (user) {
-        user.status = 'Suspended';
-    }
-};
-
-const updateIncidentStatus = (incidentId, status) => {
-    const incident = incidentReports.value.find((item) => item.id === incidentId);
-
-    if (incident) {
-        incident.status = status;
-    }
 };
 </script>
 
