@@ -67,6 +67,35 @@ forwards normal queries upstream but overrides the app domain:
 --address=/safepath.duckdns.org/172.28.0.10   # -> Caddy, for VPN clients
 ```
 
+- Put this `dnsmasq` service config into the container via Portainer
+```
+services:
+  dnsmasq:
+    image: 4km3/dnsmasq:2.90-r3
+    container_name: dnsmasq
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vpn:
+        ipv4_address: 172.28.0.53
+    command:
+      - --keep-in-foreground
+      - --log-facility=-
+      # Forward all normal queries to upstream public DNS
+      - --server=1.1.1.1
+      - --server=8.8.8.8
+      # Override: anything under this domain resolves to Caddy's internal IP
+      - --address=/yourdomain.com/172.28.0.10(caddy's private ip)
+      # Don't read /etc/hosts or /etc/resolv.conf inside the container
+      - --no-hosts
+      - --no-resolv
+
+networks:
+  vpn:
+    external: true
+```
+
 **Caution:** this override hijacks the hostname for *all* protocols, not just
 web, and for **every** subdomain of `safepath.duckdns.org` — including ones
 that aren't actually routed by this project's Caddy at all (see **Langfuse**

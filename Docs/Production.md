@@ -163,23 +163,28 @@ networks:
     2. Place the config details from Caddy
     ```
     services:
-        caddy:
-            image: lucaslorentz/caddy-docker-proxy:ci-alpine
-            ports:
-                - 80:80
-                - 443:443/tcp
-                - 443:443/udp
-            environment:
-                - CADDY_INGRESS_NETWORKS=caddy
-            networks:
-                - caddy
-            volumes:
-                - /var/run/docker.sock:/var/run/docker.sock
-                - caddy_data:/data
-            restart: unless-stopped
+      caddy:
+        image: lucaslorentz/caddy-docker-proxy:ci-alpine
+        ports:
+          - 80:80
+          - 443:443/tcp
+          - 443:443/udp
+        env_file:
+          - /opt/docker/caddy.env
+        environment:
+          - CADDY_INGRESS_NETWORKS=caddy
+        networks:
+          caddy:
+          app_vpn:
+            ipv4_address: 172.28.0.10
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - caddy_data:/data
+        restart: unless-stopped
 
     networks:
         caddy:
+        app_vpn:
             external: true
 
     volumes:
@@ -301,4 +306,27 @@ sudo nano hooks.json
     }
   }
 ]
+```
+
+## Portainer
+1. Go to /opt/docker and edit the docker compose file
+```
+cd /opt/docker
+sudo nano docker-compose.yml
+```
+2. Add a webhook's config service
+```
+portainer:
+    image: portainer/portainer-ce:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainerdata:/data
+    networks:
+      - app_vpn
+      - caddy
+    labels:
+      caddy: portainer.safepath.duckdns.org
+      caddy.@vpn.remote_ip: "172.28.0.3"
+      caddy.route.0_reverse_proxy: '@vpn {{upstreams 9000}}'
+      caddy.route.1_respond: '"VPN access required. your ip is {http.request.remote.host}" 403'
 ```
